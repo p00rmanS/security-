@@ -1,8 +1,8 @@
 /* Module 0 — A+ / Network+ Fundamentals Refresher
-   Security+ assumes you already know this. This module exists because
-   James said he forgot most of his A+/Network+ basics before restarting
-   Security+ prep, so every topic here is written as a refresher, not
-   as new material. */
+   Security+ assumes you already know this. This module exists for learners
+   who have forgotten their A+/Network+ basics before starting Security+
+   prep, so every topic here is written as a refresher, not as new
+   material. */
 
 const FUNDAMENTALS = [
   {

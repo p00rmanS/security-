@@ -733,6 +733,90 @@ const DOMAINS = [
         ],
         taglish:
           "Hindi lahat ng banta ay galing sa labas — pwede ring galing sa taong may access na talaga (insider). Malicious — sinasadya niyang manakit (halimbawa, magnanakaw ng data bago mag-resign). Negligent — hindi sinasadya, pagkakamali lang (na-phish, na-misconfigure ang cloud storage). Compromised — hindi talaga siya ang gumagawa, ninakaw lang ang kredensyal niya ng ibang tao. Shadow IT naman — paggamit ng hindi approved na app o cloud service para sa trabaho, kadalasan dahil mas madali lang gamitin, pero hindi ito nakikita ng IT/security kaya delikado kung anong data ang dumadaan doon."
+      },
+      {
+        id: "d2-t11",
+        title: "Application and Memory-Based Attacks in Depth",
+        tag: "2.3",
+        minutes: 17,
+        goal: "Distinguish the specific application and memory-based attack techniques — buffer overflow, race conditions/TOCTOU, and memory/DLL injection — beyond the general vulnerability categories already introduced.",
+        why: "The Vulnerabilities lesson introduces these techniques in one sentence each; the exam separately tests recognizing the SPECIFIC mechanism behind a described attack, which is where this lesson goes deeper.",
+        simple:
+          "A buffer overflow happens when a program writes more data into a fixed-size memory buffer than it was allocated to hold; the extra data spills into adjacent memory, which can crash the program or, in a crafted attack, overwrite something like a return address so the attacker's own code executes instead — a stack overflow targets the call stack, while a heap overflow targets dynamically allocated memory, but both are memory corruption used to try to execute code with the compromised program's own privileges. A race condition is a flaw where the outcome depends on the timing or order of operations that were assumed to always happen in a specific sequence; the classic exam-named example is TOCTOU (Time-Of-Check to Time-Of-Use) — a program checks a condition (like whether a file is safe) and then acts on it, but an attacker changes the underlying resource in the narrow window between the check and the use, so the action ends up operating on something different than what was actually checked. Memory injection covers a family of techniques where an attacker forces malicious code to run inside a legitimate, already-trusted process's memory space instead of running as its own separate, suspicious-looking process — DLL injection loads a malicious library into a running process, and process injection more generally writes and executes code inside another process, both used specifically to hide from security tools that trust or ignore activity coming from known-legitimate processes. Pointer/object dereference issues happen when a program follows a reference (pointer) that turns out to be invalid, uninitialized, or null, which can crash a program (denial of service) or, in some cases, be manipulated to point somewhere the attacker chooses. Privilege escalation is often the GOAL of exploiting several of these flaws — successfully corrupting memory or exploiting a race condition can let an attacker's code end up running with higher privileges than the vulnerable process should ever have had.",
+        keyTerms: [
+          { term: "Buffer Overflow", def: "Writing more data into a memory buffer than it was allocated to hold, corrupting adjacent memory (stack or heap)." },
+          { term: "Race Condition / TOCTOU", def: "A flaw where the outcome depends on timing; TOCTOU specifically exploits the gap between checking a condition and acting on it." },
+          { term: "Memory / DLL Injection", def: "Running malicious code inside a different, already-trusted process's memory space to evade detection." },
+          { term: "Pointer Dereference", def: "Following an invalid, uninitialized, or null memory reference, which can crash a program or be manipulated." },
+          { term: "Privilege Escalation", def: "Ending up with more access than intended, often the end goal of exploiting a memory or timing flaw." }
+        ],
+        analogy:
+          "A buffer overflow is like pouring more water into a glass than it holds — the overflow spills onto the counter, and if someone deliberately over-pours in a controlled way, they can direct that spill to hit a specific switch they want triggered. TOCTOU is like a bank teller checking that a check is valid, then looking away for a second before actually cashing it — in that gap, someone swaps it for a different check, and the teller cashes the swapped one, still believing it's the one they checked. DLL injection is like a spy sneaking into a building by riding inside a delivery truck that guards already wave through without inspection, instead of trying to walk in the front door where they'd be stopped and questioned.",
+        technical:
+          "An older network service written in C copies user-supplied input into a fixed-size buffer without checking its length; an attacker sends deliberately oversized input crafted so the overflow overwrites the function's return address with the address of their own injected code, gaining code execution with that service's privileges — a classic stack buffer overflow. A backup script checks a file's permissions, then a fraction of a second later opens and processes it; an attacker races to replace that file with a symlink to a sensitive system file in the gap between the check and the open, so the script ends up processing something it never actually validated — a TOCTOU race condition. Malware injects its code into a legitimate, already-running browser process via DLL injection specifically so that its outbound network connections appear to come from the trusted browser rather than from an unfamiliar executable that endpoint protection would flag immediately.",
+        table: {
+          headers: ["Technique", "Core Flaw", "Typical Goal"],
+          rows: [
+            ["Buffer Overflow", "Writing past a memory buffer's allocated size", "Crash the program or execute injected code"],
+            ["Race Condition (TOCTOU)", "Resource changes between check and use", "Bypass a security check that already ran"],
+            ["Memory/DLL Injection", "Code runs inside a different, trusted process", "Hide malicious activity behind a legitimate process"]
+          ]
+        },
+        confusion: [
+          { a: "Buffer Overflow", b: "Race Condition (TOCTOU)", diff: "A buffer overflow is a SIZE problem — too much data written into too little allocated space. A race condition is a TIMING problem — the resource itself changes in the narrow gap between when it was checked and when it was used. Neither requires the other." },
+          { a: "DLL Injection", b: "Privilege Escalation", diff: "DLL injection is a METHOD — running code inside another process to hide it. Privilege escalation is an OUTCOME — ending up with more access than intended. Injection is often used to help achieve escalation, but they answer different questions: where the code runs versus what access level it ends up with." }
+        ],
+        soc: "An EDR alert showing an unfamiliar process making network connections is a fairly easy catch; an alert showing a fully legitimate, expected process (like a browser or a core OS process) suddenly making unusual connections is a much stronger signal of memory/DLL injection, since the attacker specifically chose that technique to blend in with normal-looking activity.",
+        takeaways: [
+          "Buffer overflows are a size problem in memory allocation; race conditions (TOCTOU) are a timing problem between a check and its use.",
+          "Memory/DLL injection runs malicious code inside a trusted process specifically to evade detection tools that trust known-legitimate processes.",
+          "Privilege escalation is often the end goal these techniques are used to reach, not a technique in itself."
+        ],
+        taglish:
+          "Buffer overflow — sobrang laki ng ipinasok na datos kaysa sa nilaang espasyo sa memory, kaya umaapaw ito sa katabing memory — kung sinadya, pwedeng idirekta yun para tumakbo ang sariling code ng attacker. Race condition (TOCTOU) — sa pagitan ng 'pagche-check' at 'paggamit,' may pagkakataong palitan ng attacker yung ginagamit — parang nag-check ka na ng resibo pero binago na pala ito bago mo pa nagamit. DLL/memory injection — nagtatago ang malisyosong code sa LOOB ng lehitimong programa (parang delivery truck na hindi na sinusuri ng guwardya), para hindi kaagad mahalata."
+      },
+      {
+        id: "d2-t12",
+        title: "On-Path and Layer 2 Network Attacks",
+        tag: "2.4",
+        minutes: 16,
+        goal: "Recognize the specific Layer 2 and on-path network attacks — ARP poisoning, MAC flooding, DNS spoofing, and DHCP starvation/rogue DHCP — and match each to the network function it abuses.",
+        why: "The Malicious Activity lesson covers network attacks broadly; the exam separately tests recognizing WHICH specific Layer 2 or network-service attack a scenario describes, since several of these get confused with each other.",
+        simple:
+          "ARP poisoning (also called ARP spoofing) exploits the fact that ARP (Address Resolution Protocol) has no built-in authentication — an attacker sends forged ARP replies claiming their own MAC address belongs to another device's IP (often the default gateway), so nearby devices update their ARP tables to send traffic to the attacker instead, letting the attacker intercept, inspect, or alter it as an on-path attack local to that network segment. MAC flooding attacks a switch directly: the attacker sends a huge number of frames with fake source MAC addresses, filling the switch's MAC address table (CAM table) past its capacity; once full, some switches fail open and start broadcasting all traffic out every port like a hub, letting the attacker see traffic that shouldn't have reached them. DNS spoofing/poisoning corrupts DNS resolution — the attacker returns a false IP address for a legitimate domain name (by compromising a DNS server's cache or intercepting/forging responses), silently redirecting victims to an attacker-controlled server even though the address bar still shows the trusted domain name. DHCP starvation floods a DHCP server with bogus requests using spoofed MAC addresses until its entire pool of available IP addresses is exhausted, denying legitimate devices any address at all (a denial-of-service); a rogue DHCP server takes this further by then offering ITS OWN malicious configuration (pointing victims to an attacker-controlled gateway or DNS server) to devices that request one next, achieving an on-path position without ever touching ARP. Port security (limiting how many MAC addresses a switch port will learn) and DHCP snooping (only trusting DHCP responses from designated, legitimate ports) are the standard switch-level defenses against these.",
+        keyTerms: [
+          { term: "ARP Poisoning / Spoofing", def: "Sending forged ARP replies to redirect traffic to the attacker on the local network segment." },
+          { term: "MAC Flooding", def: "Overwhelming a switch's CAM table with fake MAC addresses until it fails open and broadcasts traffic." },
+          { term: "DNS Spoofing / Poisoning", def: "Returning a false IP address for a legitimate domain name to silently redirect victims." },
+          { term: "DHCP Starvation", def: "Exhausting a DHCP server's IP address pool with bogus requests, denying legitimate devices an address." },
+          { term: "Rogue DHCP Server", def: "An unauthorized DHCP server handing out malicious configuration (fake gateway/DNS) to devices." },
+          { term: "DHCP Snooping", def: "A switch feature that only trusts DHCP responses from designated, legitimate ports." }
+        ],
+        analogy:
+          "ARP poisoning is like sneaking into a building's directory and relabeling the mailroom's forwarding slip so mail addressed to the CEO's office gets redirected to a different desk instead — everyone still writes the CEO's name on the envelope, it just physically ends up somewhere else. MAC flooding is like overwhelming a receptionist with so many fake name tags that they give up checking IDs and just let everyone walk past the front desk into every office. DNS spoofing is like swapping the numbers in a phone book next to a trusted business's name, so dialing the 'right' name from the book actually rings the attacker's phone instead. A rogue DHCP server is like a fake welcome desk at a conference handing out room assignments before the real welcome desk gets to you — you follow the wrong directions confidently because you don't know it wasn't the real desk.",
+        technical:
+          "An attacker on a coffee shop's Wi-Fi sends forged ARP replies telling every device on the network that the attacker's laptop's MAC address is the default gateway's — now all outbound traffic from those devices routes through the attacker's machine first, letting them inspect unencrypted traffic before forwarding it on so victims notice nothing wrong. Separately, a penetration tester floods a target's access switch with frames carrying thousands of fake source MAC addresses until its CAM table overflows; the switch fails open into broadcast mode, and the tester's laptop, plugged into just one port, now receives a copy of traffic meant for other ports on that same switch, all without ever touching ARP.",
+        table: {
+          headers: ["Attack", "Layer/Service Abused", "What the Attacker Gains"],
+          rows: [
+            ["ARP Poisoning", "Layer 2 ARP (no authentication)", "On-path position on the local segment"],
+            ["MAC Flooding", "Switch CAM table", "Switch fails open, broadcasts traffic to attacker"],
+            ["DNS Spoofing", "DNS resolution", "Silently redirects victims to a fake server"],
+            ["DHCP Starvation + Rogue DHCP", "DHCP address pool/server", "Denies real IPs, then hands out a malicious config"]
+          ]
+        },
+        confusion: [
+          { a: "ARP Poisoning", b: "MAC Flooding", diff: "ARP poisoning tricks devices' ARP TABLES into sending traffic to the wrong MAC address on purpose — a targeted redirection. MAC flooding overwhelms the SWITCH's own CAM table until it fails open and broadcasts everything — a brute-force flood, not a targeted lie." },
+          { a: "DHCP Starvation", b: "Rogue DHCP Server", diff: "DHCP starvation is a denial-of-service — exhausting the address pool so legitimate devices get nothing. A rogue DHCP server is an on-path setup — handing out a malicious configuration to devices, often used right after starvation clears the way, but it's a distinct second step, not the same attack." }
+        ],
+        soc: "Sudden, unexplained duplicate MAC-to-IP mappings in ARP tables across multiple hosts on the same segment is one of the clearest network-level tells of ARP poisoning in progress, and it's exactly the kind of anomaly port security and DHCP snooping are configured specifically to prevent rather than just detect after the fact.",
+        takeaways: [
+          "ARP poisoning exploits ARP's lack of authentication to redirect traffic to the attacker on the local segment.",
+          "MAC flooding attacks the switch's CAM table directly, forcing it to fail open into broadcast mode.",
+          "DHCP starvation (denial-of-service) and a rogue DHCP server (malicious configuration) are often chained together but are two distinct steps."
+        ],
+        taglish:
+          "ARP poisoning — nagpapadala ng pekeng ARP reply para akalain ng mga device na ang MAC address mo ang default gateway, kaya dadaan muna sa'yo ang traffic bago ito ipasa (on-path attack). MAC flooding — binabaha ang CAM table ng switch ng maraming pekeng MAC address hanggang mag-overflow, at kapag nangyari yun, minsan nagbo-broadcast na lang ang switch sa lahat ng port. DNS spoofing — pinapalitan ang tamang IP address na sinasagot ng DNS, kaya kahit tama ang tinype mong pangalan ng website, sa maling server ka dadalhin. DHCP starvation — ubos-ubusan ng IP address hanggang wala nang matira sa totoong device, tapos papasok ang rogue DHCP server na magbibigay ng maling settings."
       }
     ]
   },
@@ -1257,6 +1341,89 @@ const DOMAINS = [
         ],
         taglish:
           "Sa cloud, may hatian ang responsibilidad ng seguridad sa pagitan mo at ng provider, at nag-iiba ang hati depende sa modelo. Sa IaaS, marami kang trabaho (OS, config, data). Sa PaaS, kinukuha na ng provider ang OS, ikaw na lang ang app mo. Sa SaaS, halos lahat na ang provider ang bahala — pero ikaw pa rin ang laging responsable sa SARILI mong datos at kung sino may access dito, kahit anong modelo. Ang pinakakaraniwang sanhi ng cloud breach? Hindi kasalanan ng provider — misconfiguration mismo ng customer."
+      },
+      {
+        id: "d3-t13",
+        title: "Segmentation in Practice: Screened Subnets, Air Gaps, and Microsegmentation",
+        tag: "3.2",
+        minutes: 16,
+        goal: "Distinguish the specific segmentation techniques — screened subnets, air gaps, jump servers, and microsegmentation — beyond the general DMZ/VLAN/zone vocabulary already introduced.",
+        why: "Defense in Depth introduces segmentation conceptually; the exam separately names and tests specific segmentation techniques and the exact scenario each fits, which is where this lesson goes deeper.",
+        simple:
+          "A screened subnet (the modern term for what was historically called a DMZ) is a network segment placed between the untrusted internet and the trusted internal network, protected by firewalls on both sides, specifically to host public-facing services (web servers, mail relays) so that even if one of them is compromised, the attacker still has to get through another firewall to reach the internal network — it's a buffer zone, not a hiding spot. An air gap takes isolation to the extreme: a system or network is physically disconnected from any other network, with no live network connection at all, used for the most sensitive systems (some industrial control systems, classified environments) where even a single accidental network path is considered an unacceptable risk — data can only move across an air gap via physical media (like a USB drive), which is itself a controlled, audited process. A jump server (or jump box) is a single, tightly controlled and monitored server that administrators must connect through to reach a sensitive network zone — instead of letting many admin workstations connect directly to sensitive systems, all administrative access is funneled through this one hardened, logged chokepoint, which also makes monitoring and revoking access far simpler. Microsegmentation goes beyond traditional VLAN-based segmentation by enforcing granular, often software-defined access rules between individual workloads or servers within the SAME zone or VLAN — instead of just controlling traffic between broad network segments, it controls exactly which specific servers within a segment are allowed to talk to which other specific servers, dramatically limiting how far an attacker can move even after landing inside a segment that used to be treated as a single trusted zone.",
+        keyTerms: [
+          { term: "Screened Subnet", def: "A network-connected buffer zone between the internet and internal network, hosting public-facing services (modern term for DMZ)." },
+          { term: "Air Gap", def: "Physical isolation with no live network connection at all; data moves only via controlled physical media." },
+          { term: "Jump Server / Jump Box", def: "A single controlled, monitored server administrators must connect through to reach a sensitive zone." },
+          { term: "Microsegmentation", def: "Granular access rules between individual workloads within the same zone or VLAN." }
+        ],
+        analogy:
+          "A screened subnet is like a hotel lobby: guests can enter and interact with the front desk, but they still need a keycard to get past the lobby into the actual guest floors — a controlled buffer, not the building's core. An air gap is like a vault with no doors to the rest of the building at all — the only way anything gets in or out is if someone physically carries it in, and that's exactly the point. A jump server is like a single reception desk everyone must check in at before being escorted to a restricted floor, instead of every visitor having their own separate way to wander upstairs. Microsegmentation is like giving every individual office door its own lock and access list, instead of just locking the one door to the whole floor — even if someone gets onto the floor, they still can't get into any specific office they weren't individually cleared for.",
+        technical:
+          "A company places its public-facing web servers in a screened subnet, with one firewall filtering internet-to-subnet traffic and a second, stricter firewall filtering subnet-to-internal-network traffic — a compromised web server still can't freely reach the internal payroll database. A power utility keeps its industrial control system on a fully air-gapped network with no internet or corporate-network connection whatsoever; software updates are applied only via a dedicated, scanned USB drive under strict procedure, specifically because the consequence of a network-based compromise there is judged too severe to accept any live connection at all. In a cloud environment using microsegmentation, a compromised web server workload is prevented from directly querying the database workload sitting in the very same subnet, because a fine-grained policy only permits that specific traffic from the designated application-tier workload — segmentation enforced between individual servers, not just between broad network zones.",
+        table: {
+          headers: ["Technique", "Isolation Level", "Typical Use"],
+          rows: [
+            ["Screened Subnet", "Buffer zone between internet and internal network", "Public-facing services (web, mail)"],
+            ["Air Gap", "No network connection at all", "Highest-sensitivity/ICS systems"],
+            ["Jump Server", "Single controlled path to a sensitive zone", "Centralizing and monitoring admin access"],
+            ["Microsegmentation", "Granular rules between individual workloads", "Limiting lateral movement inside one zone"]
+          ]
+        },
+        confusion: [
+          { a: "Screened Subnet", b: "Air Gap", diff: "A screened subnet is still NETWORK-CONNECTED, just placed as a controlled buffer between two trust zones. An air gap has NO live network connection at all — a fundamentally more extreme, and more operationally limiting, form of isolation." },
+          { a: "VLAN Segmentation", b: "Microsegmentation", diff: "VLAN segmentation separates traffic between broad network segments/zones. Microsegmentation adds granular rules WITHIN a single zone or VLAN, controlling exactly which individual workloads can talk to which other individual workloads — a much finer-grained layer on top of, not instead of, VLAN segmentation." }
+        ],
+        soc: "When an incident report shows a compromised public web server never actually reached the internal database despite both technically being reachable network-wise on paper, that's the screened subnet's second firewall doing exactly its job — a useful, concrete example to point to when justifying that architecture's cost during a security review.",
+        takeaways: [
+          "A screened subnet is a network-connected buffer zone; an air gap has no network connection at all — different isolation levels for different sensitivity levels.",
+          "A jump server centralizes and monitors administrative access to a sensitive zone through one controlled chokepoint.",
+          "Microsegmentation adds fine-grained control between individual workloads inside a single zone, limiting lateral movement that VLAN segmentation alone wouldn't stop."
+        ],
+        taglish:
+          "Screened subnet (dating tawag: DMZ) — buffer zone sa pagitan ng internet at internal network, may firewall sa magkabilang panig, para kahit ma-compromise ang public server dito, hindi pa rin agad maaabot ang loob. Air gap — mas matindi pa, walang koneksyon sa network — kailangan pa mismong dalhin nang pisikal (USB) ang datos papunta o palabas. Jump server — iisang pinto lang dapat daanan ng mga admin papunta sa sensitibong bahagi ng network, para madaling bantayan. Microsegmentation — kahit magkasama sa iisang VLAN/zone ang mga server, may hiwa-hiwalay pa ring patakaran kung sino-sino talaga ang pwedeng mag-usap — mas detalyadong proteksyon kaysa sa basic na VLAN segmentation lang."
+      },
+      {
+        id: "d3-t14",
+        title: "Backup Strategies and Capacity Planning",
+        tag: "3.4",
+        minutes: 17,
+        goal: "Compare the standard backup types (full, incremental, differential) and describe how backup strategy and capacity planning support resilience and recovery targets.",
+        why: "The Resilience and Recovery lesson covers RTO/RPO and recovery sites; the exam separately and specifically tests the backup TYPES and capacity planning concepts that determine whether those targets are actually achievable.",
+        simple:
+          "A full backup copies every selected file, every time it runs — simplest to restore from (just one backup set needed), but the slowest to run and the most storage-intensive, since nothing is skipped even if it hasn't changed. An incremental backup copies only the data that changed since the LAST backup of any kind (full or incremental) — fastest to run and smallest in size, but restoring means replaying the last full backup plus every single incremental backup in order since then, so a lot of files potentially need to be applied correctly. A differential backup copies all the data that changed since the LAST FULL backup (not since the last differential) — a middle ground: larger and slower than an incremental over time, but restoring only ever needs the last full backup plus the single most recent differential, no chain of multiple files to replay. The 3-2-1 backup rule is a widely-used guideline: keep at least 3 copies of data, on at least 2 different types of media, with at least 1 copy stored offsite — reducing the chance that a single disaster (fire, ransomware, hardware failure) destroys every copy at once. Immutable and offline (or 'air-gapped') backups can't be altered or deleted even by an attacker who has already compromised the network, which specifically defeats ransomware that tries to also encrypt or delete backup copies to remove any option except paying the ransom. Capacity planning is the forward-looking practice of ensuring enough people, technology, and infrastructure capacity exists to handle both normal growth and a disaster response — running out of storage for backups, or not having enough trained staff or spare hardware capacity during a real incident, are both capacity planning failures that undermine a recovery plan that looked fine on paper.",
+        keyTerms: [
+          { term: "Full Backup", def: "Copies every selected file every time; simplest to restore, but slowest and largest." },
+          { term: "Incremental Backup", def: "Copies only data changed since the last backup of any kind; fastest, but needs the full chain to restore." },
+          { term: "Differential Backup", def: "Copies data changed since the last full backup; needs only the full plus the latest differential to restore." },
+          { term: "3-2-1 Rule", def: "Keep 3 copies of data, on 2 different media types, with 1 copy stored offsite." },
+          { term: "Immutable Backup", def: "A backup that cannot be altered or deleted, even by an attacker who has compromised the network." },
+          { term: "Capacity Planning", def: "Ensuring enough people, technology, and infrastructure exist to handle growth and disaster response." }
+        ],
+        analogy:
+          "A full backup is like photocopying your entire filing cabinet every single day, drawer and all. An incremental backup is like only photocopying whatever's new since yesterday's photocopy — fast, but to reconstruct last Friday's cabinet you need Monday's full copy plus Tuesday's, Wednesday's, Thursday's, and Friday's incremental pages, in the right order. A differential backup is like photocopying everything that's changed since last Monday's full copy, every single day — the Friday copy is bigger than an incremental would be, but you only ever need Monday's full copy plus Friday's one differential copy to reconstruct everything. The 3-2-1 rule is like not keeping your only spare house key, your passport copy, and your important documents all in the same drawer of the same house — spread the copies out so one fire can't take all of them at once.",
+        technical:
+          "A company runs a full backup every Sunday and incremental backups every other night; recovering data from a Thursday failure requires restoring Sunday's full backup, then Monday's, Tuesday's, and Wednesday's incrementals in exact order — if any one of those files is corrupted, everything after it in the chain is unusable. Switching that same company to differential backups instead means recovering from the same Thursday failure only needs Sunday's full backup plus Wednesday's single differential backup — simpler and more resilient to one bad file, at the cost of each differential backup growing larger as the week goes on. Separately, a ransomware attack that successfully encrypts an organization's live file servers fails to extort them for payment because their backups are stored immutably in offline, air-gapped storage the ransomware itself was never able to reach or alter.",
+        table: {
+          headers: ["Backup Type", "Copies Since", "Restore Requires"],
+          rows: [
+            ["Full", "Everything, every time", "Just the one full backup"],
+            ["Incremental", "Last backup of any kind", "Last full + every incremental since, in order"],
+            ["Differential", "Last full backup only", "Last full + the most recent differential"]
+          ]
+        },
+        confusion: [
+          { a: "Incremental", b: "Differential", diff: "Incremental backs up changes since the LAST BACKUP OF ANY KIND, making each one small but requiring the whole chain to restore. Differential backs up changes since the LAST FULL BACKUP, making each one grow larger over time but requiring only the full plus the one latest differential to restore." },
+          { a: "Backup", b: "Redundancy (e.g. RAID/Clustering)", diff: "A backup is a separate, point-in-time COPY of data, recoverable if the original is lost or corrupted, including from human error or ransomware. Redundancy (like RAID or server clustering) keeps a system RUNNING through a live hardware failure, but doesn't protect against corrupted or maliciously altered data being faithfully replicated to every redundant copy at once." }
+        ],
+        soc: "A ransomware recovery goes smoothly or turns into a payment negotiation almost entirely based on one earlier decision — whether backups were kept immutable and offline where the ransomware couldn't reach and encrypt them too — which is why validating that backups are genuinely isolated, not just labeled as a 'backup' while sitting on the same live network, is a standing SOC/IT concern, not a one-time checkbox.",
+        takeaways: [
+          "Full backups are simplest to restore but slowest/largest; incremental is fastest/smallest but needs the whole chain to restore; differential is the middle ground needing only the full plus the latest differential.",
+          "The 3-2-1 rule (3 copies, 2 media types, 1 offsite) reduces the chance a single disaster destroys every copy.",
+          "Immutable/offline backups specifically defeat ransomware that tries to also destroy backup copies, and capacity planning ensures the people/tech/infrastructure exist to actually execute a recovery plan."
+        ],
+        taglish:
+          "Full backup — kinokopya lahat tuwing gagawin, pinakasimple i-restore pero pinakamabagal at malaki. Incremental — kokopyahin lang yung nagbago mula sa pinakahuling backup (kahit incremental din yun), pinakamabilis pero kailangan buong chain (full + lahat ng incremental) para i-restore nang maayos. Differential — kokopyahin ang nagbago mula sa huling full backup lang, kaya lumalaki habang tumatagal pero dalawang file lang (full + pinakabagong differential) ang kailangan i-restore. 3-2-1 rule — dapat may 3 kopya, sa 2 magkaibang klase ng storage, at 1 nasa ibang lokasyon (offsite), para hindi maubos lahat sa iisang sakuna. Immutable/offline backup — hindi kayang baguhin o burahin kahit ng attacker na nakapasok na sa network, kaya bagsak ang plano ng ransomware na sirain din ang backup."
       }
     ]
   },
@@ -1930,6 +2097,48 @@ const DOMAINS = [
         ],
         taglish:
           "May iba't ibang klase ng account: user (isang tao), privileged/admin (mataas ang karapatan, hiwalay dapat sa pang-araw-araw na account), service account (para sa application, hindi tao), at shared/generic account (maraming gumagamit — iwasan ito dahil hindi malalaman kung sino talaga ang gumawa ng aksyon). May buong lifecycle din ang account: paggawa nito nang may tamang access (provisioning), regular na pagsusuri kung kailangan pa ba talaga ang access na iyon (recertification — dito nahuhuli ang 'privilege creep,' yung unti-unting pag-ipon ng access na hindi na dapat), at pag-deactivate agad kapag umalis na ang empleyado (deprovisioning) — hindi pagkalipas ng ilang buwan."
+      },
+      {
+        id: "d4-t18",
+        title: "Monitoring and Assessment Tool Categories",
+        tag: "4.4",
+        minutes: 16,
+        goal: "Match the standard security monitoring and assessment tool categories — SCAP, benchmarks, agent-based vs. agentless scanning, and File Integrity Monitoring — to what each actually checks.",
+        why: "The Alerting and Monitoring lesson introduces SIEM/SOAR and basic log sources; the exam separately names specific tool CATEGORIES and expects you to know what each one actually monitors or assesses, which is where this lesson goes deeper.",
+        simple:
+          "SCAP (Security Content Automation Protocol) is a standardized way to automate checking a system's configuration and vulnerabilities against a known set of rules, so compliance and vulnerability checks can be run consistently and automatically instead of manually, system by system. A benchmark (like a CIS Benchmark) is the specific set of recommended, hardened configuration settings a system is compared against — SCAP is the automation method; a benchmark is the actual rulebook being checked against. Vulnerability scanning can run agent-based (a small piece of software installed on each monitored system, giving deep, continuous, credentialed visibility even when the device is off the corporate network) or agentless (the scanner checks systems remotely over the network without installing anything locally, easier to deploy broadly but limited to what's visible from outside and only while the device is reachable). File Integrity Monitoring (FIM) specifically watches critical files and configurations for unauthorized changes, alerting when something that shouldn't change suddenly does — useful for catching tampering that a general log source might not surface clearly on its own. Antivirus, EDR, and DLP tools aren't just endpoint protection — they're also monitoring DATA SOURCES in their own right, feeding their detections and logs into the SIEM alongside network-based sources like NetFlow and packet captures, so a complete monitoring picture pulls signals from configuration compliance tools, vulnerability scanners, endpoint tools, and network tools all at once, not from any single source alone.",
+        keyTerms: [
+          { term: "SCAP", def: "Security Content Automation Protocol — a standardized method for automating configuration/vulnerability compliance checks." },
+          { term: "Benchmark", def: "The specific set of recommended, hardened configuration settings a system is checked against (e.g., a CIS Benchmark)." },
+          { term: "Agent-Based Scanning", def: "Scanning using software installed on each monitored system, for deep, continuous, credentialed visibility." },
+          { term: "Agentless Scanning", def: "Scanning remotely over the network with nothing installed locally; easier to deploy but limited to what's reachable." },
+          { term: "File Integrity Monitoring (FIM)", def: "Watches critical files/configurations for unauthorized changes and alerts when they occur." }
+        ],
+        analogy:
+          "SCAP is like a standardized inspection checklist format that any building inspector can use consistently, while a specific benchmark (like a fire-code benchmark) is the actual list of items on that particular checklist. Agent-based scanning is like having a dedicated inspector permanently stationed inside a building who can check anything, anytime, even after hours. Agentless scanning is like an inspector who only drives by and checks from the street — easier to schedule and requires no cooperation from the building, but they can only see what's visible from outside, and only while they're actually there. File Integrity Monitoring is like a tamper-evident seal on a display case — you don't watch the case all day, but the seal itself tells you immediately if anyone touched what's inside.",
+        technical:
+          "An organization uses SCAP-compliant tooling to automatically check every server against the relevant CIS Benchmark every week, flagging any server whose configuration has drifted from the approved hardened baseline without anyone needing to manually review each one. A remote, laptop-heavy workforce is monitored via agent-based vulnerability scanning, since agentless network scanning would miss any laptop that isn't currently connected to the corporate network — while a large, stable server farm on a known internal network segment uses agentless scanning for broad, low-overhead coverage instead. Separately, File Integrity Monitoring flags an unexpected change to a critical system configuration file at 3 AM, when no scheduled change was on the calendar — a strong, specific tamper indicator a general log review might have taken much longer to notice.",
+        table: {
+          headers: ["Tool/Category", "What It Actually Checks", "Key Limitation"],
+          rows: [
+            ["SCAP + Benchmark", "Configuration/vulnerability compliance against a standard rulebook", "Only as good as the benchmark chosen"],
+            ["Agent-Based Scanning", "Deep, continuous, credentialed system state", "Requires software installed on every system"],
+            ["Agentless Scanning", "Remote, network-visible state", "Only sees what's reachable and connected"],
+            ["File Integrity Monitoring", "Unauthorized changes to specific critical files", "Only watches the files/paths configured"]
+          ]
+        },
+        confusion: [
+          { a: "SCAP", b: "Benchmark", diff: "SCAP is the AUTOMATION STANDARD/PROTOCOL for running consistent, machine-readable compliance checks. A benchmark is the actual CONTENT — the specific set of hardened settings being checked against. SCAP is the method; a benchmark is the rulebook it applies." },
+          { a: "Agent-Based", b: "Agentless Scanning", diff: "Agent-based requires installing software on each system for deep, continuous, credentialed visibility, including offline or off-network devices. Agentless scans remotely over the network with nothing installed locally, easier to deploy broadly but limited to what's visible and reachable at scan time." }
+        ],
+        soc: "When a vulnerability scan report seems to be missing a known device entirely, checking whether that device was simply offline or off-network at scan time (an agentless scanning blind spot) is often the answer, rather than assuming the scanning tool itself is broken.",
+        takeaways: [
+          "SCAP is the automation method; a benchmark (like a CIS Benchmark) is the actual rulebook it checks a system against.",
+          "Agent-based scanning gives deeper, continuous visibility including offline devices; agentless scanning is easier to deploy broadly but only sees what's reachable on the network at scan time.",
+          "File Integrity Monitoring specifically catches unauthorized changes to critical files, complementing rather than replacing general log-based monitoring."
+        ],
+        taglish:
+          "SCAP — istandardisadong paraan para awtomatikong i-check ang configuration/vulnerabilities ng system laban sa isang alituntunin (benchmark), kumpara sa paggawa nito nang manu-mano isa-isa. Benchmark (tulad ng CIS Benchmark) — yun mismong listahan ng tamang setting na pinagbabatayan. Agent-based scanning — may naka-install na software sa bawat system, malalim at tuloy-tuloy ang tingin kahit offline; agentless — panlabas lang, mas madaling i-deploy pero limitado lang sa nakikita habang naka-konekta. File Integrity Monitoring (FIM) — binabantayan kung may nagbago sa mahahalagang file na hindi dapat nagbago — parang selyo na agad malalaman mo kung nahawakan."
       }
     ]
   },
@@ -2229,6 +2438,49 @@ const DOMAINS = [
         ],
         taglish:
           "Black box — walang alam na kahit ano ang tester, parang totoong outsider na umaatake mula sa zero. White box — kumpleto ang alam niya (diagrams, code, credentials), mas mabilis at masusi, pero hindi na totoong representasyon ng tunay na attacker. Gray box — nasa gitna, may kaunting access pero hindi kumpleto — madalas ito ang pinipiling gawin sa totoong buhay. Passive reconnaissance — nangangalap ng impormasyon nang hindi direktang humihipo sa target (OSINT, public records) — walang risk na mahuli. Active reconnaissance — direktang humihipo (port scanning) — mas detalyado, pero may tsansang mahuli."
+      },
+      {
+        id: "d5-t2",
+        title: "Risk Assessment Types, Exposure Factor, and Risk Appetite",
+        tag: "5.2",
+        minutes: 17,
+        goal: "Explain how Single Loss Expectancy is actually derived (Asset Value x Exposure Factor), distinguish risk assessment frequency types, and tell risk appetite, risk tolerance, and risk exemption/exception apart in practice.",
+        why: "The Risk Management flagship covers the treatment options and the SLE/ARO/ALE formula; the exam separately tests the sub-concepts feeding into that formula and the more nuanced risk-appetite vocabulary, which is where this lesson goes deeper.",
+        simple:
+          "Single Loss Expectancy (SLE) isn't just a number pulled from nowhere — it's calculated as Asset Value (AV) multiplied by Exposure Factor (EF), where the Exposure Factor is the percentage of the asset's value that would actually be lost in a single incident. A server worth $50,000 that would be completely destroyed in a fire has an EF of 100%, giving an SLE of $50,000; the same server suffering a less catastrophic incident that damages only 20% of its value gives an SLE of just $10,000 — the exposure factor is what keeps the loss estimate realistic instead of always assuming total destruction. Risk assessments themselves come in different frequency types: ad hoc (done in response to a specific trigger, like a new acquisition or a major incident), one-time (a single assessment for a specific purpose, not repeated), recurring (done on a regular fixed schedule, like annually), and continuous (ongoing, near-real-time monitoring rather than a periodic snapshot) — choosing the right type depends on how quickly the underlying risk actually changes. Risk appetite is an organization's general, strategic attitude toward risk-taking, often categorized as expansionary (willing to accept more risk in pursuit of growth or opportunity), conservative (strongly risk-averse, prioritizing stability), or neutral (balanced between the two). Risk tolerance is the more specific, practical boundary of acceptable variation within that appetite for a particular risk or metric — appetite is the philosophy, tolerance is where the actual line gets drawn. Risk threshold is the specific point at which a risk becomes unacceptable and must trigger a response — crossing it isn't a judgment call anymore, it's a predefined trigger. Finally, a risk exemption is a formal, temporary waiver from a specific security requirement (usually with an expiration date and a plan to eventually comply), while a risk exception is a more permanent, ongoing acknowledgment that a requirement won't be met for a documented reason — both are different from simple risk acceptance, because they specifically excuse non-compliance with an existing policy or standard rather than just accepting a general risk.",
+        keyTerms: [
+          { term: "Exposure Factor (EF)", def: "The percentage of an asset's value that would actually be lost in a single incident; SLE = Asset Value x EF." },
+          { term: "Ad Hoc / Recurring / Continuous Assessment", def: "Risk assessment frequency types: triggered by an event, on a fixed schedule, or ongoing near-real-time." },
+          { term: "Risk Appetite", def: "An organization's general strategic attitude toward risk-taking (expansionary, conservative, or neutral)." },
+          { term: "Risk Tolerance", def: "The specific, practical boundary of acceptable variation for one particular risk or metric." },
+          { term: "Risk Exemption", def: "A temporary, expiring waiver from a specific security requirement." },
+          { term: "Risk Exception", def: "A more permanent, documented acknowledgment that a requirement won't be met." }
+        ],
+        analogy:
+          "Exposure Factor is like insurance adjusters not assuming every car accident totals the car — a fender-bender might only be a 10% loss of the car's value, while a total wreck is 100%, and the payout (SLE) scales with how much was actually lost, not a flat assumption every time. Risk appetite is like a person's general investing personality — aggressive and growth-focused, cautious and conservative, or balanced — while risk tolerance is the specific dollar amount they're actually comfortable losing on any one particular investment before they'd sell. A risk exemption is like a temporary hall pass with an expiration date; a risk exception is more like a permanent note in your file explaining why you're excused from a specific rule going forward.",
+        technical:
+          "A financial services firm classifies itself as having a conservative risk appetite overall, but for a specific new payment feature under evaluation, sets a risk tolerance of no more than a 2% projected fraud rate before the feature requires additional controls — appetite sets the general philosophy, tolerance sets the specific operating boundary for this one metric. A legacy application that can't yet support modern MFA is granted a risk exemption for 90 days while the team migrates to a newer platform, with the exemption automatically expiring and requiring renewal or genuine remediation — distinct from a risk exception that might permanently document why an isolated legacy system with no other option will simply never meet that particular control.",
+        table: {
+          headers: ["Assessment Type", "When It Happens", "Example Trigger"],
+          rows: [
+            ["Ad Hoc", "In response to a specific trigger", "A major incident or acquisition"],
+            ["One-Time", "Once, for a specific purpose", "A pre-merger security assessment"],
+            ["Recurring", "On a fixed schedule", "Annual risk assessment"],
+            ["Continuous", "Ongoing, near-real-time", "Automated continuous compliance monitoring"]
+          ]
+        },
+        confusion: [
+          { a: "Risk Appetite", b: "Risk Tolerance", diff: "Risk appetite is the organization's general, strategic ATTITUDE toward risk-taking overall (expansionary/conservative/neutral). Risk tolerance is the specific, practical BOUNDARY of acceptable variation for one particular risk or metric — appetite is the philosophy, tolerance is where the actual line is drawn in practice." },
+          { a: "Risk Exemption", b: "Risk Exception", diff: "A risk exemption is a TEMPORARY waiver from a requirement, usually with an expiration date and an expectation of eventually complying. A risk exception is a more PERMANENT, ongoing acknowledgment that a requirement won't be met, for a documented reason — both excuse non-compliance with a specific policy, unlike general risk acceptance." }
+        ],
+        soc: "When leadership asks why a known control gap on one specific legacy system hasn't been flagged as a fresh finding every single audit cycle, pointing to its documented, approved risk exception (or a still-valid, not-yet-expired risk exemption) explains the gap without it needing to be re-litigated as if it were newly discovered every time.",
+        takeaways: [
+          "SLE = Asset Value x Exposure Factor — exposure factor keeps the loss estimate realistic instead of always assuming total loss.",
+          "Risk assessments can be ad hoc, one-time, recurring, or continuous, matched to how quickly the underlying risk actually changes.",
+          "Risk appetite is the general strategic attitude; risk tolerance is the specific practical boundary; risk exemption is temporary and risk exception is more permanent — all distinct from simple risk acceptance."
+        ],
+        taglish:
+          "Ang SLE ay hindi basta-basta lang binibilang — ito ay Asset Value (halaga ng ari-arian) beses Exposure Factor (ilang porsyento ng halaga ang talagang mawawala sa isang insidente). Yung risk assessment, may iba't ibang klase: ad hoc (kapag may partikular na dahilan), one-time (isang beses lang), recurring (regular na iskedyul), continuous (walang tigil na pagsubaybay). Risk appetite — pangkalahatang saloobin ng organisasyon sa panganib (mapangahas, maingat, o katamtaman). Risk tolerance — mas specific na hangganan kung gaano karaming pagbabago ang katanggap-tanggap sa isang partikular na sukatan. Risk exemption — pansamantalang exempted, may expiration; risk exception — mas permanente, may dokumentadong dahilan."
       }
     ]
   }

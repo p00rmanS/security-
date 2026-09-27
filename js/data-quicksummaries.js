@@ -41,6 +41,8 @@ const QUICK_SUMMARIES = {
   "d2-t8": "Mobile devices have their own risk categories, from jailbreaking/rooting (removing built-in restrictions) to sideloading (installing apps outside the official store) to Bluetooth-specific attacks.",
   "d2-t9": "Risk doesn't just come from inside your own network — it can enter through a vendor's software, hardware, or dependencies, which is why a Software Bill of Materials (SBOM) matters when a new vulnerability is disclosed.",
   "d2-t10": "Not every threat comes from outside: insiders can cause harm on purpose (malicious), by mistake (negligent), or because their account was hijacked (compromised) — and shadow IT is employees quietly using unapproved apps or cloud services that IT can't see or protect.",
+  "d2-t11": "Buffer overflows are a memory-size problem, race conditions (TOCTOU) are a timing problem between checking and using something, and memory/DLL injection hides malicious code inside a process security tools already trust.",
+  "d2-t12": "ARP poisoning redirects traffic by lying to devices' ARP tables, MAC flooding overwhelms a switch until it broadcasts everything, DNS spoofing sends victims to a fake server under a trusted name, and DHCP starvation clears the way for a rogue DHCP server to hand out malicious settings.",
 
   // ---------- Domain 3 ----------
   "d3-flagship": "Defense in depth means layering multiple controls so no single failure exposes everything, and network segmentation (DMZs, VLANs, zones) limits how far an attacker can move after breaking in.",
@@ -57,6 +59,8 @@ const QUICK_SUMMARIES = {
   "d3-t10": "Data loss prevention can run at the network, endpoint, or cloud level, and detects sensitive data either by pattern matching (looks like a credit card number) or exact fingerprinting (matches a specific real record).",
   "d3-t11": "Every piece of data has an owner who decides how sensitive it is and a custodian who actually protects it day to day — and when a drive is retired, how you destroy it (clear, purge, or destroy) has to match how sensitive that data was.",
   "d3-t12": "Cloud security responsibility splits between you and the provider, and where that line falls depends on the service model — but no matter what you're renting (IaaS, PaaS, or SaaS), your own data and who can access it is always your job, not the provider's.",
+  "d3-t13": "A screened subnet is a network-connected buffer zone, an air gap has no network connection at all, a jump server centralizes admin access through one watched chokepoint, and microsegmentation locks down which individual servers can talk to each other even inside the same zone.",
+  "d3-t14": "Full backups copy everything every time, incremental only copies what changed since the last backup of any kind (fast, but needs the whole chain to restore), and differential copies what changed since the last full backup (needs just two files to restore) — and immutable, offline backups are what actually saves you from ransomware that tries to destroy backups too.",
 
   // ---------- Domain 4 ----------
   "d4-flagship": "Incident response follows a set order — preparation, detection, analysis, containment, eradication, recovery, lessons learned — and skipping or reordering a phase is exactly what exam scenarios test.",
@@ -78,9 +82,11 @@ const QUICK_SUMMARIES = {
   "d4-t15": "Incident communication means knowing who to notify, in what order, and what a post-incident report needs to contain — the human and organizational half of incident response, not just the technical fixes.",
   "d4-t16": "Kerberos issues tickets to prove identity without resending passwords, LDAP looks up directory information, RADIUS authenticates users connecting to a network, and TACACS+ authenticates administrators managing network devices.",
   "d4-t17": "Accounts have a full lifecycle — created with the right access, periodically rechecked so old access doesn't quietly pile up (privilege creep), and shut off the moment someone leaves — and knowing user vs. privileged vs. service vs. shared account types is exactly what the exam expects you to tell apart.",
+  "d4-t18": "SCAP automates checking a system against a benchmark's rulebook, agent-based scanning installs software for deep always-on visibility, agentless scanning checks remotely with nothing installed, and File Integrity Monitoring watches specific critical files for unauthorized changes.",
 
   // ---------- Domain 5 ----------
   "d5-flagship": "Risk management means identifying risks, deciding how to treat them (avoid, transfer, mitigate, accept), and using ALE (Annualized Loss Expectancy = SLE x ARO) to justify whether a control is worth its cost.",
+  "d5-t2": "SLE is actually Asset Value times Exposure Factor, risk assessments can be ad hoc, one-time, recurring, or continuous, and risk appetite (the general attitude), risk tolerance (the specific boundary), and risk exemption/exception (temporary vs. permanent waivers) are all distinct ideas the exam expects you to tell apart.",
   "d5-t1": "Governance documents form a hierarchy — policy sets the overall requirement, standard sets specific mandatory detail, procedure gives step-by-step instructions, and guideline is the only one that's optional.",
   "d5-t3": "Third-party risk means a vendor (or their own vendors) can introduce risk into your organization — supply-chain risk is a weak link in that chain, while concentration risk is relying on too few vendors overall.",
   "d5-t4": "Compliance isn't a one-time checkbox — it's an ongoing responsibility — and privacy principles like data minimization (collect less) and purpose limitation (don't reuse data for something else) run through most data-protection regulation.",

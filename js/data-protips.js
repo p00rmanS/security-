@@ -40,6 +40,8 @@ const PRO_TIPS = {
   "d2-t8": "Bluejacking = annoying message (like spam). Bluesnarfing = actual theft (like a burglary). If the scenario mentions DATA being taken, it's snarfing, not jacking — the '-snarf' root literally means to grab/steal.",
   "d2-t9": "If a new vulnerability is disclosed in a widely-used library and the question asks how an org would quickly know if they're affected, the answer is almost always \"check the SBOM\" — not \"run a full vulnerability scan\" (too slow) or \"audit every codebase\" (too manual).",
   "d2-t10": "If the scenario says an employee uses PERSONAL or UNAPPROVED cloud storage/apps for work with no malicious intent implied, that's shadow IT — not a malicious insider. Malicious requires intent; negligent is a mistake; compromised means someone ELSE is using their credentials.",
+  "d2-t11": "Size problem = buffer overflow (too much data, too little space). Timing problem = race condition/TOCTOU (the resource changed between check and use). If the exam says code runs \"inside\" a normal, trusted process, that's DLL/memory injection — the goal there is usually evading detection, not directly escalating privilege.",
+  "d2-t12": "ARP poisoning = a targeted lie to specific devices' ARP tables. MAC flooding = a brute-force overwhelm of the switch's own CAM table. If the scenario chains \"ran out of IP addresses\" then \"got a bad gateway from somewhere else,\" that's DHCP starvation followed by a rogue DHCP server — two steps, not one.",
 
   // ---------- Domain 3 ----------
   "d3-flagship": "If a public web server can freely reach the internal database with no restriction, the tested concept is a segmentation failure — the fix is always \"restrict to the specific port/protocol needed,\" never something unrelated like adding RAM.",
@@ -56,6 +58,8 @@ const PRO_TIPS = {
   "d3-t10": "\"Fewer false positives, catches only known real data\" = fingerprinting/exact data matching. \"Flags anything shaped like a credit card number, real or not\" = pattern matching. The exam tests this exact tradeoff.",
   "d3-t11": "If the exam gives you a role that DECIDES policy, that's the Owner. A role that DOES the technical work is the Custodian/Steward. A role bound by CONTRACT to process data for someone else is the Processor. For destruction: \"drive reused\" = clear or purge; \"drive never touched again\" = destroy.",
   "d3-t12": "\"Who patches the OS\" is the fast differentiator: IaaS = you patch it, PaaS/SaaS = provider patches it. But \"who's responsible for the data and who can access it\" is ALWAYS the customer, no matter the model — the one constant across every shared-responsibility question.",
+  "d3-t13": "\"No network connection at all\" is always an air gap — never call it a screened subnet, which is still network-connected by design. If the question is about limiting movement BETWEEN servers already inside the same zone, that's microsegmentation, not VLAN segmentation.",
+  "d3-t14": "Restore-chain length is the fast tell: needs EVERY incremental since the last full = incremental backups. Needs only the full plus ONE more file = differential. And \"ransomware also encrypted the backups\" always points to a missing immutable/offline backup, not a backup that never existed.",
 
   // ---------- Domain 4 ----------
   "d4-flagship": "Memorize the 7 phases in order with a sentence: \"Please Detect Any Compromise, Eradicate, Recover, Learn\" (Preparation, Detection, Analysis, Containment, Eradication, Recovery, Lessons Learned).",
@@ -77,9 +81,11 @@ const PRO_TIPS = {
   "d4-t7": "\"Automation blast radius\" is the exact phrase for the risk of a bad automated action happening at scale before a human catches it — automation risk is about SCALE, not slowness.",
   "d4-t9": "DHCP logs answer \"which device had this IP.\" Authentication logs answer \"who logged in.\" You often need BOTH together to go from an IP address to a specific person — expect a two-step log question.",
   "d4-t17": "If the question shows an account that quietly gained access across several role changes with nothing ever removed, that's privilege creep — the fix is periodic access RECERTIFICATION, not a stronger password policy. \"Account still active after someone quit\" is always a deprovisioning failure.",
+  "d4-t18": "SCAP is the METHOD, a benchmark (like CIS) is the CONTENT it checks against — don't treat them as synonyms. If a scanning approach is described as missing devices that are \"off the network\" or \"powered down,\" that's agentless scanning's blind spot, not agent-based.",
 
   // ---------- Domain 5 ----------
   "d5-flagship": "ALE = SLE x ARO. If a question gives you a cost per incident AND a frequency per year, it wants you to multiply them — then usually compare that number to the cost of a proposed control.",
+  "d5-t2": "SLE = Asset Value x Exposure Factor — if the question gives you a PERCENTAGE of an asset's value that would be lost, that's the Exposure Factor, not the ARO. Appetite is the general PHILOSOPHY; tolerance is the specific BOUNDARY for one metric — don't swap them.",
   "d5-t1": "Mandatory vs. optional is the fastest filter: Policy, Standard, Procedure = mandatory. Guideline is the ONLY non-mandatory one of the four. When in doubt, guideline is your \"not required\" answer.",
   "d5-t3": "Supply-chain risk = weakness in a vendor's OWN vendors. Concentration risk = relying on too FEW vendors. Different root causes, often confused on the exam.",
   "d5-t4": "Purpose limitation vs. data minimization: minimization is about collecting LESS in the first place; purpose limitation is about not REUSING what was already collected for something else.",

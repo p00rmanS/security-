@@ -32,11 +32,11 @@ included so it can be previewed via the Claude Code browser tool with
 index.html            Single-page shell; hash-routed (#/dashboard, #/domain/d1, ...)
 css/style.css          Design system: typography, icons, motion, light/dark theme
 js/data-examfacts.js     Official exam snapshot (SY0-701 facts, domain weights)
-js/data-protips.js       One exam Pro Tip per lesson id (73 total)
-js/data-quicksummaries.js One-line "In One Breath" summary per lesson id (73 total)
+js/data-protips.js       One exam Pro Tip per lesson id (79 total)
+js/data-quicksummaries.js One-line "In One Breath" summary per lesson id (79 total)
 js/data-cramsheet.js     Mnemonics + must-memorize facts for the Cram Sheet page
 js/data-fundamentals.js  A+/Network+ refresher content (12 topics)
-js/data-domains.js       5 SY0-701 domains: 61 full lessons (5 flagship + 56 topics)
+js/data-domains.js       5 SY0-701 domains: 67 full lessons (5 flagship + 62 topics)
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     162 original practice questions (150 domain + 12 fundamentals)
 js/data-glossary.js      137 glossary terms

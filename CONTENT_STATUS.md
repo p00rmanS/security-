@@ -669,3 +669,64 @@ plain-English text rather than a rewrite of each lesson's existing
 domain lessons' existing text was judged too large to do reliably in one
 pass and was deliberately scoped down; it remains a candidate for a
 future dedicated pass if the Quick Summary line alone isn't enough.
+
+## Ninth follow-up pass: 6 more lessons closing real remaining gaps
+
+The user asked to keep adding lessons generally ("teach me everything I
+need to learn") rather than naming specific topics, so this pass started
+by auditing the existing 61 domain lessons against the SY0-701 objective
+list to find genuine gaps, specifically checking each candidate topic
+against existing lesson content first to avoid adding anything redundant
+with what's already taught (a few strong candidates were dropped for
+exactly this reason — a "Risk Management Deep Dive" idea was scrapped
+once grep confirmed the flagship Risk Management lesson already covers
+the risk register and qualitative-vs-quantitative distinction in full).
+
+Added 6 new lessons, each an explicit deeper extension of an existing
+lesson rather than a duplicate of it: Application and Memory-Based
+Attacks in Depth (Domain 2 — buffer overflow stack/heap mechanics, race
+conditions named specifically as TOCTOU, and memory/DLL injection as a
+detection-evasion technique, extending the one-sentence-each treatment
+in the Vulnerabilities lesson), On-Path and Layer 2 Network Attacks
+(Domain 2 — ARP poisoning, MAC flooding/CAM table exhaustion, DNS
+spoofing, and DHCP starvation chained with a rogue DHCP server, extending
+Malicious Activity's general network-attack coverage), Segmentation in
+Practice: Screened Subnets, Air Gaps, and Microsegmentation (Domain 3 —
+naming and distinguishing the specific isolation techniques only
+mentioned in passing by the Defense in Depth flagship and Enterprise
+Infrastructure Extras), Backup Strategies and Capacity Planning (Domain
+3 — full/incremental/differential backup types, the 3-2-1 rule, and
+immutable/offline backups as the actual ransomware defense, a genuinely
+absent topic since "backup" was previously only ever mentioned in
+passing, never as its own lesson), Monitoring and Assessment Tool
+Categories (Domain 4 — SCAP, benchmarks, and agent-based vs. agentless
+scanning, extending Alerting and Monitoring's SIEM/SOAR/NetFlow coverage
+with the configuration-compliance and vulnerability-scanning tooling
+side), and Risk Assessment Types, Exposure Factor, and Risk Appetite
+(Domain 5 — how SLE is actually derived from Asset Value x Exposure
+Factor, risk assessment frequency types, and the appetite/tolerance/
+threshold/exemption/exception vocabulary the flagship doesn't cover,
+filling the previously-unused d5-t2 id). Domain lesson count: 61 → 67
+(d2: 10→12, d3: 12→14, d4: 17→18, d5: 8→9); Pro Tips: 73 → 79; Quick
+Summaries: 73 → 79.
+
+**Verified live**: the Node validation script was extended with
+structural checks on `confusion`/`keyTerms`/`table` shape (catching
+malformed entries, not just missing fields) and a broadened non-Latin-
+script scan covering Cyrillic, Hebrew, Arabic, and Hangul ranges in
+addition to the existing CJK check — worth doing since a stray Cyrillic
+character was caught and fixed in this pass's own Taglish draft text
+before it ever reached the file, the same class of input-method slip
+caught by the CJK scanner in an earlier pass. The extended script
+confirmed all 79 lessons have zero missing/malformed fields, zero
+duplicate ids, zero missing/orphaned Pro Tips or Quick Summaries across
+all 79 lesson ids, and zero non-Latin-script artifacts anywhere in lesson
+content, Quick Summaries, Pro Tips, or the acronym list. `node --check`
+passed on every changed JS file. Live in-browser: swept all 95 routes
+(16 static pages + all 79 lessons via the focused reader) confirming
+real rendered content and zero console errors on every one; confirmed
+all 6 new lessons render their Quick Summary, Pro Tip, and comparison
+table correctly both in the focused reader and in their domain page's
+accordion view; and confirmed the Dashboard's lesson-completion
+denominator and the Cram Sheet's Pro Tip count both auto-updated from 73
+to 79 with no code change, since both are computed from the data.

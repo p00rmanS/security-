@@ -450,5 +450,233 @@ const STORIES = {
       "text": "Lined up on a whiteboard, the three cases shared an uncomfortable pattern: a gap in the basics that was known or knowable. A vendor with too much access, a patch not applied, a password without a second factor. None required genius from the attacker.",
       "moral": "Exam-style scenarios usually reward the boring answer: patch, segment, verify identity, back up."
     }
+  ],
+  "d1-t6": [
+    {
+      "title": "The Recorded Traffic That Stayed Locked",
+      "kind": "scenario",
+      "text": "An agency recorded years of encrypted traffic hoping to decrypt it if it ever obtained the server's private key. When the key was finally stolen, it opened nothing: every session had used a fresh ephemeral key, so there was nothing to unlock.",
+      "moral": "Perfect forward secrecy limits the blast radius of a future key compromise."
+    },
+    {
+      "title": "MD5 and the Forged Certificate",
+      "kind": "real",
+      "text": "In 2008 researchers demonstrated that weaknesses in MD5 could be used to create a rogue certificate authority certificate. Certificate authorities moved away from MD5 afterwards.",
+      "moral": "A broken hash is not a theoretical problem; collisions can be turned into forged trust."
+    }
+  ],
+  "d1-t7": [
+    {
+      "title": "The Fake AWS Key",
+      "kind": "scenario",
+      "text": "A team planted a fake cloud access key in a code repository. Weeks later a login attempt with it came from an unfamiliar country. The key was never used by anyone real, so the alert proved the repository had leaked, and the team rotated real secrets before any damage.",
+      "moral": "Honeytokens give high-confidence breach detection for almost no cost."
+    }
+  ],
+  "d1-t8": [
+    {
+      "title": "The Phone That Wiped Itself",
+      "kind": "scenario",
+      "text": "A seized phone was dropped into an ordinary evidence bag. Minutes later its owner sent a remote-wipe command and the evidence vanished. After that, the lab used Faraday bags that block the signal for every seized device.",
+      "moral": "Shielding is a security control: it prevents remote commands from ever arriving."
+    }
+  ],
+  "d2-t16": [
+    {
+      "title": "The 2016 Dyn Outage",
+      "kind": "real",
+      "text": "In October 2016 a large DDoS attack against DNS provider Dyn made many well-known websites hard to reach for hours. Reporting linked it to the Mirai botnet of infected IoT devices.",
+      "moral": "DDoS can hit a shared dependency like DNS and take down many sites at once."
+    }
+  ],
+  "d2-t17": [
+    {
+      "title": "The Free USB Giveaway",
+      "kind": "scenario",
+      "text": "At a trade show, a vendor handed out branded USB drives. One attendee plugged theirs into a work laptop. It identified itself as a keyboard and typed a command that downloaded a remote access tool within seconds. The antivirus never saw a 'file' because the keyboard was the attack.",
+      "moral": "A USB device is more than storage. Control which device classes are allowed."
+    }
+  ],
+  "d2-t18": [
+    {
+      "title": "Capital One and SSRF",
+      "kind": "real",
+      "text": "The 2019 Capital One breach was widely reported to involve server-side request forgery against a misconfigured web application firewall, which was used to reach cloud credentials and then storage.",
+      "moral": "SSRF is powerful in the cloud because internal metadata services trust the server's network position."
+    },
+    {
+      "title": "The Comment That Stole Sessions",
+      "kind": "scenario",
+      "text": "A blog allowed HTML in comments. One comment hid a script that sent each visitor's session cookie to an attacker's server. Setting HttpOnly on cookies and encoding output would have neutralized it.",
+      "moral": "XSS is about where untrusted data ends up. Encode on output."
+    }
+  ],
+  "d2-t19": [
+    {
+      "title": "The Fake Press Release",
+      "kind": "scenario",
+      "text": "A realistic but fabricated press release announcing an executive resignation spread on social media. Staff answered customer questions from it for an hour before communications confirmed it was false. Afterward the company published a verification page and a single official channel for announcements.",
+      "moral": "A clear, known official channel is the best defense against impersonation."
+    }
+  ],
+  "d3-t16": [
+    {
+      "title": "The Region Nobody Chose",
+      "kind": "scenario",
+      "text": "A developer spun up a storage bucket in the default cloud region, which happened to be in another country. An audit later found customer records there, which broke a contractual residency promise. A policy that only allows approved regions closed the gap.",
+      "moral": "Residency problems are often accidents of defaults. Restrict regions by policy."
+    }
+  ],
+  "d3-t17": [
+    {
+      "title": "The Split-Tunnel Blind Spot",
+      "kind": "scenario",
+      "text": "A remote worker's laptop was infected while browsing at home. Because split tunneling sent web traffic directly to the internet, the company's filtering and monitoring saw nothing. The malware only surfaced when it first touched a company server over the VPN.",
+      "moral": "Split tunnel trades visibility for performance. Know when that tradeoff is acceptable."
+    }
+  ],
+  "d3-t18": [
+    {
+      "title": "The RAID That Mirrored the Mistake",
+      "kind": "scenario",
+      "text": "An admin deleted the wrong folder from a RAID 1 server. Both disks mirrored the deletion instantly. The team restored from last night's backup, and added a rule: RAID is for uptime, backups are for recovery.",
+      "moral": "Redundancy protects against hardware failure, not human or malicious error."
+    }
+  ],
+  "d3-t19": [
+    {
+      "title": "The Key in the Repository",
+      "kind": "scenario",
+      "text": "A developer pushed a cloud access key to a public repository. Bots found it within minutes and launched expensive compute jobs for cryptomining. Secret scanning in the pipeline and short-lived credentials would have blocked it.",
+      "moral": "Never put secrets in code. Scan for them automatically and prefer short-lived credentials."
+    }
+  ],
+  "d4-t19": [
+    {
+      "title": "The Intern With Admin Rights",
+      "kind": "scenario",
+      "text": "An intern was given access by copying a senior engineer's account permissions 'to save time.' The intern could suddenly read finance files. Moving to role-based groups with an approval workflow fixed the root issue.",
+      "moral": "Copying one person's permissions invites privilege creep. Use roles."
+    }
+  ],
+  "d4-t20": [
+    {
+      "title": "The Capture That Caught the Beacon",
+      "kind": "scenario",
+      "text": "A workstation seemed fine in every dashboard. A packet capture showed a tiny request leaving every sixty seconds to the same address, a steady beacon. The pattern was invisible in daily summaries but obvious in the raw traffic.",
+      "moral": "Different tools show different truths. Escalate from summaries to packets when something is odd."
+    }
+  ],
+  "d4-t21": [
+    {
+      "title": "The Conference-Room Access Point",
+      "kind": "scenario",
+      "text": "During a site survey, the team found an unknown access point with default settings plugged into a meeting-room jack. It bridged an unprotected wireless network straight into the internal network. Wireless monitoring now flags unknown APs automatically.",
+      "moral": "Surveys are security tools too: they find what shouldn't be there."
+    }
+  ],
+  "d4-t22": [
+    {
+      "title": "The Researcher Who Was Thanked, Not Sued",
+      "kind": "scenario",
+      "text": "A student found a flaw in a company's website and, instead of publishing it, emailed the address listed in the company's disclosure policy. The company fixed it in days, publicly credited the student, and paid a bounty. A clear policy turned a potential crisis into a routine fix.",
+      "moral": "A published way to report vulnerabilities keeps researchers on your side."
+    }
+  ],
+  "d5-t11": [
+    {
+      "title": "The Questionnaire That Stalled a Deal",
+      "kind": "scenario",
+      "text": "A mid-size software firm lost weeks of a big sale because the customer's security questionnaire asked for a SOC 2 report the firm didn't have. They spent the next year building controls and evidence, and then won deals faster. Compliance became a sales asset.",
+      "moral": "Frameworks and audits are how customers decide to trust you."
+    }
+  ],
+  "d5-t12": [
+    {
+      "title": "The Treasurer Who Never Took Leave",
+      "kind": "scenario",
+      "text": "A long-serving treasurer insisted they could not take time off. When a mandatory-vacation rule was finally enforced, the colleague who covered noticed payments to a vendor that did not exist. The scheme had run for years and the rule exposed it within two weeks.",
+      "moral": "People who never leave their post can be hiding something. Mandatory vacation is a detective control."
+    }
+  ],
+  "d5-t13": [
+    {
+      "title": "Nobody's Risk",
+      "kind": "scenario",
+      "text": "A risk register listed forty items, but the owner column read 'IT' for every one. Months later, an expired certificate took down a key service and no one felt responsible. After the review, each risk had a named business owner and a review date.",
+      "moral": "A risk without a named owner is a risk nobody manages."
+    }
+  ],
+  "d5-t14": [
+    {
+      "title": "The Deletion Request Nobody Could Answer",
+      "kind": "scenario",
+      "text": "A customer asked a retailer to delete their data. The team found it in the main database, but only later discovered more copies in an analytics warehouse, a marketing tool, and old backups. A data inventory and a vendor deletion process turned weeks of scrambling into a routine task.",
+      "moral": "You cannot honor privacy rights for data you cannot find. Inventory first."
+    }
+  ],
+  "d1-t9": [
+    {
+      "title": "The Penguin That Survived Encryption",
+      "kind": "scenario",
+      "text": "A developer encrypted a bitmap logo using ECB mode. The picture came out scrambled in color, but the outline of the penguin was still plainly visible, because identical blocks produced identical ciphertext. Switching to a randomized mode hid the shape completely.",
+      "moral": "A mode that leaks patterns defeats strong algorithms. Mode matters as much as the cipher."
+    }
+  ],
+  "d2-t20": [
+    {
+      "title": "The Number That Changed Hands",
+      "kind": "scenario",
+      "text": "A founder's phone suddenly lost service. Within minutes, password-reset codes sent by SMS were used to take over their email and then their cloud accounts. The carrier had been convinced by a caller with a few personal details to swap the SIM. A carrier PIN and an authenticator app would have stopped it.",
+      "moral": "SMS is the weakest second factor because the carrier is a social-engineering target."
+    }
+  ],
+  "d2-t21": [
+    {
+      "title": "The Invoice Next Door",
+      "kind": "scenario",
+      "text": "A customer noticed an invoice number in a URL and changed the last digit out of curiosity. The page showed another company's invoice. The bug was reported responsibly, and the fix was a server-side check that the logged-in user owns the requested record.",
+      "moral": "Hiding IDs is not authorization. Check ownership on the server for every request."
+    }
+  ],
+  "d2-t22": [
+    {
+      "title": "Sixty Seconds, Every Time",
+      "kind": "scenario",
+      "text": "A hunter plotted outbound connection times from one workstation and found a perfect sixty-second rhythm to a rarely seen domain. Real users are never that regular. The steady pulse was a beacon from malware that had gone unnoticed for weeks.",
+      "moral": "Machines are punctual and humans are not. Regularity can be an indicator of compromise."
+    }
+  ],
+  "d2-t23": [
+    {
+      "title": "When the Backups Worked and It Still Hurt",
+      "kind": "scenario",
+      "text": "A company restored from clean backups within two days after ransomware. Then the attackers posted samples of customer files and emailed the customers. Recovery solved availability but not confidentiality, which is the exact point of double extortion.",
+      "moral": "Plan for data theft as well as encryption."
+    }
+  ],
+  "d3-t21": [
+    {
+      "title": "The Resold Hard Drives",
+      "kind": "scenario",
+      "text": "A reporter bought used hard drives from an online reseller and recovered customer records from them. The company had only formatted the disks before selling them. A proper wipe or crypto erase and a certificate from the disposal vendor would have prevented the embarrassment.",
+      "moral": "Format is not erase. Sanitize and document."
+    }
+  ],
+  "d4-t23": [
+    {
+      "title": "The Spoofed Fingerprint",
+      "kind": "scenario",
+      "text": "Researchers showed that a fingerprint reader could be fooled with a molded copy of a print. The vendor added liveness detection, which checks for signs of a living finger, and required a PIN for sensitive actions.",
+      "moral": "Biometrics are convenient but not secret. Pair them with another factor and use liveness checks."
+    }
+  ],
+  "d4-t24": [
+    {
+      "title": "The Sinkhole That Found the Infection",
+      "kind": "scenario",
+      "text": "After taking over a malware domain, defenders pointed it at a sinkhole. Within hours the logs listed every infected machine that tried to call home, including several inside a company that had no idea it was compromised.",
+      "moral": "Sinkholes block communication and also provide a victim list."
+    }
   ]
 };

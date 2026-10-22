@@ -93,5 +93,10 @@ const PRO_TIPS = {
   "d5-t6": "If an answer choice measures training success by \"attendance,\" it's almost always the wrong answer. The exam consistently rewards OUTCOME-based measurement (click rates, reporting speed) as correct.",
   "d5-t7": "If a question is about keeping the WHOLE BUSINESS running (staff, communication, alternate facilities), it's BCP. If it's specifically about restoring SYSTEMS AND DATA, it's DRP. DRP is a piece of BCP, never the other way around.",
   "d5-t8": "The reversibility test decides it every time: can the original identity ever be recovered by ANYONE, even the organization itself? If no, it's anonymization. If yes (via a separately-held key/mapping), it's pseudonymization — and still counted as personal data.",
-  "d5-t9": "Match the amount of GIVEN INFORMATION to the box color: zero info = black, full info = white, partial info = gray. Don't confuse this with red/blue/purple team, which is about WHO plays offense vs. defense, not how much they were told beforehand."
+  "d5-t9": "Match the amount of GIVEN INFORMATION to the box color: zero info = black, full info = white, partial info = gray. Don't confuse this with red/blue/purple team, which is about WHO plays offense vs. defense, not how much they were told beforehand.",
+  "d2-t13": "Look for the channel and the target: text = smishing, phone = vishing, executive = whaling, trusted account with no link = BEC. 'Correct URL typed, wrong site' is pharming, not typosquatting.",
+  "d2-t14": "'Few passwords, many accounts' = spraying. 'Leaked pairs from another site' = stuffing. 'Used the hash without cracking it' = pass-the-hash. Salting beats rainbow tables, not brute force.",
+  "d2-t15": "Describe-the-behavior questions: spreads alone = worm, hides itself = rootkit, waits for a date or event = logic bomb, nothing on disk = fileless, data truly unrecoverable = wiper.",
+  "d3-t15": "One device = TPM. Many applications or a CA root key = HSM. If the answer is about blocking unsigned boot code it's Secure Boot; if it's about recording boot state for later proof it's measured boot/attestation.",
+  "d5-t10": "When a scenario sounds like a famous breach, ask which basic control failed: patching, MFA, segmentation, vendor access, or backups. The boring fix is usually the right answer."
 };

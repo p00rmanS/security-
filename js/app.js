@@ -533,6 +533,7 @@
         '<p style="margin-top:6px;"><b>Goal:</b> ' + escapeHtml(lesson.goal) + "</p>" +
         '<div class="lesson-section"><div class="lesson-section-label">Simple Explanation</div><p>' + escapeHtml(lesson.simple) + "</p></div>" +
         '<div class="lesson-section"><div class="lesson-section-label">Real-Life Analogy</div><div class="analogy-box">' + escapeHtml(lesson.analogy) + "</div></div>" +
+        storyBlock(lesson.id) +
         '<div class="lesson-section"><div class="lesson-section-label">Key Points</div><ul>' + lesson.keyPoints.map((k) => "<li>" + escapeHtml(k) + "</li>").join("") + "</ul></div>" +
         '<div class="lesson-section"><div class="lesson-section-label">Key Terms</div>' + keyTermsList(lesson.keyTerms) + "</div>" +
         proTipBlock(lesson.id) +
@@ -941,6 +942,17 @@
     return wrap;
   }
 
+  function storyBlock(lessonId) {
+    const list = STORIES[lessonId];
+    if (!list || !list.length) return "";
+    return list.map((st) =>
+      '<div class="lesson-section"><div class="lesson-section-label">Story from the Field</div>' +
+      '<div class="story-box"><div class="story-head"><b>' + escapeHtml(st.title) + '</b>' +
+      '<span class="story-kind story-' + (st.kind === "real" ? "real" : "scenario") + '">' + (st.kind === "real" ? "True story" : "Scenario") + "</span></div>" +
+      "<p>" + escapeHtml(st.text) + '</p><p class="story-moral"><b>Lesson:</b> ' + escapeHtml(st.moral) + "</p></div></div>"
+    ).join("");
+  }
+
   function proTipBlock(lessonId) {
     const tip = PRO_TIPS[lessonId];
     if (!tip) return "";
@@ -980,6 +992,7 @@
       '<div class="lesson-section"><div class="lesson-section-label">4. Key Terms</div>' + keyTermsList(lesson.keyTerms) + "</div>" +
       '<div class="lesson-section"><div class="lesson-section-label">5. Real-Life Analogy</div><div class="analogy-box">' + escapeHtml(lesson.analogy) + "</div></div>" +
       '<div class="lesson-section"><div class="lesson-section-label">6. Technical Example</div><p>' + escapeHtml(lesson.technical) + "</p></div>" +
+      storyBlock(lesson.id) +
       (lesson.table ? '<div class="lesson-section"><div class="lesson-section-label">7. Visual Summary</div>' + tableBlock(lesson.table) + "</div>" : "") +
       '<div class="lesson-section"><div class="lesson-section-label">8. Common Confusion</div>' +
         lesson.confusion.map((c) => '<div class="confusion-item"><b>' + escapeHtml(c.a) + "</b> vs <b>" + escapeHtml(c.b) + "</b><br>" + escapeHtml(c.diff) + "</div>").join("") +

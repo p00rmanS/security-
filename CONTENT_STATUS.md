@@ -730,3 +730,7 @@ table correctly both in the focused reader and in their domain page's
 accordion view; and confirmed the Dashboard's lesson-completion
 denominator and the Cram Sheet's Pro Tip count both auto-updated from 73
 to 79 with no code change, since both are computed from the data.
+
+## Stories from the Field (latest pass)
+
+Added js/data-stories.js: 80+ short stories (true public incidents and clearly labeled invented scenarios) attached by lesson id and rendered as a 'Story from the Field' section on every fundamentals topic and domain topic lesson. Also added 5 lessons (phishing variants, credential attacks, malware families, hardware roots of trust, famous-breach case files), each with a Pro Tip and Quick Summary. Domain topic lessons: 62 -> 67. Real incidents are summarized from public reporting and simplified.

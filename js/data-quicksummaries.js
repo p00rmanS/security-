@@ -94,5 +94,10 @@ const QUICK_SUMMARIES = {
   "d5-t6": "A good security awareness program is measured by real outcomes — like faster phishing reporting or lower click rates — not just by who showed up to a training session.",
   "d5-t7": "A Business Continuity Plan keeps the whole organization running during a disruption; a Disaster Recovery Plan is the narrower piece focused specifically on restoring systems and data.",
   "d5-t8": "Anonymization permanently strips data of any way to trace it back to a person, while pseudonymization replaces identifying details with a stand-in that could still be reversed with a separately-held key.",
-  "d5-t9": "Penetration tests vary by how much the tester already knows going in — black box (nothing), white box (everything), gray box (partial) — and can start with passive or active reconnaissance."
+  "d5-t9": "Penetration tests vary by how much the tester already knows going in — black box (nothing), white box (everything), gray box (partial) — and can start with passive or active reconnaissance.",
+  "d2-t13": "Phishing variants are named by channel and target: smishing (SMS), vishing (voice), whaling (executives), BEC (trusted email account), typosquatting (misspelled domain), watering hole (a site the victim already visits), and pharming (redirection even with the right URL).",
+  "d2-t14": "Spraying tries few passwords on many accounts, stuffing replays leaked credential pairs, salting defeats rainbow tables, and pass-the-hash authenticates with a stolen hash without ever knowing the password.",
+  "d2-t15": "Malware is identified by behavior: worms spread themselves, rootkits hide, logic bombs wait for a trigger, fileless malware lives in memory, and wipers destroy data for good.",
+  "d3-t15": "A TPM is a per-device key chip, an HSM is a shared tamper-resistant key vault, a KMS manages key lifecycle, and Secure Boot blocks unsigned boot code while measured boot records it for attestation.",
+  "d5-t10": "Most famous breaches trace to basic control failures — vendor access, unpatched software, missing MFA, flat networks, and backups kept next to production."
 };

@@ -3,50 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Security+ Learning Path — From IT Foundations to SOC Analyst Readiness</title>
-<meta name="description" content="An independent, original-content study platform for CompTIA Security+ (SY0-701), with an A+/Network+ fundamentals refresher, Taglish explanations, practice quizzes, labs, and a 100-day study plan.">
+<title>Security+ Learning Path — SY0-701 Course</title>
+<meta name="description" content="An independent, original-content study course for CompTIA Security+ (SY0-701): lessons with exam-focused takeaways, pro tips, Taglish explanations, practice quizzes, labs, and a 100-day study plan.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f8b8d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z' fill='%230f8b8d' fill-opacity='0.15'/%3E%3Cpath d='M9 12l2 2 4-4.5'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231b1a17'/%3E%3Cpath d='M9 17l5 5 9-12' fill='none' stroke='%23ff8a4c' stroke-width='3.5' stroke-linecap='square'/%3E%3C/svg%3E">
 </head>
 <body>
 
+<header class="topbar" role="banner">
+  <button class="tb-btn" id="menu-toggle" aria-label="Toggle navigation menu" aria-expanded="true" title="Toggle menu (M)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <button class="wordmark" id="wordmark" aria-label="Go to dashboard">Security+ <small>SY0-701</small></button>
+  <div class="topbar-spacer"></div>
+  <button class="tb-btn tb-search" id="open-search" aria-label="Search lessons, glossary, and comparisons" aria-haspopup="dialog">
+    <span style="display:inline-flex;align-items:center;gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20.5 20.5 16 16"/></svg>
+      <span class="tb-label">Search</span>
+    </span>
+    <span class="tb-kbd">Ctrl K</span>
+  </button>
+  <button class="tb-btn tb-outline tb-hide-sm" id="outline-toggle" aria-pressed="true" aria-label="Show or hide course content" title="Course content (O)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h16"/><path d="M18 9l3 3-3 3"/></svg>
+    <span class="tb-label">Course content</span>
+  </button>
+  <button class="tb-btn tb-hide-sm" id="open-keys" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+    <span class="tb-kbd">?</span>
+  </button>
+  <button class="tb-btn" id="theme-toggle" aria-label="Switch color theme" title="Theme">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+  </button>
+</header>
+
 <div class="app-shell" id="app-shell">
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"/><path d="M9 12l2 2 4-4.5"/></svg>
-      </div>
-      <div>
-        <div class="brand-title">Security+ Learning Path</div>
-        <div class="brand-subtitle">From IT Foundations to SOC Analyst Readiness</div>
-      </div>
-    </div>
+  <aside class="sidebar" id="sidebar" aria-label="Site navigation">
     <nav id="sidebar-nav"></nav>
     <div class="sidebar-footer">
-      <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" id="sidebar-progress-fill" style="width:0%;"></div></div>
+      <div class="progress-track" style="margin-bottom:8px;"><div class="progress-fill" id="sidebar-progress-fill" style="width:0%;"></div></div>
       <div id="sidebar-progress-label">0% of lessons complete</div>
     </div>
   </aside>
 
   <div class="main-col">
-    <div class="topbar">
-      <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation">&#9776; Menu</button>
-      <div class="topbar-title">SY0-701 &middot; Independent Study Platform</div>
-      <button class="topbar-search-btn" id="open-search" aria-label="Search lessons, glossary, and comparisons" aria-haspopup="dialog">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20.5 20.5 16 16"/></svg>
-        <span class="topbar-search-label">Search</span>
-        <span class="topbar-search-kbd">Ctrl K</span>
-      </button>
-    </div>
     <main class="content" id="content" role="main"></main>
     <footer class="footer-disclaimer">
       Security+ is a trademark of CompTIA. This independent study tool is not affiliated with or endorsed by CompTIA. All practice questions, lessons, and lab scenarios on this platform are original. Exam facts (format, scoring, dates) can change &mdash; verify current details on the official CompTIA Security+ page before your exam. Progress is stored only in this browser's local storage; use Settings to export a backup.
     </footer>
   </div>
+
+  <aside class="outline" id="outline" aria-label="Course content"></aside>
 </div>
 
 <div class="search-modal-backdrop" id="search-modal-backdrop" hidden>
@@ -57,6 +67,14 @@
       <button id="search-modal-close" aria-label="Close search">Esc</button>
     </div>
     <div class="search-modal-results" id="search-modal-results"></div>
+  </div>
+</div>
+
+<div class="search-modal-backdrop" id="keys-modal-backdrop" hidden>
+  <div class="search-modal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" style="max-width:640px;">
+    <div class="keys-head"><h2>Keyboard shortcuts</h2><button class="link-btn" id="keys-close">Close (Esc)</button></div>
+    <div class="keys-grid" id="keys-grid"></div>
+    <div class="keys-note">Shortcuts are paused while you are typing in a field.</div>
   </div>
 </div>
 
@@ -72,6 +90,7 @@
 <script src="js/data-acronyms.js"></script>
 <script src="js/data-quicksummaries.js"></script>
 <script src="js/data-labs.js"></script>
+<script src="js/data-lessons-extra.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

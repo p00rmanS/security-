@@ -321,7 +321,7 @@ const DOMAINS = [
           "Bukod sa proseso ng pag-apruba, may specific na technical checklist din dapat isipin: kailangan bang i-update ang allow/deny list? Ano ang bawal gawin habang ongoing ang pagbabago (restricted activities)? Gaano katagal ang inaasahang downtime, at kailangan ba ng restart bago ito bumisa? Pinaka-importante: sino/ano pa ang umaasa (dependencies) sa binabago mo — kasi kadalasan, dito nagmumula ang 'biglaang' outage na parang walang kinalaman sa ginawang pagbabago."
       },
       {
-        "id": "d1-t6",
+        "id": "d1-t36",
         "title": "Cryptographic Algorithms and Key Exchange Reference",
         "tag": "1.4",
         "minutes": 16,
@@ -431,7 +431,7 @@ const DOMAINS = [
         "taglish": "AES — pang-encrypt ng maraming data, isang shared key. RSA/ECC — public at private key, para sa key exchange at signature. Diffie-Hellman — paraan para magkasundo sa secret key kahit hindi ito ipinapadala. PFS — bagong key bawat session, kaya kahit manakaw ang lumang key hindi mabubuksan ang lumang traffic. MD5 at SHA-1 — luma na, hindi na dapat gamitin."
       },
       {
-        "id": "d1-t7",
+        "id": "d1-t37",
         "title": "Deception and Disruption: Honeypots, Honeytokens, and Fake Telemetry",
         "tag": "1.2",
         "minutes": 12,
@@ -1224,7 +1224,7 @@ const DOMAINS = [
           "ARP poisoning — nagpapadala ng pekeng ARP reply para akalain ng mga device na ang MAC address mo ang default gateway, kaya dadaan muna sa'yo ang traffic bago ito ipasa (on-path attack). MAC flooding — binabaha ang CAM table ng switch ng maraming pekeng MAC address hanggang mag-overflow, at kapag nangyari yun, minsan nagbo-broadcast na lang ang switch sa lahat ng port. DNS spoofing — pinapalitan ang tamang IP address na sinasagot ng DNS, kaya kahit tama ang tinype mong pangalan ng website, sa maling server ka dadalhin. DHCP starvation — ubos-ubusan ng IP address hanggang wala nang matira sa totoong device, tapos papasok ang rogue DHCP server na magbibigay ng maling settings."
       },
       {
-        "id": "d2-t13",
+        "id": "d2-t43",
         "title": "Phishing Variants and Impersonation Attacks",
         "tag": "2.2",
         "minutes": 15,
@@ -2923,92 +2923,7 @@ const DOMAINS = [
           "Full backup — kinokopya lahat tuwing gagawin, pinakasimple i-restore pero pinakamabagal at malaki. Incremental — kokopyahin lang yung nagbago mula sa pinakahuling backup (kahit incremental din yun), pinakamabilis pero kailangan buong chain (full + lahat ng incremental) para i-restore nang maayos. Differential — kokopyahin ang nagbago mula sa huling full backup lang, kaya lumalaki habang tumatagal pero dalawang file lang (full + pinakabagong differential) ang kailangan i-restore. 3-2-1 rule — dapat may 3 kopya, sa 2 magkaibang klase ng storage, at 1 nasa ibang lokasyon (offsite), para hindi maubos lahat sa iisang sakuna. Immutable/offline backup — hindi kayang baguhin o burahin kahit ng attacker na nakapasok na sa network, kaya bagsak ang plano ng ransomware na sirain din ang backup."
       },
       {
-        "id": "d3-t15",
-        "title": "Hardware Roots of Trust: TPM, HSM, and Secure Enclaves",
-        "tag": "3.3",
-        "minutes": 14,
-        "goal": "Explain what a TPM, HSM, key management system, and secure enclave each protect, and when to choose which.",
-        "why": "These look similar on paper. The exam tests whether you know a TPM lives inside one device, an HSM serves an organization's keys, and both exist because software alone cannot protect secrets.",
-        "simple": "A Trusted Platform Module (TPM) is a chip built into a computer that stores keys, measures boot integrity, and supports full-disk encryption and device attestation; keys sealed to it do not leave the chip in usable form. A Hardware Security Module (HSM) is a dedicated, tamper-resistant device or cloud service that generates, stores, and uses cryptographic keys for many applications, such as a certificate authority's root key or payment processing, without ever exposing the key. A key management system (KMS) is the broader service that creates, rotates, and controls access to keys, often backed by an HSM. A secure enclave is an isolated region of a processor where sensitive code and data run protected even from the operating system. Hardware roots of trust matter because if keys sit in ordinary files or memory, malware or an administrator can copy them. Related concepts: Secure Boot verifies signed boot components, measured boot records them for later attestation, and key escrow keeps a protected recovery copy of a key.",
-        "keyTerms": [
-          {
-            "term": "TPM",
-            "def": "A chip on the device that stores keys and supports disk encryption and boot attestation."
-          },
-          {
-            "term": "HSM",
-            "def": "A tamper-resistant device or service that generates and uses keys without exposing them."
-          },
-          {
-            "term": "KMS",
-            "def": "A service managing key creation, rotation, and access."
-          },
-          {
-            "term": "Secure Enclave",
-            "def": "An isolated processor region protecting code and data even from the OS."
-          },
-          {
-            "term": "Attestation",
-            "def": "Proving a device booted into a trusted state."
-          },
-          {
-            "term": "Key Escrow",
-            "def": "Keeping a protected recovery copy of a key."
-          }
-        ],
-        "analogy": "A TPM is the safe bolted inside your own house, tied to that house. An HSM is the bank vault where the bank performs signing for you but never hands out the key. A KMS is the bank's key-control office that decides who may use which box and when to change the locks.",
-        "technical": "A laptop uses BitLocker with a TPM: the disk key is released only if the boot measurements match, so a stolen drive moved to another machine stays encrypted. A certificate authority keeps its root private key in an HSM; signing requests go in, signatures come out, and the key never leaves. A cloud team uses a managed KMS with automatic rotation and audit logs of every key use.",
-        "table": {
-          "headers": [
-            "Component",
-            "Scope",
-            "Typical Use"
-          ],
-          "rows": [
-            [
-              "TPM",
-              "One device",
-              "Disk encryption keys, boot attestation"
-            ],
-            [
-              "HSM",
-              "Organization or service",
-              "CA root keys, code signing, payments"
-            ],
-            [
-              "KMS",
-              "Cloud or enterprise platform",
-              "Key lifecycle, rotation, access control"
-            ],
-            [
-              "Secure enclave",
-              "CPU region",
-              "Protect code and data in use"
-            ]
-          ]
-        },
-        "confusion": [
-          {
-            "a": "TPM",
-            "b": "HSM",
-            "diff": "A TPM is a chip tied to a single device. An HSM is a shared, higher-capacity appliance or service for many applications."
-          },
-          {
-            "a": "Secure Boot",
-            "b": "Measured Boot",
-            "diff": "Secure Boot BLOCKS unsigned boot components. Measured boot RECORDS what loaded so it can be attested later."
-          }
-        ],
-        "soc": "Analysts see TPM and attestation failures as devices failing compliance checks or refusing to unlock encrypted volumes after unexpected boot changes. KMS audit logs show who used which key and when, which matters for investigating suspected misuse.",
-        "takeaways": [
-          "TPM = per-device chip; HSM = shared tamper-resistant key vault; KMS = key lifecycle service.",
-          "Secure Boot blocks; measured boot records for attestation.",
-          "Keys in hardware cannot be copied like keys in files."
-        ],
-        "taglish": "TPM — chip sa loob ng mismong computer na nag-iingat ng key at tumutulong sa disk encryption. HSM — matibay na device o serbisyo na nag-iingat at gumagamit ng keys para sa buong organisasyon, hindi lumalabas ang key. KMS — ang sistemang namamahala sa buhay ng keys. Secure enclave — protektadong bahagi ng processor."
-      },
-      {
-        "id": "d3-t16",
+        "id": "d3-t46",
         "title": "Data Types, Sovereignty, Residency, and Geographic Controls",
         "tag": "3.3",
         "minutes": 14,
@@ -3087,106 +3002,6 @@ const DOMAINS = [
           "Geofencing and cloud region controls enforce location policies."
         ],
         "taglish": "Data sovereignty — sumusunod ang data sa batas ng bansang kinalalagyan nito. Data residency — kung saan pisikal na nakalagay ang data. Geofencing — nililimitahan ang access ayon sa lokasyon."
-      },
-      {
-        "id": "d3-t17",
-        "title": "VPNs, IPsec, and Secure Protocol Internals",
-        "tag": "3.2",
-        "minutes": 16,
-        "goal": "Explain IPsec (AH, ESP, transport and tunnel modes), site-to-site versus remote-access VPNs, full versus split tunnel, and what protocols such as SRTP, S/MIME, and DNSSEC protect.",
-        "why": "The cheat sheet lesson lists secure protocols and ports; this one explains how the main ones actually protect data.",
-        "simple": "IPsec secures IP traffic at the network layer. The Authentication Header (AH) provides integrity and authentication but not encryption; the Encapsulating Security Payload (ESP) provides encryption plus integrity and is the one normally used. Transport mode protects the payload between two hosts, while tunnel mode wraps the whole original packet and is used between gateways. IKE negotiates the keys and security associations. A site-to-site VPN connects two networks permanently through gateways; a remote-access VPN connects one user's device to the network. SSL/TLS VPNs run over HTTPS and work through most firewalls, and IPsec VPNs are common for site-to-site links. In full tunnel mode all of a user's traffic goes through the VPN (so company controls apply to everything), while split tunnel sends only company-bound traffic through the VPN and the rest straight to the internet (less load, but less visibility and more risk). Always-on VPN connects automatically. Other secure protocols: SRTP secures voice and video, S/MIME signs and encrypts email using certificates, DNSSEC signs DNS records so resolvers can detect forged answers (it provides integrity and authenticity, not encryption), and TLS protects application traffic such as HTTPS, with 1.2 and 1.3 considered current. SSH replaces Telnet, and LDAPS secures directory queries.",
-        "keyTerms": [
-          {
-            "term": "IPsec ESP",
-            "def": "Provides encryption plus integrity and authentication for IP packets."
-          },
-          {
-            "term": "IPsec AH",
-            "def": "Integrity and authentication only, no encryption."
-          },
-          {
-            "term": "Tunnel Mode",
-            "def": "Wraps the entire original packet; typical between gateways."
-          },
-          {
-            "term": "Split Tunnel",
-            "def": "Only company-bound traffic goes through the VPN."
-          },
-          {
-            "term": "DNSSEC",
-            "def": "Signs DNS records to prove they are authentic; does not encrypt."
-          },
-          {
-            "term": "S/MIME",
-            "def": "Email signing and encryption using certificates."
-          }
-        ],
-        "analogy": "A VPN is a private armored tunnel under a public road. Tunnel mode puts your entire letter, envelope and all, inside a second sealed envelope. Split tunnel is driving through the tunnel only for company errands and using the public road for everything else.",
-        "technical": "A branch office connects to headquarters with an IPsec site-to-site tunnel using ESP in tunnel mode. Remote staff use an always-on, full-tunnel VPN so web filtering and DLP apply to all their traffic. A resolver validates DNSSEC signatures and rejects a forged answer for the company's domain that an attacker injected.",
-        "table": {
-          "headers": [
-            "Protocol",
-            "Protects",
-            "Note"
-          ],
-          "rows": [
-            [
-              "IPsec ESP",
-              "Confidentiality and integrity",
-              "Most common IPsec choice"
-            ],
-            [
-              "IPsec AH",
-              "Integrity and authentication",
-              "No encryption"
-            ],
-            [
-              "TLS",
-              "Application traffic",
-              "1.2 and 1.3 current"
-            ],
-            [
-              "SRTP",
-              "Voice and video",
-              "Secure RTP"
-            ],
-            [
-              "S/MIME",
-              "Email",
-              "Uses certificates"
-            ],
-            [
-              "DNSSEC",
-              "DNS answers",
-              "Integrity, not encryption"
-            ]
-          ]
-        },
-        "confusion": [
-          {
-            "a": "AH",
-            "b": "ESP",
-            "diff": "AH authenticates but does not encrypt. ESP encrypts and also provides integrity."
-          },
-          {
-            "a": "Full Tunnel",
-            "b": "Split Tunnel",
-            "diff": "Full tunnel sends everything through the VPN for maximum control. Split tunnel sends only corporate traffic, which saves bandwidth but reduces inspection."
-          },
-          {
-            "a": "DNSSEC",
-            "b": "DNS over HTTPS",
-            "diff": "DNSSEC proves answers are authentic. DoH encrypts the query so others cannot see it. They solve different problems."
-          }
-        ],
-        "soc": "Analysts watch VPN logs for impossible travel, repeated failures, and logins from unmanaged devices. Split tunnel makes it harder to see a compromised laptop's internet traffic, which is a known tradeoff.",
-        "takeaways": [
-          "ESP encrypts; AH only authenticates; tunnel mode protects the whole packet.",
-          "Full tunnel gives full inspection; split tunnel saves bandwidth with less visibility.",
-          "DNSSEC authenticates DNS data; it does not encrypt it."
-        ],
-        "taglish": "IPsec ESP — may encryption at integrity. AH — authentication lang, walang encryption. Tunnel mode — isinasama ang buong packet. Full tunnel — lahat ng traffic dumadaan sa VPN. Split tunnel — corporate traffic lang. DNSSEC — pinapatunayan na tunay ang DNS answer, hindi ito encryption."
       },
       {
         "id": "d3-t18",
@@ -4305,7 +4120,7 @@ const DOMAINS = [
           "SCAP — istandardisadong paraan para awtomatikong i-check ang configuration/vulnerabilities ng system laban sa isang alituntunin (benchmark), kumpara sa paggawa nito nang manu-mano isa-isa. Benchmark (tulad ng CIS Benchmark) — yun mismong listahan ng tamang setting na pinagbabatayan. Agent-based scanning — may naka-install na software sa bawat system, malalim at tuloy-tuloy ang tingin kahit offline; agentless — panlabas lang, mas madaling i-deploy pero limitado lang sa nakikita habang naka-konekta. File Integrity Monitoring (FIM) — binabantayan kung may nagbago sa mahahalagang file na hindi dapat nagbago — parang selyo na agad malalaman mo kung nahawakan."
       },
       {
-        "id": "d4-t19",
+        "id": "d4-t49",
         "title": "Access Control Models: MAC, DAC, RBAC, ABAC, and Rule-Based",
         "tag": "4.6",
         "minutes": 14,
@@ -4400,7 +4215,7 @@ const DOMAINS = [
         "taglish": "DAC — ang may-ari ang nagpapasya. MAC — gobyerno o sistema ang nagtatakda ng label, hindi mababago ng may-ari. RBAC — access ayon sa role. ABAC — access ayon sa katangian (device, oras, lugar). Rule-based — iisang patakaran para sa lahat."
       },
       {
-        "id": "d4-t20",
+        "id": "d4-t50",
         "title": "Security Tools in Practice: Nmap, Wireshark, tcpdump, and Scanners",
         "tag": "4.4",
         "minutes": 16,
@@ -5718,7 +5533,7 @@ const DOMAINS = [
           "Ang SLE ay hindi basta-basta lang binibilang — ito ay Asset Value (halaga ng ari-arian) beses Exposure Factor (ilang porsyento ng halaga ang talagang mawawala sa isang insidente). Yung risk assessment, may iba't ibang klase: ad hoc (kapag may partikular na dahilan), one-time (isang beses lang), recurring (regular na iskedyul), continuous (walang tigil na pagsubaybay). Risk appetite — pangkalahatang saloobin ng organisasyon sa panganib (mapangahas, maingat, o katamtaman). Risk tolerance — mas specific na hangganan kung gaano karaming pagbabago ang katanggap-tanggap sa isang partikular na sukatan. Risk exemption — pansamantalang exempted, may expiration; risk exception — mas permanente, may dokumentadong dahilan."
       },
       {
-        "id": "d5-t10",
+        "id": "d5-t40",
         "title": "Case Files: Famous Breaches and What They Teach",
         "tag": "5.4",
         "minutes": 18,
@@ -5814,7 +5629,7 @@ const DOMAINS = [
         "taglish": "Karamihan ng malalaking breach ay hindi gumamit ng kakaibang teknik — kulang lang sa basics: hindi na-patch, walang MFA, walang segmentation, walang backup na hiwalay. Iugnay ang bawat sikat na kaso sa isang konsepto sa exam para madaling tandaan."
       },
       {
-        "id": "d5-t11",
+        "id": "d5-t41",
         "title": "Security Frameworks, Standards, and Regulations",
         "tag": "5.4",
         "minutes": 18,

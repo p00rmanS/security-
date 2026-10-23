@@ -16,6 +16,10 @@
       theme: "system",
       taglishEnabled: true,
       reducedMotion: false,
+      outlineOpen: true,
+      navCollapsed: false,
+      outlineSections: {},
+      hiddenSections: {},
       completedLessons: {},
       bookmarks: {},
       notes: {},
@@ -49,6 +53,10 @@
         theme: parsed.theme || fresh.theme,
         taglishEnabled: parsed.taglishEnabled !== undefined ? parsed.taglishEnabled : true,
         reducedMotion: !!parsed.reducedMotion,
+        outlineOpen: parsed.outlineOpen !== false,
+        navCollapsed: !!parsed.navCollapsed,
+        outlineSections: parsed.outlineSections || {},
+        hiddenSections: parsed.hiddenSections || {},
         completedLessons: parsed.completedLessons || {},
         bookmarks: parsed.bookmarks || {},
         notes: parsed.notes || {},
@@ -197,7 +205,8 @@
     x: '<path d="M6 6l12 12M18 6L6 18"/>',
     note: '<path d="M4 3h13l3 3v15H4Z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
     expand: '<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>',
-    hash: '<path d="M9 3 7 21M17 3l-2 18M4 8h17M3 16h17"/>'
+    hash: '<path d="M9 3 7 21M17 3l-2 18M4 8h17M3 16h17"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7"/>'
   };
 
   function icon(name, size, extraClass) {
@@ -239,6 +248,7 @@
 
   const routes = {
     dashboard: renderDashboard,
+    course: renderCoursePage,
     exam: renderExamOverview,
     fundamentals: renderFundamentals,
     domain: renderDomainPage,
@@ -264,21 +274,75 @@
     location.hash = "#/" + route + (param ? "/" + param : "");
   }
 
-  function render() {
+  /* The course-content panel is shown beside lessons only. It starts closed on
+     narrow screens, where it opens as an overlay instead of taking up space. */
+  let outlineVisible = state.outlineOpen !== false && window.innerWidth > 1180;
+
+  function isMobileNav() {
+    return window.matchMedia("(max-width: 860px)").matches;
+  }
+
+  function applyLayout() {
+    const { route } = parseHash();
+    const isLesson = route === "lesson";
+    const b = document.body;
+    b.classList.toggle("has-outline", isLesson);
+    b.classList.toggle("outline-open", isLesson && outlineVisible);
+    b.classList.toggle("nav-collapsed", !isMobileNav() && !!state.navCollapsed);
+    const ot = document.getElementById("outline-toggle");
+    if (ot) ot.setAttribute("aria-pressed", String(isLesson && outlineVisible));
+    const mt = document.getElementById("menu-toggle");
+    if (mt) mt.setAttribute("aria-expanded", String(isMobileNav() ? document.getElementById("sidebar").classList.contains("open") : !state.navCollapsed));
+  }
+
+  function toggleOutline() {
+    outlineVisible = !outlineVisible;
+    if (window.innerWidth > 1180) { state.outlineOpen = outlineVisible; saveState(); }
+    applyLayout();
+    if (outlineVisible) scrollOutlineToCurrent();
+  }
+
+  function toggleNav() {
+    if (isMobileNav()) {
+      const sb = document.getElementById("sidebar");
+      const open = !sb.classList.contains("open");
+      sb.classList.toggle("open", open);
+      document.getElementById("sidebar-backdrop").classList.toggle("open", open);
+    } else {
+      state.navCollapsed = !state.navCollapsed;
+      saveState();
+    }
+    applyLayout();
+  }
+
+  function render(opts) {
+    const keepScroll = !!(opts && opts.keepScroll);
+    const y = window.scrollY;
     const { route, param } = parseHash();
     const fn = routes[route] || renderDashboard;
-    renderSidebar(route, param);
     const content = document.getElementById("content");
+
+    renderSidebar(route, param);
+    applyLayout();
+    if (route === "lesson") renderOutline(param);
+
+    content.classList.toggle("is-player", route === "lesson");
     content.innerHTML = "";
     content.classList.remove("content-enter");
     content.appendChild(fn(param));
-    void content.offsetWidth;
-    content.classList.add("content-enter");
-    window.scrollTo(0, 0);
-    closeSidebarMobile();
+    if (!keepScroll) {
+      void content.offsetWidth;
+      content.classList.add("content-enter");
+    }
+
+    const found = route === "lesson" && param ? findLessonFull(param) : null;
+    document.title = (found ? found.lesson.title + " — " : "") + "Security+ Learning Path";
+
+    window.scrollTo(0, keepScroll ? y : 0);
+    if (!keepScroll) closeSidebarMobile();
   }
 
-  window.addEventListener("hashchange", render);
+  window.addEventListener("hashchange", () => render());
 
   /* ============================= SIDEBAR / NAV ============================= */
 
@@ -287,33 +351,36 @@
     const pct = Math.round((completedCount() / TOTAL_LESSONS) * 100);
 
     let html = "";
-    html += navGroupOpen("Study");
-    html += navLink("dashboard", null, "Dashboard", "dashboard", activeRoute === "dashboard");
-    html += navLink("exam", null, "Exam Overview", "award", activeRoute === "exam");
-    html += navLink("fundamentals", null, "A+/Network+ Refresher", "book", activeRoute === "fundamentals");
+    html += navGroupOpen("Course");
+    html += navLink("dashboard", null, "Dashboard", activeRoute === "dashboard");
+    html += navLink("course", null, "Course content", activeRoute === "course" || activeRoute === "lesson");
+    html += navLink("exam", null, "Exam overview", activeRoute === "exam");
     html += "</div>";
 
-    html += navGroupOpen("Domains (SY0-701)");
+    html += navGroupOpen("Modules");
+    const fundIds = FUNDAMENTALS.map((f) => f.id);
+    const fundDone = fundIds.filter((id) => state.completedLessons[id]).length;
+    html += navLink("fundamentals", null, "0. A+/Network+ Refresher", activeRoute === "fundamentals", Math.round((fundDone / fundIds.length) * 100) + "%", "var(--text-muted)");
     DOMAINS.forEach((d) => {
       const lessonIds = [d.flagship.id, ...d.topics.map((t) => t.id)];
       const done = lessonIds.filter((id) => state.completedLessons[id]).length;
       const dpct = Math.round((done / lessonIds.length) * 100);
-      html += navLink("domain", d.id, "D" + d.number + ". " + d.title, null, activeRoute === "domain" && activeParam === d.id, dpct + "%", DOMAIN_COLORS[d.id]);
+      html += navLink("domain", d.id, d.number + ". " + d.title, activeRoute === "domain" && activeParam === d.id, dpct + "%", DOMAIN_COLORS[d.id]);
     });
     html += "</div>";
 
-    html += navGroupOpen("Practice & Reference");
-    html += navLink("practice", null, "Practice Center", "target", activeRoute === "practice");
-    html += navLink("labs", null, "Labs / SOC Simulator", "flask", activeRoute === "labs" || activeRoute === "lab");
-    html += navLink("glossary", null, "Glossary", "search", activeRoute === "glossary");
-    html += navLink("acronyms", null, "Acronyms", "hash", activeRoute === "acronyms");
-    html += navLink("compare", null, "Compare & Contrast", "columns", activeRoute === "compare");
-    html += navLink("cram", null, "Exam Cram Sheet", "graduation", activeRoute === "cram");
-    html += navLink("plan", null, "100-Day Plan", "calendar", activeRoute === "plan");
+    html += navGroupOpen("Practice & reference");
+    html += navLink("practice", null, "Practice Center", activeRoute === "practice");
+    html += navLink("labs", null, "Labs / SOC Simulator", activeRoute === "labs" || activeRoute === "lab");
+    html += navLink("glossary", null, "Glossary", activeRoute === "glossary");
+    html += navLink("acronyms", null, "Acronyms", activeRoute === "acronyms");
+    html += navLink("compare", null, "Compare & Contrast", activeRoute === "compare");
+    html += navLink("cram", null, "Exam Cram Sheet", activeRoute === "cram");
+    html += navLink("plan", null, "100-Day Plan", activeRoute === "plan");
     html += "</div>";
 
     html += navGroupOpen("");
-    html += navLink("settings", null, "Settings", "sliders", activeRoute === "settings");
+    html += navLink("settings", null, "Settings", activeRoute === "settings");
     html += "</div>";
 
     nav.innerHTML = html;
@@ -322,9 +389,7 @@
 
     nav.querySelectorAll("[data-nav]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const r = btn.getAttribute("data-nav");
-        const p = btn.getAttribute("data-param");
-        navigate(r, p || null);
+        navigate(btn.getAttribute("data-nav"), btn.getAttribute("data-param") || null);
       });
     });
   }
@@ -333,12 +398,12 @@
     return '<div class="nav-group">' + (label ? '<div class="nav-group-label">' + escapeHtml(label) + "</div>" : "");
   }
 
-  function navLink(route, param, label, iconName, active, pctLabel, dotColor) {
+  function navLink(route, param, label, active, pctLabel, dotColor) {
     return (
       '<button class="nav-link' + (active ? " active" : "") + '" data-nav="' + route + '"' +
-      (param ? ' data-param="' + param + '"' : "") +
+      (param ? ' data-param="' + param + '"' : "") + (active ? ' aria-current="page"' : "") +
       '><span class="nav-link-main">' +
-      (iconName ? icon(iconName, 16) : dotColor ? '<span class="nav-dot" style="background:' + dotColor + ';"></span>' : "") +
+      (dotColor ? '<span class="nav-dot" style="--domain-color:' + dotColor + ';"></span>' : "") +
       "<span>" + escapeHtml(label) + "</span></span>" +
       (pctLabel ? '<span class="pct">' + pctLabel + "</span>" : "") +
       "</button>"
@@ -362,8 +427,8 @@
   function completeToggleButton(lessonId) {
     const done = !!state.completedLessons[lessonId];
     return (
-      '<button class="btn ' + (done ? "btn-primary" : "") + '" data-complete-toggle="' + lessonId + '">' +
-      (done ? "Marked Complete" : "Mark Complete") + "</button>"
+      '<button class="btn ' + (done ? "btn-primary" : "") + '" data-complete-toggle="' + lessonId + '" title="Toggle complete (C)">' +
+      (done ? icon("check", 15) + " Completed" : "Mark complete") + "</button>"
     );
   }
 
@@ -371,7 +436,7 @@
     container.querySelectorAll("[data-complete-toggle]").forEach((btn) => {
       btn.addEventListener("click", () => {
         toggleLessonComplete(btn.getAttribute("data-complete-toggle"));
-        render();
+        render({ keepScroll: true });
       });
     });
   }
@@ -386,7 +451,7 @@
     const on = !!state.bookmarks[lessonId];
     return (
       '<button class="btn btn-icon-only' + (on ? " bookmarked" : "") + '" data-bookmark-toggle="' + lessonId +
-      '" aria-label="' + (on ? "Remove bookmark" : "Bookmark this lesson") + '" title="' + (on ? "Bookmarked" : "Bookmark this lesson") + '">' +
+      '" aria-label="' + (on ? "Remove bookmark" : "Bookmark this lesson") + '" title="' + (on ? "Bookmarked (B)" : "Bookmark this lesson (B)") + '">' +
       icon("star", 16) + "</button>"
     );
   }
@@ -395,19 +460,9 @@
     container.querySelectorAll("[data-bookmark-toggle]").forEach((btn) => {
       btn.addEventListener("click", () => {
         toggleBookmark(btn.getAttribute("data-bookmark-toggle"));
-        render();
+        render({ keepScroll: true });
       });
     });
-  }
-
-  function notesBlock(lessonId) {
-    const existing = state.notes[lessonId] || "";
-    return (
-      '<details class="disclosure"' + (existing ? " open" : "") + '><summary>' + icon("note", 14) + " My Notes" +
-      (existing ? '<span class="tag tag-accent" style="margin-left:8px;">Saved</span>' : "") + "</summary>" +
-      '<textarea class="notes-textarea" style="margin-top:8px;" data-notes-for="' + lessonId +
-      '" placeholder="Jot down anything worth remembering about this lesson...">' + escapeHtml(existing) + "</textarea></details>"
-    );
   }
 
   function wireNotesInputs(container) {
@@ -430,12 +485,6 @@
     setTimeout(() => { el2.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30);
     el2.classList.add("jump-highlight");
     setTimeout(() => el2.classList.remove("jump-highlight"), 1600);
-  }
-
-  function wireAccordions(container) {
-    container.querySelectorAll(".topic-card-head").forEach((head) => {
-      head.addEventListener("click", () => head.parentElement.classList.toggle("open"));
-    });
   }
 
   function taglishBlock(text) {
@@ -506,13 +555,204 @@
     return null;
   }
 
-  /* ============================= FOCUSED LESSON READER (SWIPE) ============================= */
+  /* ============================= COURSE MODEL & OUTLINE PANEL ============================= */
+
+  function courseModules() {
+    const mods = [{
+      id: "fund", route: "fundamentals", param: null, label: "Module 0", title: "A+ / Network+ Refresher",
+      color: "var(--text-muted)", weight: null,
+      lessons: FUNDAMENTALS.map((f) => ({ id: f.id, title: f.title, minutes: f.minutes || null, tag: f.category, flagship: false }))
+    }];
+    DOMAINS.forEach((d) => {
+      mods.push({
+        id: d.id, route: "domain", param: d.id, label: "Domain " + d.number, title: d.title,
+        color: DOMAIN_COLORS[d.id], weight: d.weight,
+        lessons: [d.flagship, ...d.topics].map((l) => ({
+          id: l.id, title: l.title, minutes: l.minutes || null, tag: l === d.flagship ? "Flagship" : l.tag, flagship: l === d.flagship
+        }))
+      });
+    });
+    return mods;
+  }
+
+  function moduleOfLesson(lessonId) {
+    return courseModules().find((m) => m.lessons.some((l) => l.id === lessonId)) || null;
+  }
+
+  function outlineLessonHtml(l, i, currentId) {
+    const done = !!state.completedLessons[l.id];
+    const cur = l.id === currentId;
+    const sub = [
+      l.flagship ? "Flagship" : l.tag && /^\d/.test(l.tag) ? "Obj " + l.tag : "",
+      l.minutes ? l.minutes + " min" : ""
+    ].filter(Boolean).join(" · ");
+    return (
+      '<li class="ol-lesson' + (done ? " done" : "") + (cur ? " current" : "") + '" data-ol-lesson="' + l.id + '" tabindex="0" role="link"' + (cur ? ' aria-current="page"' : "") + ">" +
+      '<button class="ol-check" data-ol-check="' + l.id + '" aria-pressed="' + done + '" aria-label="' + (done ? "Mark incomplete: " : "Mark complete: ") + escapeHtml(l.title) + '">' + icon("check", 13) + "</button>" +
+      '<span class="ol-text">' + (i + 1) + ". " + escapeHtml(l.title) + (sub ? '<span class="ol-sub">' + escapeHtml(sub) + "</span>" : "") + "</span></li>"
+    );
+  }
+
+  function outlineModulesHtml(currentId) {
+    return courseModules().map((m) => {
+      const done = m.lessons.filter((l) => state.completedLessons[l.id]).length;
+      const hasCurrent = m.lessons.some((l) => l.id === currentId);
+      const open = m.id in state.outlineSections ? state.outlineSections[m.id] : hasCurrent;
+      return (
+        '<div class="ol-module' + (open ? " open" : "") + '" data-module="' + m.id + '" style="--domain-color:' + m.color + ';">' +
+        '<button class="ol-module-head" data-ol-module-toggle="' + m.id + '" aria-expanded="' + open + '">' + icon("chevronRight", 14, "chev") +
+        '<span class="ol-module-name"><b>' + escapeHtml(m.label + ": " + m.title) + "</b><span>" + done + " / " + m.lessons.length + " lessons" +
+        (m.weight ? " · " + m.weight + "% of exam" : "") + '</span></span><span class="ol-module-tick"></span></button>' +
+        '<ul class="ol-lessons">' + m.lessons.map((l, i) => outlineLessonHtml(l, i, currentId)).join("") + "</ul></div>"
+      );
+    }).join("");
+  }
+
+  function wireOutline(container, currentId) {
+    container.querySelectorAll("[data-ol-module-toggle]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mod = btn.parentElement;
+        const open = !mod.classList.contains("open");
+        mod.classList.toggle("open", open);
+        btn.setAttribute("aria-expanded", String(open));
+        state.outlineSections[btn.getAttribute("data-ol-module-toggle")] = open;
+        saveState();
+      });
+    });
+    container.querySelectorAll("[data-ol-check]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleLessonComplete(btn.getAttribute("data-ol-check"));
+        render({ keepScroll: true });
+      });
+    });
+    container.querySelectorAll("[data-ol-lesson]").forEach((row) => {
+      const go = () => {
+        if (window.innerWidth <= 1180) outlineVisible = false;
+        navigate("lesson", row.getAttribute("data-ol-lesson"));
+      };
+      row.addEventListener("click", go);
+      row.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target === row) go(); });
+    });
+    container.querySelectorAll("[data-ol-all]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const open = btn.getAttribute("data-ol-all") === "expand";
+        courseModules().forEach((m) => { state.outlineSections[m.id] = open; });
+        saveState();
+        render({ keepScroll: true });
+      });
+    });
+  }
+
+  let lastOutlineLesson = null;
+
+  function renderOutline(currentId) {
+    const root = document.getElementById("outline");
+    const oldBody = root.querySelector(".outline-body");
+    const prevScroll = oldBody ? oldBody.scrollTop : 0;
+    const lessonChanged = currentId !== lastOutlineLesson;
+    if (lessonChanged) {
+      const m = moduleOfLesson(currentId);
+      if (m) state.outlineSections[m.id] = true;
+      lastOutlineLesson = currentId;
+    }
+    const pct = Math.round((completedCount() / TOTAL_LESSONS) * 100);
+    root.innerHTML =
+      '<div class="outline-head"><div class="outline-head-row"><h2 class="outline-title" style="margin:0;">Course content</h2>' +
+      '<div class="outline-tools"><button class="link-btn" data-ol-all="expand">Expand all</button><button class="link-btn" data-ol-all="collapse">Collapse all</button>' +
+      '<button class="link-btn" id="outline-close" aria-label="Close course content">Close</button></div></div>' +
+      '<div class="outline-meta"><span>' + completedCount() + " / " + TOTAL_LESSONS + " lessons</span><span>" + pct + "%</span></div>" +
+      '<div class="progress-track" style="margin-top:6px;"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>' +
+      '<div class="outline-body">' + outlineModulesHtml(currentId) + "</div>";
+    wireOutline(root, currentId);
+    root.querySelector("#outline-close").addEventListener("click", toggleOutline);
+    const body = root.querySelector(".outline-body");
+    if (lessonChanged) scrollOutlineToCurrent();
+    else body.scrollTop = prevScroll;
+  }
+
+  function scrollOutlineToCurrent() {
+    const body = document.querySelector("#outline .outline-body");
+    const cur = document.querySelector("#outline .ol-lesson.current");
+    if (!body || !cur || !body.clientHeight) return;
+    body.scrollTop = Math.max(0, cur.offsetTop - body.offsetTop - body.clientHeight / 3);
+  }
+
+  /* ============================= LESSON PLAYER ============================= */
+
+  const SECTION_TOGGLES = [
+    { key: "analogy", label: "Analogy" },
+    { key: "technical", label: "Example" },
+    { key: "confusion", label: "Exam traps" },
+    { key: "soc", label: "SOC link" }
+  ];
+
+  function sectionVisible(key) {
+    return !state.hiddenSections[key];
+  }
+
+  function quickSummaryBlock(lessonId) {
+    const s = QUICK_SUMMARIES[lessonId];
+    if (!s) return "";
+    return '<div class="quick-summary-box"><div class="quick-summary-label">In one breath</div><p>' + escapeHtml(s) + "</p></div>";
+  }
+
+  function lessonRemember(lesson) {
+    if (lesson.remember && lesson.remember.length) return lesson.remember;
+    if (lesson.takeaways && lesson.takeaways.length) return lesson.takeaways;
+    return lesson.keyPoints || [];
+  }
+
+  function lessonSection(n, label, inner, id) {
+    return (
+      '<section class="l-section"' + (id ? ' id="' + id + '"' : "") + '><div class="l-label"><span class="l-num">' + (typeof n === "number" ? String(n).padStart(2, "0") : n) + "</span>" +
+      escapeHtml(label) + "</div>" + inner + "</section>"
+    );
+  }
+
+  function lessonBodyBlocks(kind, lesson) {
+    let n = 0;
+    let html = "";
+    const add = (label, inner, id) => { n += 1; html += lessonSection(n, label, inner, id); };
+
+    add("What this lesson covers",
+      "<p><b>Goal.</b> " + escapeHtml(lesson.goal) + "</p>" +
+      (lesson.why ? "<p><b>Why it matters.</b> " + escapeHtml(lesson.why) + "</p>" : ""));
+    add("The explanation", "<p>" + escapeHtml(lesson.simple) + "</p>");
+    if (lesson.keyTerms && lesson.keyTerms.length) add("Key terms", keyTermsList(lesson.keyTerms));
+    if (lesson.analogy && sectionVisible("analogy")) add("Analogy", '<div class="analogy-box">' + escapeHtml(lesson.analogy) + "</div>");
+    if (lesson.technical && sectionVisible("technical")) add("Technical example", "<p>" + escapeHtml(lesson.technical) + "</p>");
+    (STORIES[lesson.id] || []).forEach((st) => {
+      add("Story from the field",
+        '<div class="story-box"><div class="story-head"><b>' + escapeHtml(st.title) + '</b><span class="story-kind story-' + (st.kind === "real" ? "real" : "scenario") + '">' +
+        (st.kind === "real" ? "True story" : "Scenario") + "</span></div><p>" + escapeHtml(st.text) + '</p><p class="story-moral"><b>Lesson:</b> ' + escapeHtml(st.moral) + "</p></div>");
+    });
+    if (lesson.table) add("At a glance", tableBlock(lesson.table));
+    if (lesson.confusion && lesson.confusion.length && sectionVisible("confusion")) {
+      add("Exam traps: easily confused",
+        lesson.confusion.map((c) => '<div class="confusion-item"><b>' + escapeHtml(c.a) + "</b> vs <b>" + escapeHtml(c.b) + "</b><br>" + escapeHtml(c.diff) + "</div>").join(""));
+    }
+    if (lesson.soc && sectionVisible("soc")) add("On the job: SOC analyst", "<p>" + escapeHtml(lesson.soc) + "</p>");
+
+    const items = lessonRemember(lesson);
+    if (items.length) {
+      html +=
+        '<section class="remember" id="remember-box"><div class="remember-head"><span>What to remember</span><span>Exam focus</span></div><ol>' +
+        items.map((t) => "<li>" + escapeHtml(t) + "</li>").join("") + "</ol></section>";
+    }
+    const tip = PRO_TIPS[lesson.id];
+    if (tip) html += lessonSection("★", "Pro tip", '<div class="pro-tip-box">' + escapeHtml(tip) + "</div>", "protip-box");
+    if (state.taglishEnabled && lesson.taglish) {
+      html += '<section class="taglish-section" id="taglish-box"><div class="l-label"><span class="l-num">TL</span>Taglish: explain it in plain words</div><div class="taglish-box">' + escapeHtml(lesson.taglish) + "</div></section>";
+    }
+    return html;
+  }
 
   function renderLessonFocus(lessonId) {
     const found = findLessonFull(lessonId);
     const wrap = el("<div></div>");
     if (!found) {
-      wrap.innerHTML = '<div class="empty-state">Lesson not found. <button class="btn" data-back-route="dashboard">Back to Dashboard</button></div>';
+      wrap.innerHTML = '<div class="empty-state">Lesson not found. <button class="btn" data-back-route="dashboard">Back to dashboard</button></div>';
       wrap.querySelector("[data-back-route]").addEventListener("click", () => navigate("dashboard"));
       return wrap;
     }
@@ -521,61 +761,95 @@
     const idx = ids.indexOf(lessonId);
     const prevId = idx > 0 ? ids[idx - 1] : null;
     const nextId = idx !== -1 && idx < ids.length - 1 ? ids[idx + 1] : null;
+    const prevLesson = prevId ? findLessonFull(prevId).lesson : null;
+    const nextLesson = nextId ? findLessonFull(nextId).lesson : null;
+    const mod = moduleOfLesson(lessonId);
+    const done = !!state.completedLessons[lessonId];
+    const objective = kind === "domain" && lesson.tag && /^\d/.test(lesson.tag) ? lesson.tag : "";
+    const practiceScope = kind === "fund" ? "fund" : domain.id;
 
-    const breadcrumbLabel = kind === "fund" ? "A+/Net+ Fundamentals" : "D" + domain.number + " · " + domain.title;
-    const backRoute = kind === "fund" ? "fundamentals" : "domain";
-    const backParam = kind === "fund" ? "" : domain.id;
+    const hasTip = !!PRO_TIPS[lesson.id];
+    const hasTaglish = state.taglishEnabled && !!lesson.taglish;
+    const jumps =
+      (lessonRemember(lesson).length ? '<button class="link-btn" data-jump="remember-box">What to remember</button>' : "") +
+      (hasTip ? '<button class="link-btn" data-jump="protip-box">Pro tip</button>' : "") +
+      (hasTaglish ? '<button class="link-btn" data-jump="taglish-box">Taglish</button>' : "") +
+      '<button class="link-btn" data-jump="notes-box">My notes</button>';
 
-    let bodyHtml;
-    if (kind === "fund") {
-      bodyHtml =
-        quickSummaryBlock(lesson.id) +
-        '<p style="margin-top:6px;"><b>Goal:</b> ' + escapeHtml(lesson.goal) + "</p>" +
-        '<div class="lesson-section"><div class="lesson-section-label">Simple Explanation</div><p>' + escapeHtml(lesson.simple) + "</p></div>" +
-        '<div class="lesson-section"><div class="lesson-section-label">Real-Life Analogy</div><div class="analogy-box">' + escapeHtml(lesson.analogy) + "</div></div>" +
-        storyBlock(lesson.id) +
-        '<div class="lesson-section"><div class="lesson-section-label">Key Points</div><ul>' + lesson.keyPoints.map((k) => "<li>" + escapeHtml(k) + "</li>").join("") + "</ul></div>" +
-        '<div class="lesson-section"><div class="lesson-section-label">Key Terms</div>' + keyTermsList(lesson.keyTerms) + "</div>" +
-        proTipBlock(lesson.id) +
-        (state.taglishEnabled ? '<div class="lesson-section">' + taglishBlock(lesson.taglish) + "</div>" : "") +
-        '<div class="lesson-section">' + notesBlock(lesson.id) + "</div>";
-    } else {
-      bodyHtml = lessonBodyHtml(lesson);
-    }
+    const toggles =
+      '<div class="view-toggles"><span class="vt-label">Show</span>' +
+      '<button class="vt-chip" data-vt="taglish" aria-pressed="' + state.taglishEnabled + '">Taglish</button>' +
+      SECTION_TOGGLES.filter((t) => kind === "domain").map((t) => '<button class="vt-chip" data-vt="' + t.key + '" aria-pressed="' + sectionVisible(t.key) + '">' + t.label + "</button>").join("") +
+      "</div>";
+
+    const existingNote = state.notes[lesson.id] || "";
 
     wrap.innerHTML =
-      '<div class="lesson-focus" id="lesson-focus-root">' +
-      '<div class="breadcrumb"><button class="breadcrumb-link" data-back-route="' + backRoute + '" data-back-param="' + backParam + '">' +
-      icon("chevronLeft", 13) + " " + escapeHtml(breadcrumbLabel) + "</button></div>" +
-      '<div class="lesson-focus-progress">Lesson ' + (idx + 1) + " of " + ids.length + "</div>" +
-      '<div class="lesson-header"><div><h1 style="margin:0;">' + escapeHtml(lesson.title) + "</h1>" +
-      '<div class="lesson-meta">' + (lesson.minutes ? '<span class="tag">' + lesson.minutes + ' min</span>' : "") +
-      (kind === "domain" && found.isFlagship ? '<span class="tag tag-blue">Flagship Lesson</span>' : "") + "</div></div>" +
-      '<div class="btn-row" style="margin:0;">' + bookmarkButton(lesson.id) + completeToggleButton(lesson.id) + "</div></div>" +
-      bodyHtml +
+      '<article class="lesson-focus" id="lesson-focus-root">' +
+      '<div class="lesson-crumbs"><button data-nav-to="course">Course</button><span class="sep">/</span>' +
+      (mod ? '<button data-nav-to="' + mod.route + (mod.param ? "/" + mod.param : "") + '">' + escapeHtml(mod.label + ": " + mod.title) + "</button>" : "") +
+      (objective ? '<span class="sep">/</span><span>Objective ' + escapeHtml(objective) + "</span>" : "") + "</div>" +
+
+      '<div class="lesson-title-row"><h1>' + escapeHtml(lesson.title) + "</h1>" +
+      '<div class="lesson-actions">' + bookmarkButton(lesson.id) + completeToggleButton(lesson.id) + "</div></div>" +
+      '<div class="lesson-meta"><span class="tag">Lesson ' + (idx + 1) + " of " + ids.length + "</span>" +
+      (lesson.minutes ? '<span class="tag">' + lesson.minutes + " min</span>" : "") +
+      (kind === "domain" && found.isFlagship ? '<span class="tag tag-blue">Flagship</span>' : "") +
+      (done ? '<span class="badge-complete">' + icon("check", 14) + " Completed</span>" : "") + "</div>" +
+      quickSummaryBlock(lesson.id) +
+      toggles +
+      '<div class="jump-links"><span style="color:var(--text-muted);">Jump to</span>' + jumps + "</div>" +
+
+      lessonBodyBlocks(kind, lesson) +
+
+      '<div class="practice-cta"><div><b>Check yourself</b><p>Practice questions for this ' + (kind === "fund" ? "module" : "domain") + ' are in the Practice Center.</p></div>' +
+      '<button class="btn" data-practice-domain="' + practiceScope + '">Start practice ' + icon("chevronRight", 14) + "</button></div>" +
+
+      '<section class="l-section" id="notes-box"><div class="l-label"><span class="l-num">' + icon("note", 13) + "</span>My notes</div>" +
+      '<textarea class="notes-textarea" data-notes-for="' + lesson.id + '" placeholder="Anything worth remembering? Notes save automatically in this browser.">' + escapeHtml(existingNote) + "</textarea></section>" +
+
       '<div class="lesson-focus-nav">' +
-      '<button class="btn lesson-nav-btn" id="lesson-nav-prev"' + (prevId ? "" : " disabled") + ">" + icon("chevronLeft", 16) + " Previous</button>" +
-      '<button class="btn lesson-nav-btn" id="lesson-nav-next"' + (nextId ? "" : " disabled") + ">Next " + icon("chevronRight", 16) + "</button>" +
+      '<button class="btn lesson-nav-btn prev" id="lesson-nav-prev"' + (prevId ? "" : " disabled") + "><small>" + icon("chevronLeft", 12) + " Previous <kbd>←</kbd></small>" +
+      '<span class="t">' + (prevLesson ? escapeHtml(prevLesson.title) : "Start of course") + "</span></button>" +
+      '<div class="lesson-nav-mid">' + completeToggleButton(lesson.id) + "</div>" +
+      '<button class="btn lesson-nav-btn next" id="lesson-nav-next"' + (nextId ? "" : " disabled") + "><small>Next <kbd>→</kbd> " + icon("chevronRight", 12) + "</small>" +
+      '<span class="t">' + (nextLesson ? escapeHtml(nextLesson.title) : "End of course") + "</span></button>" +
       "</div>" +
-      '<div class="lesson-focus-swipe-hint">Swipe left or right, or use the arrow keys, to move to the next lesson.</div>' +
-      "</div>";
+      '<div class="lesson-focus-hint"><kbd>←</kbd> <kbd>→</kbd> change lesson &middot; <kbd>Shift</kbd>+<kbd>→</kbd> complete and continue &middot; <kbd>C</kbd> complete &middot; <kbd>O</kbd> course content &middot; <kbd>?</kbd> all shortcuts</div>' +
+      "</article>";
 
     wireCompleteButtons(wrap);
     wireBookmarkButtons(wrap);
     wireNotesInputs(wrap);
+    wirePracticeDomainButtons(wrap);
 
-    wrap.querySelector("[data-back-route]").addEventListener("click", (e) => {
-      const btn = e.currentTarget;
-      pendingScrollTargetId = "lesson-" + lessonId;
-      navigate(btn.getAttribute("data-back-route"), btn.getAttribute("data-back-param") || null);
+    wrap.querySelectorAll("[data-nav-to]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const t = b.getAttribute("data-nav-to").split("/");
+        navigate(t[0], t[1] || null);
+      });
+    });
+    wrap.querySelectorAll("[data-jump]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const target = document.getElementById(b.getAttribute("data-jump"));
+        if (target) target.scrollIntoView({ behavior: state.reducedMotion ? "auto" : "smooth", block: "start" });
+      });
+    });
+    wrap.querySelectorAll("[data-vt]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const k = b.getAttribute("data-vt");
+        if (k === "taglish") state.taglishEnabled = !state.taglishEnabled;
+        else if (state.hiddenSections[k]) delete state.hiddenSections[k];
+        else state.hiddenSections[k] = true;
+        saveState();
+        render({ keepScroll: true });
+      });
     });
 
     const goPrev = () => { if (prevId) navigate("lesson", prevId); };
     const goNext = () => { if (nextId) navigate("lesson", nextId); };
-    const prevBtn = wrap.querySelector("#lesson-nav-prev");
-    const nextBtn = wrap.querySelector("#lesson-nav-next");
-    if (prevId) prevBtn.addEventListener("click", goPrev);
-    if (nextId) nextBtn.addEventListener("click", goNext);
+    if (prevId) wrap.querySelector("#lesson-nav-prev").addEventListener("click", goPrev);
+    if (nextId) wrap.querySelector("#lesson-nav-next").addEventListener("click", goNext);
 
     wireLessonSwipe(wrap.querySelector("#lesson-focus-root"), goPrev, goNext);
 
@@ -605,20 +879,13 @@
   }
 
   function continueButton(lessonId, label, variant) {
-    const meta = findLessonMeta(lessonId);
-    if (!meta) return "";
-    return (
-      '<button class="btn ' + (variant || "") + '" data-continue-route="' + meta.route + '" data-continue-param="' + (meta.param || "") +
-      '" data-continue-lesson="' + lessonId + '">' + (label || "Open") + "</button>"
-    );
+    if (!findLessonMeta(lessonId)) return "";
+    return '<button class="btn ' + (variant || "") + '" data-continue-lesson="' + lessonId + '">' + (label || "Open") + "</button>";
   }
 
   function wireContinueButtons(container) {
-    container.querySelectorAll("[data-continue-route]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        pendingScrollTargetId = "lesson-" + btn.getAttribute("data-continue-lesson");
-        navigate(btn.getAttribute("data-continue-route"), btn.getAttribute("data-continue-param") || null);
-      });
+    container.querySelectorAll("[data-continue-lesson]").forEach((btn) => {
+      btn.addEventListener("click", () => navigate("lesson", btn.getAttribute("data-continue-lesson")));
     });
   }
 
@@ -721,7 +988,7 @@
   }
 
   function renderDashboard() {
-    const wrap = el('<div></div>');
+    const wrap = el("<div></div>");
     const pct = Math.round((completedCount() / TOTAL_LESSONS) * 100);
     const r = readiness();
     const plan = state.plan;
@@ -731,83 +998,74 @@
     const daysChecked = Object.keys(plan.checkedDays).length;
     const streak = currentStreakCount();
     const next = nextIncompleteLesson();
-    const ringToneColor = r.tone === "green" ? "#63e6b0" : r.tone === "blue" ? "#8fb8ff" : "#f5cd7e";
+    const nextFull = next ? findLessonFull(next.lessonId) : null;
+    const nextMod = next ? moduleOfLesson(next.lessonId) : null;
+    const nextIdx = next ? allLessonIds().indexOf(next.lessonId) + 1 : 0;
+    const started = completedCount() > 0;
 
     wrap.innerHTML =
-      '<div class="hero-card">' +
-      '<div class="hero-main">' +
-      '<div class="hero-eyebrow">Security+ Learning Path &middot; SY0-701</div>' +
-      "<h1>Welcome back</h1>" +
-      '<p>From IT Foundations to SOC Analyst Readiness. Track your progress and jump back into where you left off.</p>' +
-      '<div class="btn-row" style="margin:0;">' +
-      '<button class="btn btn-primary" data-goto="practice">' + icon("target", 16) + " Start a Practice Quiz</button>" +
-      '<button class="btn" data-goto="plan">' + icon("calendar", 16) + " View 100-Day Plan</button>" +
-      "</div></div>" +
-      '<div class="hero-side">' +
-      (streak > 0 ? '<div style="text-align:center;color:#f3f7fb;">' + icon("flame", 26) + '<div style="font-family:var(--font-display);font-weight:800;font-size:20px;margin-top:2px;">' + streak + '</div><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;opacity:0.75;">day streak</div></div>' : "") +
-      progressRing(pct, { size: 108, stroke: 10, color: ringToneColor, trackColor: "rgba(255,255,255,0.16)", label: pct + "%", sub: "complete" }) +
+      '<div class="resume"><div>' +
+      '<div class="eyebrow">' + (next ? (started ? "Pick up where you left off" : "Start here") : "Course complete") + "</div>" +
+      (next
+        ? "<h1>" + escapeHtml(next.title) + "</h1>" +
+          "<p>" + escapeHtml(nextMod ? nextMod.label + ": " + nextMod.title : "") + " &middot; Lesson " + nextIdx + " of " + TOTAL_LESSONS +
+          (nextFull && nextFull.lesson.minutes ? " &middot; " + nextFull.lesson.minutes + " min" : "") + "</p>" +
+          '<div class="btn-row" style="margin:0;"><button class="btn btn-primary" data-continue-lesson="' + next.lessonId + '">' + (started ? "Resume lesson" : "Start first lesson") + " " + icon("chevronRight", 15) + '</button>' +
+          '<button class="btn" data-goto="course">Course content</button></div>'
+        : "<h1>Every lesson is marked complete</h1><p>Head to the Practice Center and run a full mock exam. Aim for 85% or better, twice in a row.</p>" +
+          '<div class="btn-row" style="margin:0;"><button class="btn btn-primary" data-goto="practice">Open Practice Center</button></div>') +
+      "</div>" +
+      '<div class="resume-side">' +
+      (streak > 0 ? '<div class="streak"><b>' + streak + "</b><span>day streak</span></div>" : "") +
+      progressRing(pct, { size: 104, stroke: 8, color: "var(--accent)", trackColor: "var(--border)", label: pct + "%", sub: "complete" }) +
       "</div></div>" +
 
       '<div class="card-grid">' +
-        statCard("dashboard", pct + "%", "Course completion (" + completedCount() + " / " + TOTAL_LESSONS + " lessons)") +
-        statCard("calendar", "Day " + currentDay + " / 100", daysChecked + " study days checked off") +
-        statCard("target", state.quizHistory.length, "Practice attempts logged") +
-        statCard(r.tone === "green" ? "checkCircle" : "clock", r.label, "Readiness status", r.tone) +
+        statCard(completedCount() + " / " + TOTAL_LESSONS, "Lessons completed") +
+        statCard("Day " + currentDay + " / 100", daysChecked + " study days checked off") +
+        statCard(state.quizHistory.length, "Practice attempts logged") +
+        statCard(r.label, "Readiness status", r.tone) +
       "</div>" +
 
-      '<div class="card"><h3 style="margin-top:0;display:flex;align-items:center;gap:8px;">' + icon("award", 17) + " Readiness</h3><p style=\"margin-bottom:0;\">" + escapeHtml(r.detail) + "</p></div>" +
-
-      focusAreasCard() +
-
-      "<h2>Domain Mastery</h2>" +
-      '<div class="card-grid" style="grid-template-columns:1fr;">' +
-      DOMAINS.map((d) => {
-        const best = domainBestScore(d.id);
-        const mastered = best !== null && best >= 80;
+      "<h2>Modules</h2>" +
+      '<div class="module-table">' +
+      courseModules().map((m) => {
+        const done = m.lessons.filter((l) => state.completedLessons[l.id]).length;
+        const mpct = Math.round((done / m.lessons.length) * 100);
+        const best = m.id === "fund" ? null : domainBestScore(m.id);
+        const scope = m.id === "fund" ? "fund" : m.id;
         return (
-          '<div class="card" style="margin-bottom:0;border-left:4px solid ' + DOMAIN_COLORS[d.id] + ';">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">' +
-          '<div style="display:flex;align-items:center;gap:10px;min-width:0;"><span class="domain-badge" style="--domain-color:' + DOMAIN_COLORS[d.id] + ';">D' + d.number + '</span><b style="font-family:var(--font-display);font-size:14.5px;">' + escapeHtml(d.title) + "</b></div>" +
-          '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span class="tag tag-accent">' + d.weight + '% of exam</span><button class="btn btn-sm" data-practice-domain="' + d.id + '">' + icon("target", 13) + " Practice</button></div></div>" +
-          progressBar(best === null ? 0 : best) +
-          (best === null
-            ? '<div style="font-size:12px;color:var(--text-muted);">No quiz attempts yet</div>'
-            : '<div style="font-size:12px;color:' + (mastered ? "var(--green)" : "var(--text-muted)") + ';display:flex;align-items:center;gap:4px;">' + (mastered ? icon("checkCircle", 13) : "") + "Best score: " + best + "%" + (mastered ? " &mdash; mastered" : "") + "</div>") +
-          "</div>"
+          '<div class="module-row" style="--domain-color:' + m.color + ';">' +
+          '<span class="domain-badge" style="--domain-color:' + m.color + ';">' + (m.id === "fund" ? "M0" : "D" + m.id.slice(1)) + "</span>" +
+          '<div><b>' + escapeHtml(m.title) + '</b><span class="mr-sub">' + done + " / " + m.lessons.length + " lessons" +
+          (m.weight ? " &middot; " + m.weight + "% of exam" : "") + (best !== null ? " &middot; best quiz " + best + "%" : "") + "</span></div>" +
+          progressBar(mpct) +
+          '<div class="module-actions"><button class="btn btn-sm" data-goto="' + m.route + (m.param ? "/" + m.param : "") + '">Open</button>' +
+          '<button class="btn btn-sm" data-practice-domain="' + scope + '">Practice</button></div></div>'
         );
       }).join("") +
       "</div>" +
 
-      "<h2>Continue Studying</h2>" +
-      (next
-        ? '<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">' +
-          '<div style="min-width:0;"><div class="eyebrow" style="margin-bottom:4px;">Up next</div>' +
-          '<div style="font-family:var(--font-display);font-weight:700;font-size:15px;">' + escapeHtml(next.title) + "</div></div>" +
-          continueButton(next.lessonId, icon("chevronRight", 16) + " Continue", "btn-primary") +
-          "</div>"
-        : '<div class="card" style="display:flex;align-items:center;gap:10px;">' + icon("checkCircle", 20) + " Every lesson is marked complete. Head to Practice Center for a full mock exam.</div>") +
-      '<div class="btn-row" style="margin-top:10px;">' +
-      '<button class="btn" data-goto="exam">' + icon("award", 16) + " Exam Overview</button>" +
-      '<button class="btn" data-goto="labs">' + icon("flask", 16) + " Labs / SOC Simulator</button>" +
-      "</div>" +
+      '<div class="card" style="margin-top:22px;"><h3 style="margin-top:0;">Readiness</h3><p style="margin-bottom:0;">' + escapeHtml(r.detail) + "</p></div>" +
 
+      focusAreasCard() +
       bookmarkedLessonsSection();
 
-    wrap.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => navigate(b.getAttribute("data-goto"))));
+    wrap.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => {
+      const target = b.getAttribute("data-goto").split("/");
+      navigate(target[0], target[1] || null);
+    }));
     wireContinueButtons(wrap);
     wirePracticeDomainButtons(wrap);
     wireScopeButtons(wrap);
     return wrap;
   }
 
-  function statCard(iconName, value, label, tone) {
-    const toneColor = tone === "green" ? "var(--green)" : tone === "amber" ? "var(--amber)" : "var(--text-primary)";
-    const toneBg = tone === "green" ? "var(--green-soft)" : tone === "amber" ? "var(--amber-soft)" : "var(--accent-soft)";
-    const toneFg = tone === "green" ? "var(--green)" : tone === "amber" ? "var(--amber)" : "var(--accent-strong)";
+  function statCard(value, label, tone) {
+    const toneColor = tone === "green" ? "var(--green)" : tone === "amber" ? "var(--amber)" : tone === "blue" ? "var(--blue)" : "var(--text-primary)";
     return (
-      '<div class="stat-card"><div class="stat-icon" style="background:' + toneBg + ";color:" + toneFg + ';">' + icon(iconName, 18) + "</div><div>" +
-      '<div class="stat-value" style="color:' + toneColor + ';">' +
-      escapeHtml(String(value)) + '</div><div class="stat-label">' + escapeHtml(label) + "</div></div></div>"
+      '<div class="stat-card"><div class="stat-value" style="color:' + toneColor + ';">' +
+      escapeHtml(String(value)) + '</div><div class="stat-label">' + escapeHtml(label) + "</div></div>"
     );
   }
 
@@ -853,186 +1111,113 @@
     return wrap;
   }
 
-  /* ============================= FUNDAMENTALS ============================= */
+  /* ============================= MODULE PAGES ============================= */
 
   function renderFundamentals() {
-    const wrap = el("<div></div>");
-    const lessonIds = FUNDAMENTALS.map((f) => f.id);
-    const done = lessonIds.filter((id) => state.completedLessons[id]).length;
-
-    wrap.innerHTML =
-      '<div class="eyebrow">Module 0 &middot; Prerequisite Refresher</div>' +
-      "<h1>A+ / Network+ Fundamentals Refresher</h1>" +
-      '<p class="lede">Security+ assumes you already know this material. This module is a fast, no-judgment refresher &mdash; work through it before the five exam domains if it has been a while since your A+ or Network+ studies.</p>' +
-      progressBar((done / lessonIds.length) * 100);
-
-    const list = el('<div style="margin-top:16px;"></div>');
-    let category = null;
-    FUNDAMENTALS.forEach((f) => {
-      if (f.category !== category) {
-        category = f.category;
-        list.appendChild(el('<h2>' + escapeHtml(category) + " Topics</h2>"));
-      }
-      list.appendChild(fundamentalCard(f));
+    const mod = courseModules()[0];
+    return renderModulePage(mod, {
+      eyebrow: "Module 0 · Prerequisite refresher",
+      title: "A+ / Network+ Fundamentals Refresher",
+      blurb: "Security+ assumes you already know this material. Work through it before the five exam domains if it has been a while since your A+ or Network+ studies.",
+      practiceScope: "fund",
+      practiceLabel: "Fundamentals check",
+      groupByTag: true
     });
-    wrap.appendChild(list);
-    wireCompleteButtons(wrap);
-    wireBookmarkButtons(wrap);
-    wireNotesInputs(wrap);
-    wireOpenFocusButtons(wrap);
-    setTimeout(handlePendingScroll, 0);
-    return wrap;
   }
-
-  function fundamentalCard(f) {
-    const card = el('<div class="card"></div>');
-    card.id = "lesson-" + f.id;
-    card.innerHTML =
-      '<div class="lesson-header"><h3 style="margin:0;">' + escapeHtml(f.title) + "</h3>" +
-      '<div class="btn-row" style="margin:0;">' + openFocusButton(f.id) + bookmarkButton(f.id) + completeToggleButton(f.id) + "</div></div>" +
-      quickSummaryBlock(f.id) +
-      '<p style="margin-top:6px;"><b>Goal:</b> ' + escapeHtml(f.goal) + "</p>" +
-      '<div class="lesson-section"><div class="lesson-section-label">Simple Explanation</div><p>' + escapeHtml(f.simple) + "</p></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">Real-Life Analogy</div><div class="analogy-box">' + escapeHtml(f.analogy) + "</div></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">Key Points</div><ul>' + f.keyPoints.map((k) => "<li>" + escapeHtml(k) + "</li>").join("") + "</ul></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">Key Terms</div>' + keyTermsList(f.keyTerms) + "</div>" +
-      proTipBlock(f.id) +
-      (state.taglishEnabled ? '<div class="lesson-section">' + taglishBlock(f.taglish) + "</div>" : "") +
-      '<div class="lesson-section">' + notesBlock(f.id) + "</div>";
-    return card;
-  }
-
-  /* ============================= DOMAIN PAGE ============================= */
 
   function renderDomainPage(domainId) {
     const d = domainById(domainId) || DOMAINS[0];
-    const wrap = el("<div></div>");
-    const lessonIds = [d.flagship.id, ...d.topics.map((t) => t.id)];
-    const done = lessonIds.filter((id) => state.completedLessons[id]).length;
-    const best = domainBestScore(d.id);
-
-    wrap.innerHTML =
-      '<div class="breadcrumb">Domain ' + d.number + "</div>" +
-      "<h1>D" + d.number + ". " + escapeHtml(d.title) + "</h1>" +
-      '<p class="lede">' + escapeHtml(d.blurb) + "</p>" +
-      '<div class="btn-row"><span class="tag tag-accent">' + d.weight + '% of the exam</span>' +
-      '<span class="tag">' + (best === null ? "No quiz attempts yet" : "Best score: " + best + "%") + "</span></div>" +
-      progressBar((done / lessonIds.length) * 100);
-
-    wrap.appendChild(el("<h2>Flagship Lesson</h2>"));
-    wrap.appendChild(flagshipLessonCard(d.flagship));
-
-    wrap.appendChild(el("<h2>More Topics in This Domain</h2>"));
-    const topicsWrap = el("<div></div>");
-    d.topics.forEach((t) => topicsWrap.appendChild(topicCard(t)));
-    wrap.appendChild(topicsWrap);
-
-    const practiceRow = el(
-      '<div class="btn-row"><button class="btn btn-primary" data-practice-domain="' + d.id + '">Practice ' + escapeHtml(d.title) + " Questions</button></div>"
-    );
-    wrap.appendChild(practiceRow);
-    wirePracticeDomainButtons(wrap);
-
-    wireCompleteButtons(wrap);
-    wireBookmarkButtons(wrap);
-    wireNotesInputs(wrap);
-    wireAccordions(wrap);
-    wireOpenFocusButtons(wrap);
-    setTimeout(handlePendingScroll, 0);
-    return wrap;
-  }
-
-  function storyBlock(lessonId) {
-    const list = STORIES[lessonId];
-    if (!list || !list.length) return "";
-    return list.map((st) =>
-      '<div class="lesson-section"><div class="lesson-section-label">Story from the Field</div>' +
-      '<div class="story-box"><div class="story-head"><b>' + escapeHtml(st.title) + '</b>' +
-      '<span class="story-kind story-' + (st.kind === "real" ? "real" : "scenario") + '">' + (st.kind === "real" ? "True story" : "Scenario") + "</span></div>" +
-      "<p>" + escapeHtml(st.text) + '</p><p class="story-moral"><b>Lesson:</b> ' + escapeHtml(st.moral) + "</p></div></div>"
-    ).join("");
-  }
-
-  function proTipBlock(lessonId) {
-    const tip = PRO_TIPS[lessonId];
-    if (!tip) return "";
-    return (
-      '<div class="lesson-section"><div class="lesson-section-label">12. Pro Tip</div>' +
-      '<div class="pro-tip-box">' + icon("award", 16, "pro-tip-icon") + "<span>" + escapeHtml(tip) + "</span></div></div>"
-    );
-  }
-
-  function quickSummaryBlock(lessonId) {
-    const s = QUICK_SUMMARIES[lessonId];
-    if (!s) return "";
-    return (
-      '<div class="quick-summary-box"><div class="quick-summary-label">In One Breath</div><p>' + escapeHtml(s) + "</p></div>"
-    );
-  }
-
-  function openFocusButton(lessonId) {
-    return (
-      '<button class="btn btn-icon-only" data-open-focus="' + lessonId +
-      '" aria-label="Open in focused reader" title="Open in focused reader">' + icon("expand", 15) + "</button>"
-    );
-  }
-
-  function wireOpenFocusButtons(container) {
-    container.querySelectorAll("[data-open-focus]").forEach((btn) => {
-      btn.addEventListener("click", () => navigate("lesson", btn.getAttribute("data-open-focus")));
+    const mod = courseModules().find((m) => m.id === d.id);
+    return renderModulePage(mod, {
+      eyebrow: "Domain " + d.number + " · " + d.weight + "% of the exam",
+      title: d.title,
+      blurb: d.blurb,
+      practiceScope: d.id,
+      practiceLabel: "D" + d.number + " questions",
+      best: domainBestScore(d.id)
     });
   }
 
-  function lessonBodyHtml(lesson) {
+  function lessonListItem(l, i) {
+    const done = !!state.completedLessons[l.id];
+    const summary = QUICK_SUMMARIES[l.id] || "";
     return (
-      quickSummaryBlock(lesson.id) +
-      '<div class="lesson-section"><div class="lesson-section-label">1. Lesson Goal</div><p>' + escapeHtml(lesson.goal) + "</p></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">2. Why This Matters</div><p>' + escapeHtml(lesson.why) + "</p></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">3. Simple Explanation</div><p>' + escapeHtml(lesson.simple) + "</p></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">4. Key Terms</div>' + keyTermsList(lesson.keyTerms) + "</div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">5. Real-Life Analogy</div><div class="analogy-box">' + escapeHtml(lesson.analogy) + "</div></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">6. Technical Example</div><p>' + escapeHtml(lesson.technical) + "</p></div>" +
-      storyBlock(lesson.id) +
-      (lesson.table ? '<div class="lesson-section"><div class="lesson-section-label">7. Visual Summary</div>' + tableBlock(lesson.table) + "</div>" : "") +
-      '<div class="lesson-section"><div class="lesson-section-label">8. Common Confusion</div>' +
-        lesson.confusion.map((c) => '<div class="confusion-item"><b>' + escapeHtml(c.a) + "</b> vs <b>" + escapeHtml(c.b) + "</b><br>" + escapeHtml(c.diff) + "</div>").join("") +
-      "</div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">9. SOC Analyst Connection</div><p>' + escapeHtml(lesson.soc) + "</p></div>" +
-      '<div class="lesson-section"><div class="lesson-section-label">10. Knowledge Check</div><p>Head to the Practice Center and select this domain to answer original questions tagged to this lesson.</p></div>' +
-      '<div class="lesson-section"><div class="lesson-section-label">11. Key Takeaway</div><ul class="takeaway-list">' + lesson.takeaways.map((t) => "<li>" + escapeHtml(t) + "</li>").join("") + "</ul></div>" +
-      proTipBlock(lesson.id) +
-      '<div class="lesson-section">' + taglishBlock(lesson.taglish) + "</div>" +
-      '<div class="lesson-section">' + notesBlock(lesson.id) + "</div>"
+      '<div class="lesson-list-item" data-open-lesson="' + l.id + '" tabindex="0" role="link">' +
+      '<span class="ll-num">' + String(i + 1).padStart(2, "0") + "</span>" +
+      '<div class="ll-main"><div class="ll-title">' + escapeHtml(l.title) + "</div>" +
+      (summary ? '<div class="ll-sum">' + escapeHtml(summary.length > 150 ? summary.slice(0, 147).replace(/\s+\S*$/, "") + "…" : summary) + "</div>" : "") + "</div>" +
+      '<div class="ll-meta">' +
+      (state.bookmarks[l.id] ? icon("star", 14) : "") +
+      (l.flagship ? '<span class="tag tag-blue">Flagship</span>' : l.tag && /^\d/.test(l.tag) ? '<span class="tag">Obj ' + escapeHtml(l.tag) + "</span>" : "") +
+      (l.minutes ? '<span class="tag">' + l.minutes + " min</span>" : "") +
+      (done ? '<span class="badge-complete">' + icon("check", 14) + " Done</span>" : "") +
+      "</div></div>"
     );
   }
 
-  function flagshipLessonCard(lesson) {
-    const card = el('<div class="card"></div>');
-    card.id = "lesson-" + lesson.id;
-    card.innerHTML =
-      '<div class="lesson-header"><div><h3 style="margin:0;">' + escapeHtml(lesson.title) + '</h3>' +
-      '<div class="lesson-meta"><span class="tag">' + lesson.minutes + " min</span><span class=\"tag tag-blue\">Flagship Lesson</span></div></div>" +
-      '<div class="btn-row" style="margin:0;">' + openFocusButton(lesson.id) + bookmarkButton(lesson.id) + completeToggleButton(lesson.id) + "</div></div>" +
-      lessonBodyHtml(lesson);
-    return card;
+  function renderModulePage(mod, o) {
+    const wrap = el("<div></div>");
+    const done = mod.lessons.filter((l) => state.completedLessons[l.id]).length;
+    const nextLesson = mod.lessons.find((l) => !state.completedLessons[l.id]);
+    const startLesson = nextLesson || mod.lessons[0];
+
+    wrap.innerHTML =
+      '<div class="breadcrumb"><a href="#/course">Course</a> / ' + escapeHtml(mod.label) + "</div>" +
+      '<div class="eyebrow">' + escapeHtml(o.eyebrow) + "</div>" +
+      "<h1>" + escapeHtml(o.title) + "</h1>" +
+      '<p class="lede">' + escapeHtml(o.blurb) + "</p>" +
+      '<div class="btn-row" style="align-items:center;">' +
+      '<button class="btn btn-primary" data-open-lesson="' + startLesson.id + '">' +
+      (done === 0 ? "Start module" : nextLesson ? "Continue module" : "Review module") + " " + icon("chevronRight", 15) + "</button>" +
+      '<button class="btn" data-practice-domain="' + o.practiceScope + '">Practice: ' + escapeHtml(o.practiceLabel) + "</button>" +
+      '<span class="tag">' + done + " / " + mod.lessons.length + " lessons done</span>" +
+      (o.best === undefined ? "" : '<span class="tag">' + (o.best === null ? "No quiz attempts yet" : "Best score " + o.best + "%") + "</span>") +
+      "</div>" +
+      progressBar((done / mod.lessons.length) * 100);
+
+    if (o.groupByTag) {
+      let category = null;
+      let group = null;
+      mod.lessons.forEach((l, i) => {
+        if (l.tag !== category) {
+          category = l.tag;
+          wrap.appendChild(el("<h2>" + escapeHtml(category) + " topics</h2>"));
+          group = el('<div class="lesson-list"></div>');
+          wrap.appendChild(group);
+        }
+        group.insertAdjacentHTML("beforeend", lessonListItem(l, i));
+      });
+    } else {
+      const list = el('<div class="lesson-list" style="margin-top:22px;"></div>');
+      list.innerHTML = mod.lessons.map(lessonListItem).join("");
+      wrap.appendChild(list);
+    }
+
+    wireOpenLesson(wrap);
+    wirePracticeDomainButtons(wrap);
+    return wrap;
   }
 
-  function topicCard(topic) {
-    const done = !!state.completedLessons[topic.id];
-    const bookmarked = !!state.bookmarks[topic.id];
-    const card = el('<div class="topic-card"></div>');
-    card.id = "lesson-" + topic.id;
-    card.innerHTML =
-      '<div class="topic-card-head"><div><b>' + escapeHtml(topic.title) + '</b> <span class="tag" style="margin-left:6px;">' + escapeHtml(topic.tag) + "</span>" +
-      (topic.minutes ? '<span class="tag" style="margin-left:6px;">' + topic.minutes + " min</span>" : "") +
-      (bookmarked ? ' <span class="tag tag-accent" style="margin-left:6px;">' + icon("star", 11) + " Bookmarked</span>" : "") +
-      (done ? ' <span class="badge-complete" style="margin-left:6px;">&#10003; Complete</span>' : "") + "</div>" +
-      '<span class="chevron">&#9656;</span></div>' +
-      '<div class="topic-card-body">' +
-      lessonBodyHtml(topic) +
-      '<div class="btn-row">' + openFocusButton(topic.id) + bookmarkButton(topic.id) + completeToggleButton(topic.id) + "</div>" +
-      "</div>";
-    return card;
+  function wireOpenLesson(container) {
+    container.querySelectorAll("[data-open-lesson]").forEach((node) => {
+      const go = () => navigate("lesson", node.getAttribute("data-open-lesson"));
+      node.addEventListener("click", go);
+      node.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+    });
+  }
+
+  /* ============================= COURSE CONTENT PAGE ============================= */
+
+  function renderCoursePage() {
+    const wrap = el("<div></div>");
+    const pct = Math.round((completedCount() / TOTAL_LESSONS) * 100);
+    wrap.innerHTML =
+      '<div class="eyebrow">Syllabus</div><h1>Course content</h1>' +
+      '<p class="lede">' + TOTAL_LESSONS + " lessons across the refresher and the five SY0-701 domains. Open or close any section; the same outline stays beside every lesson (press <kbd>O</kbd> to hide it).</p>" +
+      '<div class="btn-row" style="align-items:center;"><button class="btn btn-sm" data-ol-all="expand">Expand all</button><button class="btn btn-sm" data-ol-all="collapse">Collapse all</button><span class="tag">' + completedCount() + " / " + TOTAL_LESSONS + " complete (" + pct + "%)</span></div>" +
+      '<div class="outline-page" style="margin-top:14px;">' + outlineModulesHtml(null) + "</div>";
+    wireOutline(wrap, null);
+    return wrap;
   }
 
   /* ============================= PRACTICE / QUIZ ENGINE ============================= */
@@ -1811,6 +1996,7 @@
       settingsRow("Theme", "Light, dark, or match your system.", themeSelectHtml()) +
       settingsRow("Taglish Help", "Show the collapsible Taglish explanation on lessons and comparisons.", switchHtml("st-taglish", state.taglishEnabled)) +
       settingsRow("Reduced Motion", "Turn off transitions and animations.", switchHtml("st-motion", state.reducedMotion)) +
+      settingsRow("Keyboard shortcuts", "Arrow keys move between lessons; C completes, O toggles course content, T toggles Taglish.", '<button class="btn" id="st-keys">View shortcuts</button>') +
       "</div>" +
       '<div class="card">' +
       settingsRow("Reset Progress", "Clears all completed lessons, quiz history, notes, and plan check-offs. This cannot be undone.", '<button class="btn" id="st-reset" style="border-color:var(--red);color:var(--red);">Reset Progress</button>') +
@@ -1821,6 +2007,7 @@
 
     wrap.querySelector("#theme-select").addEventListener("change", (e) => { state.theme = e.target.value; applyTheme(); saveState(); });
     wrap.querySelector("#st-taglish").addEventListener("change", (e) => { state.taglishEnabled = e.target.checked; saveState(); });
+    wrap.querySelector("#st-keys").addEventListener("click", openKeysModal);
     wrap.querySelector("#st-motion").addEventListener("change", (e) => { state.reducedMotion = e.target.checked; applyMotion(); saveState(); });
 
     wrap.querySelector("#st-reset").addEventListener("click", () => {
@@ -1987,12 +2174,99 @@
     navigate(item.route, item.param);
   }
 
+  /* ============================= SHORTCUTS & SHELL ============================= */
+
+  const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || "");
+  const MOD_KEY = IS_MAC ? "⌘" : "Ctrl";
+
+  const SHORTCUTS = [
+    { keys: ["←"], label: "Previous lesson" },
+    { keys: ["→"], label: "Next lesson" },
+    { keys: ["Shift", "→"], label: "Mark complete, then next" },
+    { keys: ["C"], label: "Mark complete / undo" },
+    { keys: ["B"], label: "Bookmark this lesson" },
+    { keys: ["O"], label: "Show / hide course content" },
+    { keys: ["M"], label: "Show / hide the menu" },
+    { keys: ["T"], label: "Show / hide Taglish" },
+    { keys: ["/"], label: "Search" },
+    { keys: [MOD_KEY, "K"], label: "Search" },
+    { keys: ["?"], label: "Show this list" },
+    { keys: ["Esc"], label: "Close dialog or panel" }
+  ];
+
+  function isTypingTarget(t) {
+    if (!t) return false;
+    const tag = (t.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select" || t.isContentEditable;
+  }
+
+  function modalOpen() {
+    return !document.getElementById("search-modal-backdrop").hidden || !document.getElementById("keys-modal-backdrop").hidden;
+  }
+
+  function currentLessonId() {
+    const { route, param } = parseHash();
+    return route === "lesson" && param && findLessonFull(param) ? param : null;
+  }
+
+  function stepLesson(delta) {
+    const id = currentLessonId();
+    if (!id) return;
+    const ids = allLessonIds();
+    const next = ids[ids.indexOf(id) + delta];
+    if (next) navigate("lesson", next);
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    let t = document.getElementById("toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "toast";
+      t.className = "toast";
+      t.setAttribute("role", "status");
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 1600);
+  }
+
+  function openKeysModal() {
+    document.getElementById("keys-grid").innerHTML = SHORTCUTS.map((s) => (
+      '<div class="keys-row"><span>' + escapeHtml(s.label) + '</span><span class="k">' +
+      s.keys.map((k) => "<kbd>" + escapeHtml(k) + "</kbd>").join("") + "</span></div>"
+    )).join("");
+    document.getElementById("keys-modal-backdrop").hidden = false;
+  }
+
+  function closeKeysModal() {
+    document.getElementById("keys-modal-backdrop").hidden = true;
+  }
+
+  function cycleTheme() {
+    const order = ["system", "light", "dark"];
+    state.theme = order[(order.indexOf(state.theme) + 1) % order.length];
+    applyTheme();
+    saveState();
+    toast("Theme: " + state.theme[0].toUpperCase() + state.theme.slice(1));
+  }
+
   function initShell() {
-    document.getElementById("menu-toggle").addEventListener("click", () => {
-      document.getElementById("sidebar").classList.add("open");
-      document.getElementById("sidebar-backdrop").classList.add("open");
+    const mq = window.matchMedia("(max-width: 860px)");
+
+    document.getElementById("menu-toggle").addEventListener("click", toggleNav);
+    document.getElementById("outline-toggle").addEventListener("click", toggleOutline);
+    document.getElementById("wordmark").addEventListener("click", () => navigate("dashboard"));
+    document.getElementById("theme-toggle").addEventListener("click", cycleTheme);
+    document.getElementById("open-keys").addEventListener("click", openKeysModal);
+    document.getElementById("keys-close").addEventListener("click", closeKeysModal);
+    document.getElementById("keys-modal-backdrop").addEventListener("click", (e) => {
+      if (e.target.id === "keys-modal-backdrop") closeKeysModal();
     });
     document.getElementById("sidebar-backdrop").addEventListener("click", closeSidebarMobile);
+    mq.addEventListener("change", () => applyLayout());
 
     document.getElementById("open-search").addEventListener("click", openSearchModal);
     document.getElementById("search-modal-close").addEventListener("click", closeSearchModal);
@@ -2021,22 +2295,68 @@
     });
 
     document.addEventListener("keydown", (e) => {
-      const isK = e.key === "k" || e.key === "K";
-      if ((e.ctrlKey || e.metaKey) && isK) {
+      const key = e.key;
+      if ((e.ctrlKey || e.metaKey) && (key === "k" || key === "K")) {
         e.preventDefault();
         openSearchModal();
-      } else if (e.key === "Escape" && !document.getElementById("search-modal-backdrop").hidden) {
-        closeSearchModal();
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-        const tag = (e.target && e.target.tagName || "").toLowerCase();
-        if (tag === "input" || tag === "textarea" || (e.target && e.target.isContentEditable)) return;
-        const { route, param } = parseHash();
-        if (route !== "lesson" || !param) return;
-        const ids = allLessonIds();
-        const idx = ids.indexOf(param);
-        if (idx === -1) return;
-        if (e.key === "ArrowLeft" && idx > 0) { e.preventDefault(); navigate("lesson", ids[idx - 1]); }
-        if (e.key === "ArrowRight" && idx < ids.length - 1) { e.preventDefault(); navigate("lesson", ids[idx + 1]); }
+        return;
+      }
+      if (key === "Escape") {
+        if (!document.getElementById("search-modal-backdrop").hidden) closeSearchModal();
+        else if (!document.getElementById("keys-modal-backdrop").hidden) closeKeysModal();
+        else if (mq.matches && document.getElementById("sidebar").classList.contains("open")) closeSidebarMobile();
+        else if (window.innerWidth <= 1180 && outlineVisible && document.body.classList.contains("has-outline")) toggleOutline();
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey || modalOpen() || isTypingTarget(e.target)) return;
+
+      const lessonId = currentLessonId();
+      switch (key) {
+        case "ArrowLeft":
+          if (lessonId) { e.preventDefault(); stepLesson(-1); }
+          break;
+        case "ArrowRight":
+          if (!lessonId) break;
+          e.preventDefault();
+          if (e.shiftKey) {
+            if (!state.completedLessons[lessonId]) { toggleLessonComplete(lessonId); toast("Marked complete"); }
+          }
+          stepLesson(1);
+          break;
+        case "c": case "C":
+          if (!lessonId) break;
+          toggleLessonComplete(lessonId);
+          toast(state.completedLessons[lessonId] ? "Marked complete" : "Marked incomplete");
+          render({ keepScroll: true });
+          break;
+        case "b": case "B":
+          if (!lessonId) break;
+          toggleBookmark(lessonId);
+          toast(state.bookmarks[lessonId] ? "Bookmarked" : "Bookmark removed");
+          render({ keepScroll: true });
+          break;
+        case "t": case "T":
+          if (!lessonId) break;
+          state.taglishEnabled = !state.taglishEnabled;
+          saveState();
+          toast("Taglish " + (state.taglishEnabled ? "on" : "off"));
+          render({ keepScroll: true });
+          break;
+        case "o": case "O":
+          toggleOutline();
+          break;
+        case "m": case "M":
+          toggleNav();
+          break;
+        case "/":
+          e.preventDefault();
+          openSearchModal();
+          break;
+        case "?":
+          e.preventDefault();
+          openKeysModal();
+          break;
+        default:
       }
     });
   }

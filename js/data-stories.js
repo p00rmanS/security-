@@ -405,7 +405,7 @@ const STORIES = {
       text: "A CISO asked for budget to fix a flaw. The CFO asked 'how much does it cost us if we don't?' With an asset worth 400,000, an exposure factor of 50 percent, and an annual rate of 0.5, the ALE was 100,000 — more than the 40,000 fix. Funding approved.",
       moral: "SLE = asset value x exposure factor; ALE = SLE x ARO. Numbers let you compare risk to the cost of controls." }
   ],
-  "d2-t13": [
+  "d2-t43": [
     {
       "title": "The Wire That Almost Went Out",
       "kind": "scenario",
@@ -435,15 +435,7 @@ const STORIES = {
       "moral": "Logic bombs are triggered by conditions, and they are best caught by review and insider-risk controls."
     }
   ],
-  "d3-t15": [
-    {
-      "title": "The Stolen Drive That Stayed Dark",
-      "kind": "scenario",
-      "text": "A technician's laptop was stolen from a car. The disk was encrypted with a key sealed in the TPM. Moved to another machine, the drive would not unlock and the key was unreachable. The incident closed as a loss of hardware.",
-      "moral": "Hardware-protected keys turn theft into an inconvenience."
-    }
-  ],
-  "d5-t10": [
+  "d5-t40": [
     {
       "title": "What Target, Equifax, and Colonial Had in Common",
       "kind": "scenario",
@@ -451,7 +443,7 @@ const STORIES = {
       "moral": "Exam-style scenarios usually reward the boring answer: patch, segment, verify identity, back up."
     }
   ],
-  "d1-t6": [
+  "d1-t36": [
     {
       "title": "The Recorded Traffic That Stayed Locked",
       "kind": "scenario",
@@ -465,7 +457,7 @@ const STORIES = {
       "moral": "A broken hash is not a theoretical problem; collisions can be turned into forged trust."
     }
   ],
-  "d1-t7": [
+  "d1-t37": [
     {
       "title": "The Fake AWS Key",
       "kind": "scenario",
@@ -519,20 +511,12 @@ const STORIES = {
       "moral": "A clear, known official channel is the best defense against impersonation."
     }
   ],
-  "d3-t16": [
+  "d3-t46": [
     {
       "title": "The Region Nobody Chose",
       "kind": "scenario",
       "text": "A developer spun up a storage bucket in the default cloud region, which happened to be in another country. An audit later found customer records there, which broke a contractual residency promise. A policy that only allows approved regions closed the gap.",
       "moral": "Residency problems are often accidents of defaults. Restrict regions by policy."
-    }
-  ],
-  "d3-t17": [
-    {
-      "title": "The Split-Tunnel Blind Spot",
-      "kind": "scenario",
-      "text": "A remote worker's laptop was infected while browsing at home. Because split tunneling sent web traffic directly to the internet, the company's filtering and monitoring saw nothing. The malware only surfaced when it first touched a company server over the VPN.",
-      "moral": "Split tunnel trades visibility for performance. Know when that tradeoff is acceptable."
     }
   ],
   "d3-t18": [
@@ -551,7 +535,7 @@ const STORIES = {
       "moral": "Never put secrets in code. Scan for them automatically and prefer short-lived credentials."
     }
   ],
-  "d4-t19": [
+  "d4-t49": [
     {
       "title": "The Intern With Admin Rights",
       "kind": "scenario",
@@ -559,7 +543,7 @@ const STORIES = {
       "moral": "Copying one person's permissions invites privilege creep. Use roles."
     }
   ],
-  "d4-t20": [
+  "d4-t50": [
     {
       "title": "The Capture That Caught the Beacon",
       "kind": "scenario",
@@ -583,7 +567,7 @@ const STORIES = {
       "moral": "A published way to report vulnerabilities keeps researchers on your side."
     }
   ],
-  "d5-t11": [
+  "d5-t41": [
     {
       "title": "The Questionnaire That Stalled a Deal",
       "kind": "scenario",
@@ -725,6 +709,78 @@ const STORIES = {
       "kind": "scenario",
       "text": "Responding to a suspected intrusion, an eager admin rebooted the server 'to be safe.' The reboot erased the running processes and network connections that would have shown how the attacker got in, and the case could never be fully proven. The next playbook said: isolate, capture memory, and do not reboot.",
       "moral": "Volatile evidence disappears quickly. Capture it before touching anything."
+    }
+  ],
+  "d1-t6": [
+    {
+      "title": "The Breach Where Passwords Were Easy to Crack",
+      "kind": "scenario",
+      "text": "A small site stored passwords as plain unsalted hashes. After a leak, attackers matched common hashes against precomputed tables and recovered most passwords within hours, then reused them elsewhere. A unique salt per user and a slow hashing algorithm would have made each guess costly.",
+      "moral": "Hashing alone is not enough for passwords. Salt them and use a slow algorithm."
+    }
+  ],
+  "d1-t7": [
+    {
+      "title": "The Laptop That Stayed Locked",
+      "kind": "scenario",
+      "text": "A laptop was stolen from a car. Its disk was encrypted with a key sealed in the TPM, and it would not decrypt when moved to another machine. The incident became a hardware-loss ticket instead of a data breach.",
+      "moral": "Keys held in hardware are far harder to copy than keys held in files."
+    }
+  ],
+  "d2-t13": [
+    {
+      "title": "Dyn and the Internet-Wide Outage",
+      "kind": "real",
+      "text": "In October 2016 a large DDoS attack on DNS provider Dyn made many well-known websites hard to reach for hours. Reporting linked it to the Mirai botnet of infected IoT devices.",
+      "moral": "DDoS can hit a shared dependency and take down many services at once."
+    }
+  ],
+  "d3-t15": [
+    {
+      "title": "The Tunnel That Protected the Coffee Shop",
+      "kind": "scenario",
+      "text": "A consultant working from a cafe connected through the company VPN. Another customer on the same Wi-Fi was capturing traffic, but everything the consultant sent was inside an encrypted IPsec tunnel and unreadable.",
+      "moral": "A VPN protects traffic across networks you do not control."
+    }
+  ],
+  "d3-t16": [
+    {
+      "title": "The Template That Fixed Everything Once",
+      "kind": "scenario",
+      "text": "A team defined its network and servers in version-controlled templates. When a security group was found too open, they fixed it once in the template and redeployed, and every environment was corrected the same day. They also caught a leaked key in review before it shipped.",
+      "moral": "Infrastructure as code makes secure settings repeatable, but it can also repeat mistakes at scale, so review it like application code."
+    }
+  ],
+  "d4-t19": [
+    {
+      "title": "The Email From the CEO's Own Domain",
+      "kind": "scenario",
+      "text": "Fake invoices appeared to come from a company's real domain. The domain had no DMARC policy, so receivers had no instruction on what to do with forged mail. After publishing SPF and DKIM records and a DMARC policy set to reject, forged messages from the domain were dropped.",
+      "moral": "SPF, DKIM, and DMARC together tell the world which mail is genuinely yours."
+    }
+  ],
+  "d4-t20": [
+    {
+      "title": "The Poisoned Answer",
+      "kind": "scenario",
+      "text": "Customers reached a fake copy of a bank's website even though they typed the correct address, because a forged DNS answer had been cached by a resolver. A resolver that validated DNSSEC signatures would have rejected the forged record.",
+      "moral": "DNS answers can be forged. DNSSEC proves authenticity, and DNS filtering blocks known-bad destinations."
+    }
+  ],
+  "d5-t10": [
+    {
+      "title": "The Gap Nobody Had Listed",
+      "kind": "scenario",
+      "text": "A company said it followed a security framework but had never compared its actual controls against it. A gap analysis showed missing logging, no tested restores, and no vendor reviews. Each gap got an owner and a date, and the next audit was calm.",
+      "moral": "You cannot close gaps you have not measured."
+    }
+  ],
+  "d5-t11": [
+    {
+      "title": "The Three-Day Outage Nobody Planned For",
+      "kind": "scenario",
+      "text": "A distributor lost its order system for three days. A business impact analysis later showed the system could only be down for four hours before major customers left, so the recovery target had been wildly unrealistic. Recovery objectives were rewritten from the business impact outward.",
+      "moral": "RTO and RPO come from the business impact analysis, not from what is convenient for IT."
     }
   ]
 };

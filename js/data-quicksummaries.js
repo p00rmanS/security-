@@ -126,5 +126,11 @@ const QUICK_SUMMARIES = {
   "d2-t23": "Modern cybercrime is a service economy of access brokers, RaaS operators, and affiliates, and double extortion means backups alone do not remove the threat.",
   "d3-t21": "Match sanitization to the media: overwrite or degauss magnetic drives, crypto erase encrypted drives and SSDs, shred or pulverize for the highest assurance, and keep a certificate of destruction.",
   "d4-t23": "FAR measures wrongly accepted impostors, FRR wrongly rejected users, CER is the equal point where lower is better, smart cards and security keys are strong factors, and SMS and push approvals are weaker.",
-  "d4-t24": "Taps and SPAN copy traffic for sensors, flow data records metadata, secure web gateways and DNS filters block bad destinations, sinkholes reveal infected hosts, and allow lists deny by default."
+  "d4-t24": "Taps and SPAN copy traffic for sensors, flow data records metadata, secure web gateways and DNS filters block bad destinations, sinkholes reveal infected hosts, and allow lists deny by default.",
+  "d3-t22": "Inline devices such as firewalls and IPS can block, passive IDS sensors only observe, and a device that fails open keeps traffic flowing while one that fails closed blocks it.",
+  "d4-t25": "BYOD, COPE, and CYOD describe who owns the device, MDM enforces passcodes, encryption, and remote wipe, containerization separates work from personal data, and sideloading and jailbreaking are the main mobile risks.",
+  "d4-t26": "A SIEM collects, normalizes, correlates, and alerts on logs, NTP keeps timelines accurate, retention and integrity protect evidence, and tuning prevents alert fatigue.",
+  "d4-t27": "SAML passes signed XML assertions for enterprise SSO, OAuth 2.0 delegates limited access using tokens and scopes, and OpenID Connect adds authentication on top of OAuth with an ID token.",
+  "d4-t28": "CVSS rates technical severity, CVE names a flaw, EPSS estimates exploit likelihood, KEV lists flaws already exploited, and priority also depends on exposure and asset criticality.",
+  "d4-t29": "Collect evidence in order of volatility, image drives behind a write blocker, hash the original and the copy, keep a chain of custody, and honor legal holds so evidence stays admissible."
 };

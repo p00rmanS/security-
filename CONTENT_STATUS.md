@@ -747,3 +747,8 @@ New lessons by gap closed:
 - 5.x: Case Files (famous breaches); Frameworks, Standards and Regulations; Policies and Personnel Controls (dual control, mandatory vacation); Risk Registers, Ownership and Gap Analysis; Privacy Roles and Data Subject Rights
 
 Known remaining thin spots (honest list): only 2 practice questions per new lesson (older lessons have domain-level questions only); the 5 flagship lessons have no stories; no pass against the official CompTIA objective PDF was possible offline, so the audit is against the project rubric plus recalled SY0-701 objectives.
+
+## Latest pass
+
+6 more lessons (device placement and failure modes, MDM and deployment models, SIEM/log management, SAML/OAuth/OIDC, vulnerability prioritization with CVSS/EPSS/KEV, forensic acquisition) plus 12 questions. Totals: 100 domain topic lessons (+5 flagships), 112 lessons with stories overall, 238 questions. Automated checks: all data files parse, no duplicate ids, every question has a reason for each wrong choice, every lesson has Pro Tip, Quick Summary and story, no overflow at 375px, all 112 lesson routes and all main routes render with zero console errors, and a full 226-question quiz ran end to end.
+

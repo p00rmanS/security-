@@ -1,7 +1,7 @@
 # Security+ Learning Path
 
 An independent-study web app for CompTIA Security+ (SY0-701), built as plain
-separated HTML/CSS/JS — no framework, no build step, no emojis. Includes an
+separated HTML/CSS/JS â€” no framework, no build step, no emojis. Includes an
 A+/Network+ fundamentals refresher, Taglish explanations throughout, a
 100-day study plan generator, a global search (Ctrl/Cmd+K) across every
 lesson/glossary term/acronym/comparison, per-lesson bookmarks and notes, a
@@ -32,13 +32,13 @@ included so it can be previewed via the Claude Code browser tool with
 index.html            Single-page shell; hash-routed (#/dashboard, #/domain/d1, ...)
 css/style.css          Design system: typography, icons, motion, light/dark theme
 js/data-examfacts.js     Official exam snapshot (SY0-701 facts, domain weights)
-js/data-protips.js       One exam Pro Tip per lesson id (79 total)
-js/data-quicksummaries.js One-line "In One Breath" summary per lesson id (79 total)
+js/data-protips.js       One exam Pro Tip per lesson id (117 total)
+js/data-stories.js      "Story from the Field" narratives (true incidents + labeled scenarios) by lesson id`njs/data-quicksummaries.js One-line "In One Breath" summary per lesson id (117 total)
 js/data-cramsheet.js     Mnemonics + must-memorize facts for the Cram Sheet page
 js/data-fundamentals.js  A+/Network+ refresher content (12 topics)
-js/data-domains.js       5 SY0-701 domains: 67 full lessons (5 flagship + 62 topics)
+js/data-domains.js       5 SY0-701 domains: 105 full lessons (5 flagship + 100 topics)
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
-js/data-questions.js     162 original practice questions (150 domain + 12 fundamentals)
+js/data-questions.js     238 original practice questions (226 domain + 12 fundamentals)
 js/data-glossary.js      137 glossary terms
 js/data-acronyms.js      216 Security+ acronyms, expansion + plain-English meaning
 js/data-labs.js          10 hands-on labs (fictional data only)
@@ -50,9 +50,9 @@ Lessons can also be read one at a time in a distraction-free view at
 lesson card or a lesson result in global search (Ctrl/Cmd+K). That view
 supports Previous/Next buttons, left/right arrow keys, and a touch swipe
 gesture to move to the next or previous lesson in the full fundamentals
-→ domains sequence.
+â†’ domains sequence.
 
-Content is fully separate from rendering logic — editing lessons, questions,
+Content is fully separate from rendering logic â€” editing lessons, questions,
 glossary terms, or labs means editing the relevant `data-*.js` file only;
 `app.js` renders whatever is in those arrays.
 
@@ -62,14 +62,14 @@ Every data file is a plain JS array of objects assigned to a `const`. To add
 a question, copy an existing object in `data-questions.js` and give it a
 unique `id`. To add a glossary term, append to `GLOSSARY` in
 `data-glossary.js`. To add a lesson topic to a domain, append to that
-domain's `topics` array in `data-domains.js`. No build step is needed —
+domain's `topics` array in `data-domains.js`. No build step is needed â€”
 just save and reload.
 
 ## Progress storage
 
 All learner progress (completed lessons, quiz history, plan check-offs,
 notes, settings) is stored in the browser's `localStorage` under the key
-`secplus_progress_v1`, versioned for safe migration. Use Settings → Export
+`secplus_progress_v1`, versioned for safe migration. Use Settings â†’ Export
 Progress to back it up as a JSON file, and Import to restore it (or move it
 to another browser/device).
 

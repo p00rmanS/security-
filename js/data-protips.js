@@ -125,5 +125,11 @@ const PRO_TIPS = {
   "d2-t23": "If the scenario says backups restored everything but the attackers still threatened to leak data, that is double extortion. 'Sold credentials for access' = initial access broker.",
   "d3-t21": "SSD or encrypted drive and speed = crypto erase. Magnetic tape or HDD = degauss. 'Prove it was destroyed' = certificate of destruction.",
   "d4-t23": "'Impostor accepted' = FAR; 'valid user rejected' = FRR; 'compare two systems' = look at CER; 'chip card plus PIN' = smart card two-factor.",
-  "d4-t24": "'Physical device copying traffic' = tap; 'switch config copying traffic' = SPAN; 'metadata only' = flow; 'redirect bad domain lookups' = sinkhole; 'deny by default' = allow list."
+  "d4-t24": "'Physical device copying traffic' = tap; 'switch config copying traffic' = SPAN; 'metadata only' = flow; 'redirect bad domain lookups' = sinkhole; 'deny by default' = allow list.",
+  "d3-t22": "'Can block traffic' = inline (IPS/firewall). 'Only alerts, uses a mirror' = passive IDS. 'Availability matters most when it fails' = fail-open; 'security matters most' = fail-closed.",
+  "d4-t25": "'Employee-owned' = BYOD. 'Company-owned but allowed personal use' = COPE. 'Remove only company data' = selective wipe/containerization. 'Installing apps outside the store' = sideloading.",
+  "d4-t26": "'Common field format' = normalization. 'Link events from different sources' = correlation. 'Clocks must match' = NTP. 'Too many noisy alerts' = alert fatigue; the fix is tuning.",
+  "d4-t27": "'Authorization with scopes and tokens' = OAuth. 'Authentication with an ID token' = OpenID Connect. 'XML assertion for enterprise SSO' = SAML. OAuth by itself does not prove who the user is.",
+  "d4-t28": "'Known to be exploited in the wild' = KEV. 'Probability of exploitation' = EPSS. 'Standard flaw identifier' = CVE. When asked what to fix first, favor exploited, internet-facing, critical assets.",
+  "d4-t29": "'Most volatile first' = memory before disk. 'Prevents altering the original' = write blocker. 'Proves the copy is identical' = hash. 'Documents who handled it' = chain of custody."
 };

@@ -678,5 +678,53 @@ const STORIES = {
       "text": "After taking over a malware domain, defenders pointed it at a sinkhole. Within hours the logs listed every infected machine that tried to call home, including several inside a company that had no idea it was compromised.",
       "moral": "Sinkholes block communication and also provide a victim list."
     }
+  ],
+  "d3-t22": [
+    {
+      "title": "The Sensor That Became an Outage",
+      "kind": "scenario",
+      "text": "A company moved its IPS inline without a bypass. A software crash in the device took down the whole internet link for an hour. Afterward they deployed it in a redundant pair with a defined failure mode and health monitoring.",
+      "moral": "Inline security devices are also single points of failure. Decide the failure mode on purpose."
+    }
+  ],
+  "d4-t25": [
+    {
+      "title": "The Lost Phone at the Airport",
+      "kind": "scenario",
+      "text": "A sales manager left a BYOD phone in a taxi. Because MDM had enforced encryption and a passcode, IT locked the device remotely and selectively wiped the work container within minutes, leaving the manager's family photos intact and the company data protected.",
+      "moral": "MDM turns a lost device from a breach into a minor incident, and selective wipe respects personal data."
+    }
+  ],
+  "d4-t26": [
+    {
+      "title": "The Clocks That Disagreed",
+      "kind": "scenario",
+      "text": "An investigation stalled because the firewall clock was seven minutes ahead of the server clock, so events appeared to happen in the wrong order. After the incident, the team enforced NTP everywhere, and later timelines lined up exactly.",
+      "moral": "If timestamps are wrong, evidence becomes confusing. Synchronize time first."
+    }
+  ],
+  "d4-t27": [
+    {
+      "title": "The Valet Key",
+      "kind": "scenario",
+      "text": "A user wanted a budgeting app to read bank transactions. Instead of handing over a bank password, they approved a read-only OAuth scope. When they later revoked the app, its token stopped working, and the password never changed hands.",
+      "moral": "OAuth lets you grant limited access without sharing credentials, and revoke it later."
+    }
+  ],
+  "d4-t28": [
+    {
+      "title": "The Lower Score That Mattered",
+      "kind": "scenario",
+      "text": "A team patched in strict CVSS order and left a 7.5 flaw in a VPN appliance for last. Attackers were already exploiting it. After that week the team added exploitation data and exposure to its prioritization, so actively exploited internet-facing flaws jumped the queue.",
+      "moral": "Score alone is not risk. Exploitation and exposure change the order."
+    }
+  ],
+  "d4-t29": [
+    {
+      "title": "The Rebooted Server",
+      "kind": "scenario",
+      "text": "Responding to a suspected intrusion, an eager admin rebooted the server 'to be safe.' The reboot erased the running processes and network connections that would have shown how the attacker got in, and the case could never be fully proven. The next playbook said: isolate, capture memory, and do not reboot.",
+      "moral": "Volatile evidence disappears quickly. Capture it before touching anything."
+    }
   ]
 };

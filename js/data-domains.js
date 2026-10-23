@@ -3488,6 +3488,106 @@ const DOMAINS = [
           "Keep a certificate of destruction and honor legal holds before disposal."
         ],
         "taglish": "Overwrite — pinapalitan ang laman. Degauss — magnet para sa magnetic media, hindi gumagana sa SSD. Crypto erase — sinisira ang key kaya hindi na mabasa ang data. Shredding at pulverizing — pisikal na pagsira. Certificate of destruction — patunay na nawasak."
+      },
+      {
+        "id": "d3-t22",
+        "title": "Security Device Placement: Inline vs Passive, Fail-Open vs Fail-Closed",
+        "tag": "3.2",
+        "minutes": 14,
+        "goal": "Decide where to place firewalls, IDS, IPS, proxies, and sensors, and explain inline versus passive monitoring, fail-open versus fail-closed behavior, and active versus passive detection.",
+        "why": "The exam describes a design goal, such as blocking attacks without risking an outage, and asks where a device belongs and how it should behave on failure.",
+        "simple": "An inline device sits directly in the traffic path, so all traffic passes through it and it can block; a firewall and an intrusion prevention system (IPS) are typically inline. A passive device receives a copy of traffic, for example from a tap or SPAN port, and can only observe and alert; an intrusion detection system (IDS) is typically passive. Inline placement gives control but adds a possible point of failure and latency. Failure mode matters: fail-open means that when the device fails, traffic continues to flow unprotected, which preserves availability; fail-closed (fail-secure) means that when it fails, traffic is blocked, which preserves security. Choose fail-open when availability is the priority, such as life-safety systems, and fail-closed when security is the priority, such as a perimeter protecting sensitive data. A physical door lock has the same choice: fail-safe unlocks in a power loss so people can leave, fail-secure stays locked. Detection can be active (it takes action, as an IPS does) or passive (it only records, as an IDS does). Placement guidance: put firewalls at network boundaries and between zones, place a screened subnet (DMZ) for public-facing services, put web application firewalls and reverse proxies in front of web servers, place sensors where they can see important traffic such as at the internet edge, data center entrance, and critical segments, and use load balancers for high availability. Avoid single points of failure by deploying devices in redundant pairs, and monitor the health of security devices themselves.",
+        "keyTerms": [
+          {
+            "term": "Inline",
+            "def": "Placed directly in the traffic path, able to block."
+          },
+          {
+            "term": "Passive",
+            "def": "Receives a copy of traffic and can only observe."
+          },
+          {
+            "term": "Fail-Open",
+            "def": "On failure, traffic continues without protection."
+          },
+          {
+            "term": "Fail-Closed",
+            "def": "On failure, traffic is blocked."
+          },
+          {
+            "term": "IDS",
+            "def": "Detects and alerts; typically passive."
+          },
+          {
+            "term": "IPS",
+            "def": "Detects and blocks; typically inline."
+          }
+        ],
+        "analogy": "An inline device is a security guard standing in the doorway; everyone must pass. A passive device is a guard watching the doorway on camera. Fail-open is a door that unlocks in a power failure so no one is trapped. Fail-closed is a vault door that locks itself.",
+        "technical": "A hospital puts an IPS inline at the internet edge for blocking, but configures a bypass so a failure lets traffic pass (fail-open) because patient systems must stay reachable. A bank puts its payment gateway behind an inline firewall set to fail-closed so a failure stops transactions instead of exposing them. An IDS on a SPAN port monitors an internal network segment without any risk of causing an outage.",
+        "table": {
+          "headers": [
+            "Device",
+            "Placement",
+            "Behavior"
+          ],
+          "rows": [
+            [
+              "Firewall",
+              "Inline at boundaries",
+              "Blocks per rules"
+            ],
+            [
+              "IPS",
+              "Inline",
+              "Detects and blocks"
+            ],
+            [
+              "IDS",
+              "Passive (tap or SPAN)",
+              "Detects and alerts"
+            ],
+            [
+              "WAF / reverse proxy",
+              "In front of web servers",
+              "Filters web requests"
+            ],
+            [
+              "Fail-open",
+              "Failure mode",
+              "Keeps availability"
+            ],
+            [
+              "Fail-closed",
+              "Failure mode",
+              "Keeps security"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "IDS",
+            "b": "IPS",
+            "diff": "An IDS alerts and is usually passive. An IPS can block and is usually inline."
+          },
+          {
+            "a": "Fail-Open",
+            "b": "Fail-Closed",
+            "diff": "Fail-open favors availability. Fail-closed favors security."
+          },
+          {
+            "a": "Fail-Safe",
+            "b": "Fail-Secure",
+            "diff": "Fail-safe puts human safety first (doors unlock). Fail-secure keeps assets protected (doors stay locked)."
+          }
+        ],
+        "soc": "SOC teams must know whether an alert came from an inline or passive sensor, since a passive IDS alert means the traffic was not blocked and may need manual containment.",
+        "takeaways": [
+          "Inline devices can block but add risk; passive devices only observe.",
+          "Fail-open favors availability; fail-closed favors security.",
+          "IPS is inline and blocks; IDS is passive and alerts."
+        ],
+        "taglish": "Inline — nasa mismong daan ng traffic kaya nakaka-block. Passive — kopya lang ng traffic ang nakikita. Fail-open — kapag nasira, tuloy pa rin ang traffic (walang proteksyon). Fail-closed — kapag nasira, naka-block lahat. IDS — nag-aalarma. IPS — nagba-block."
       }
     ]
   },
@@ -4803,6 +4903,477 @@ const DOMAINS = [
           "Allow lists are stricter than block lists."
         ],
         "taglish": "Tap at SPAN — kumokopya ng traffic para sa monitoring. NetFlow — metadata lang, parang phone bill. Secure web gateway — nagfi-filter ng web traffic ng users. DNS sinkhole — inilalagay sa walang-panganib na address ang bad domain para ma-block at makita ang infected na device. Allow list — pinapayagan lang ang aprubado."
+      },
+      {
+        "id": "d4-t25",
+        "title": "Mobile Device Management and Deployment Models",
+        "tag": "4.1",
+        "minutes": 15,
+        "goal": "Explain BYOD, COPE, CYOD, and corporate-owned models, and the controls MDM provides: containerization, remote wipe, geofencing, app control, and enrollment, plus sideloading and rooting risks.",
+        "why": "Mobile devices carry corporate data everywhere, so the exam asks which deployment model and MDM control fits a scenario.",
+        "simple": "Deployment models differ in who owns the device. Bring your own device (BYOD) uses personal phones, which cuts cost but blurs privacy and control. Corporate-owned, personally enabled (COPE) gives employees company devices they may also use personally. Choose your own device (CYOD) lets employees pick from an approved list. Corporate-owned, business-only devices give the tightest control. Mobile device management (MDM) enforces policy: required passcodes and screen locks, device and storage encryption, minimum OS versions, approved apps, remote lock and remote wipe, location tracking or geofencing, and compliance checks that can block non-compliant devices from corporate resources. Mobile application management (MAM) controls just the business apps and data. Containerization separates business data from personal data on one device so that only the business container can be wiped or controlled. Unified endpoint management (UEM) extends this to laptops and other endpoints. Risks: sideloading installs apps from outside official stores and bypasses vetting; jailbreaking and rooting remove OS protections and should make a device non-compliant; unpatched OS versions; public Wi-Fi; lost or stolen devices; and malicious apps with excessive permissions. Policy points: acceptable use, privacy expectations, what the company can see or wipe, onboarding and offboarding procedures, and support responsibilities. On exit, a selective wipe removes only corporate data from a BYOD device.",
+        "keyTerms": [
+          {
+            "term": "BYOD",
+            "def": "Employees use their own personal devices."
+          },
+          {
+            "term": "COPE",
+            "def": "Corporate-owned, personally enabled devices."
+          },
+          {
+            "term": "CYOD",
+            "def": "Employees choose from an approved device list."
+          },
+          {
+            "term": "MDM",
+            "def": "Software enforcing security policy on mobile devices."
+          },
+          {
+            "term": "Containerization",
+            "def": "Separating business data from personal data on a device."
+          },
+          {
+            "term": "Sideloading",
+            "def": "Installing apps from outside the official store."
+          }
+        ],
+        "analogy": "BYOD is a guest bringing their own car to the company parking lot: the company can set parking rules but can't inspect the car. COPE is a company car you may also use on weekends. Containerization is a locked box in the trunk that only the company can open or destroy.",
+        "technical": "A company allows BYOD with MDM enrollment required for email. Policy forces a six-digit passcode, encryption, and OS updates, and blocks jailbroken devices. When an employee leaves, IT selectively wipes the corporate container, leaving personal photos untouched. When a phone is lost, remote lock is triggered and the full device is wiped only if it is corporate-owned.",
+        "table": {
+          "headers": [
+            "Model",
+            "Owner",
+            "Tradeoff"
+          ],
+          "rows": [
+            [
+              "BYOD",
+              "Employee",
+              "Low cost, less control, privacy concerns"
+            ],
+            [
+              "COPE",
+              "Company",
+              "More control, some personal use allowed"
+            ],
+            [
+              "CYOD",
+              "Company",
+              "Choice within approved list"
+            ],
+            [
+              "Corporate-owned, business only",
+              "Company",
+              "Tightest control"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "BYOD",
+            "b": "COPE",
+            "diff": "In BYOD the employee owns the device. In COPE the company owns it but allows personal use."
+          },
+          {
+            "a": "Selective Wipe",
+            "b": "Full Wipe",
+            "diff": "A selective wipe removes only corporate data. A full wipe resets the entire device."
+          },
+          {
+            "a": "MDM",
+            "b": "MAM",
+            "diff": "MDM manages the whole device. MAM manages only specific apps and their data."
+          }
+        ],
+        "soc": "SOC analysts check MDM compliance data when investigating a mobile incident, such as whether a device was jailbroken, running an old OS, or recently saw impossible-travel sign-ins.",
+        "takeaways": [
+          "BYOD = employee-owned; COPE = company-owned, personal use allowed; CYOD = choice from a list.",
+          "MDM enforces passcodes, encryption, app control, remote wipe, and compliance checks.",
+          "Containerization and selective wipe protect company data on personal devices; sideloading and jailbreaking are risks."
+        ],
+        "taglish": "BYOD — sarili mong device. COPE — kumpanya ang may-ari pero pwedeng personal na gamit. CYOD — pipili ka sa listahan. MDM — nagpapatupad ng patakaran sa mobile. Containerization — hiwalay ang laman ng trabaho at personal. Sideloading — pag-install ng app sa labas ng official store."
+      },
+      {
+        "id": "d4-t26",
+        "title": "Log Management and SIEM Operations: Collect, Normalize, Correlate, Retain",
+        "tag": "4.4",
+        "minutes": 15,
+        "goal": "Describe the log pipeline from collection through aggregation, normalization, correlation, alerting, and retention, and why time synchronization and integrity matter.",
+        "why": "Logs are only useful if they arrive, line up in time, and survive long enough. The exam asks how to make logging effective and trustworthy.",
+        "simple": "A security information and event management (SIEM) platform collects logs from many sources, aggregates them in one place, normalizes them into a common format so fields like source IP and username line up, correlates events across sources to spot patterns no single log shows, and raises alerts. Collection methods include agents, syslog forwarding, APIs, and flow collectors. Time synchronization with NTP is essential: if devices disagree about the time, events cannot be ordered, and an attacker's timeline becomes impossible to reconstruct. Log retention sets how long logs are kept, balancing investigation needs (attackers are often present for weeks or months), legal and compliance requirements, and storage cost; hot storage is fast and recent, cold storage is cheaper and slower. Integrity matters too: send logs to a central collector quickly, restrict who can modify or delete them, and use hashing or write-once storage so attackers cannot erase their tracks. Tuning matters: baselines and thresholds reduce false positives, while alert fatigue happens when analysts drown in noisy alerts and miss the real ones. Dashboards show trends and key metrics, and playbooks describe what to do for each alert type. Common mistakes: logging too little, logging everything without parsing, unsynchronized clocks, no retention policy, and nobody owning the alerts. User and entity behavior analytics (UEBA) adds statistical baselines to catch unusual behavior.",
+        "keyTerms": [
+          {
+            "term": "SIEM",
+            "def": "A platform that collects, normalizes, correlates, and alerts on security logs."
+          },
+          {
+            "term": "Normalization",
+            "def": "Converting logs into a common field format."
+          },
+          {
+            "term": "Correlation",
+            "def": "Linking events from different sources into one pattern."
+          },
+          {
+            "term": "NTP",
+            "def": "Network Time Protocol, used to synchronize clocks."
+          },
+          {
+            "term": "Log Retention",
+            "def": "How long logs are kept."
+          },
+          {
+            "term": "Alert Fatigue",
+            "def": "Analysts overwhelmed by noisy alerts."
+          }
+        ],
+        "analogy": "A SIEM is a detective's evidence board. Normalization is translating every witness statement into the same language, correlation is connecting the strings between photos, and NTP is making sure every witness's watch shows the same time.",
+        "technical": "A failed VPN login, a successful login from a new country twenty minutes later, and a large file download are each unremarkable alone. The SIEM normalizes the three log formats, correlates them by username, and raises a high-priority alert. During the investigation, the analyst relies on NTP-synchronized timestamps to order events, and finds enough retained history to see the first suspicious login three weeks earlier.",
+        "table": {
+          "headers": [
+            "Stage",
+            "What Happens",
+            "Why It Matters"
+          ],
+          "rows": [
+            [
+              "Collect",
+              "Gather logs from sources",
+              "Coverage"
+            ],
+            [
+              "Normalize",
+              "Common format",
+              "Fields line up"
+            ],
+            [
+              "Correlate",
+              "Link events",
+              "Finds multi-step attacks"
+            ],
+            [
+              "Alert",
+              "Notify on rules",
+              "Timely response"
+            ],
+            [
+              "Retain",
+              "Store for a set period",
+              "Investigations and compliance"
+            ],
+            [
+              "Protect",
+              "Integrity controls",
+              "Attackers can't erase logs"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Log Aggregation",
+            "b": "Correlation",
+            "diff": "Aggregation gathers logs in one place. Correlation connects events across them to find patterns."
+          },
+          {
+            "a": "False Positive",
+            "b": "False Negative",
+            "diff": "A false positive is an alert for harmless activity. A false negative is a real attack that was missed."
+          },
+          {
+            "a": "SIEM",
+            "b": "SOAR",
+            "diff": "SIEM collects and analyzes. SOAR automates response actions and workflows."
+          }
+        ],
+        "soc": "Analysts spend their day in the SIEM triaging alerts, tuning noisy rules, and building searches for hunting. Retention and time sync determine whether an investigation can be completed at all.",
+        "takeaways": [
+          "SIEM collects, normalizes, correlates, and alerts.",
+          "Synchronize clocks with NTP or the timeline falls apart.",
+          "Set retention and protect log integrity; tune alerts to avoid fatigue."
+        ],
+        "taglish": "SIEM — pinagsasama-sama ang logs. Normalization — pare-parehong format. Correlation — pinag-uugnay ang mga pangyayari mula sa iba't ibang source. NTP — iisang oras sa lahat ng device. Retention — gaano katagal itatago ang logs. Alert fatigue — sobrang daming alerto kaya nalalampasan ang totoo."
+      },
+      {
+        "id": "d4-t27",
+        "title": "Federation and SSO Protocols: SAML, OAuth, and OpenID Connect",
+        "tag": "4.6",
+        "minutes": 16,
+        "goal": "Tell SAML, OAuth 2.0, and OpenID Connect apart, and explain single sign-on, federation, identity providers, service providers, tokens, and scopes.",
+        "why": "These three names are easy to confuse. The exam asks which one handles authentication, which handles delegated authorization, and which fits enterprise web single sign-on.",
+        "simple": "Single sign-on (SSO) lets a user authenticate once and access many applications. Federation extends this across organizations: an identity provider (IdP) authenticates the user and vouches for them to a service provider (SP), the application, which trusts the IdP. SAML (Security Assertion Markup Language) is an XML-based standard that passes signed assertions from the IdP to the SP, and is widely used for enterprise web SSO. OAuth 2.0 is an authorization framework: it lets an application obtain limited access to a user's resources on another service through access tokens, without sharing the password; scopes define exactly what access is granted, such as read-only calendar. OAuth alone is not authentication. OpenID Connect (OIDC) adds an authentication layer on top of OAuth 2.0, providing an ID token (often a JSON Web Token) that tells the application who the user is. Related protocols: Kerberos for tickets inside a domain, LDAP for directory queries, RADIUS and TACACS+ for network access and device administration. Security points: validate tokens and signatures, use short-lived tokens, protect against token theft, require MFA at the IdP, restrict which apps can request consent, and log federation sign-ins. Benefits of SSO include fewer passwords, central policy, and fast deprovisioning, while the risk is that compromising the IdP or one session can expose many applications, so it deserves the strongest protection.",
+        "keyTerms": [
+          {
+            "term": "SSO",
+            "def": "Authenticate once to reach many applications."
+          },
+          {
+            "term": "Identity Provider",
+            "def": "The system that authenticates users and vouches for them."
+          },
+          {
+            "term": "Service Provider",
+            "def": "The application that trusts the identity provider."
+          },
+          {
+            "term": "SAML",
+            "def": "XML-based standard for exchanging signed authentication assertions."
+          },
+          {
+            "term": "OAuth 2.0",
+            "def": "A framework for delegated authorization using tokens and scopes."
+          },
+          {
+            "term": "OpenID Connect",
+            "def": "An authentication layer on top of OAuth 2.0 that issues an ID token."
+          }
+        ],
+        "analogy": "SAML is a notarized letter from the company saying 'this person is who they claim.' OAuth is a valet key that lets the parking attendant move the car but not open the trunk. OpenID Connect is the valet key plus a name badge that says who is driving.",
+        "technical": "An employee opens a cloud HR app, is redirected to the company IdP, signs in with MFA, and returns with a signed SAML assertion that the HR app accepts: federated SSO. A calendar app asks to read the user's contacts; the user approves a read-only scope and the app receives an OAuth access token without ever seeing the password. A mobile app uses OpenID Connect so users can sign in with an existing identity and the app receives an ID token containing their identity claims.",
+        "table": {
+          "headers": [
+            "Protocol",
+            "Purpose",
+            "Format / Token"
+          ],
+          "rows": [
+            [
+              "SAML",
+              "Enterprise web SSO (authentication)",
+              "XML assertion"
+            ],
+            [
+              "OAuth 2.0",
+              "Delegated authorization",
+              "Access token with scopes"
+            ],
+            [
+              "OpenID Connect",
+              "Authentication on top of OAuth",
+              "ID token (often JWT)"
+            ],
+            [
+              "Kerberos",
+              "Domain ticket-based authentication",
+              "Tickets"
+            ],
+            [
+              "LDAP",
+              "Directory queries",
+              "Directory protocol"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "OAuth",
+            "b": "OpenID Connect",
+            "diff": "OAuth grants access to resources. OIDC adds proof of who the user is."
+          },
+          {
+            "a": "SAML",
+            "b": "OAuth",
+            "diff": "SAML is mainly for authentication in enterprise SSO using XML. OAuth is for authorization using tokens."
+          },
+          {
+            "a": "Authentication",
+            "b": "Authorization",
+            "diff": "Authentication proves who you are. Authorization decides what you may do."
+          }
+        ],
+        "soc": "Analysts review federation sign-in logs, token anomalies, and consent grants. An attacker who steals a session token can bypass MFA, so token lifetime and revocation matter.",
+        "takeaways": [
+          "SAML = XML SSO assertions; OAuth = delegated authorization with scopes; OIDC = authentication on top of OAuth.",
+          "The IdP authenticates; the SP trusts it.",
+          "SSO is convenient but makes the IdP a high-value target requiring MFA and monitoring."
+        ],
+        "taglish": "SSO — isang login para sa maraming app. IdP — nagpapatunay kung sino ka. SP — ang app na nagtitiwala sa IdP. SAML — XML na patunay para sa enterprise SSO. OAuth — pahintulot para sa limitadong access gamit ang token. OpenID Connect — OAuth na may dagdag na patunay ng pagkakakilanlan."
+      },
+      {
+        "id": "d4-t28",
+        "title": "Vulnerability Prioritization: CVSS Bands, EPSS, KEV, and Business Context",
+        "tag": "4.3",
+        "minutes": 14,
+        "goal": "Prioritize vulnerabilities using CVSS severity bands, exploit likelihood (EPSS), known-exploited lists (KEV), exposure, and asset criticality, and explain compensating controls and exceptions.",
+        "why": "Real teams cannot patch everything at once. The exam asks which vulnerability to fix first and why.",
+        "simple": "The Common Vulnerability Scoring System (CVSS) rates technical severity from 0.0 to 10.0: roughly 0.1 to 3.9 is low, 4.0 to 6.9 medium, 7.0 to 8.9 high, and 9.0 to 10.0 critical. CVSS measures severity, not risk to your specific business, so teams adjust using context. The Exploit Prediction Scoring System (EPSS) estimates the probability that a vulnerability will be exploited in the near future, and a catalog of known exploited vulnerabilities (KEV), maintained by CISA, lists flaws that attackers are actively using; a lower-scored flaw on that list can outrank a higher-scored one that nobody exploits. Other context: is the system internet-facing, how critical is the asset and the data on it, is there a public exploit, is the vulnerable component reachable, and do existing controls such as segmentation or a WAF reduce exposure? Common Vulnerabilities and Exposures (CVE) gives each flaw a standard identifier. A false positive is a reported finding that is not real; validate before spending effort. Remediation options: patch, change configuration, upgrade, or apply a compensating control or virtual patch when patching is not possible. Exceptions should be documented, approved, time-limited, and reviewed. After fixing, rescan to confirm. Reporting should show trends and time to remediate, with service-level targets such as critical internet-facing flaws within days.",
+        "keyTerms": [
+          {
+            "term": "CVSS",
+            "def": "A 0 to 10 score of a vulnerability's technical severity."
+          },
+          {
+            "term": "CVE",
+            "def": "A standard identifier for a publicly known vulnerability."
+          },
+          {
+            "term": "EPSS",
+            "def": "An estimate of the likelihood a vulnerability will be exploited."
+          },
+          {
+            "term": "KEV",
+            "def": "A catalog of vulnerabilities known to be exploited in the wild."
+          },
+          {
+            "term": "Compensating Control",
+            "def": "An alternative safeguard when the primary fix is not possible."
+          },
+          {
+            "term": "Virtual Patching",
+            "def": "Blocking exploitation with a control such as a WAF without changing the vulnerable code."
+          }
+        ],
+        "analogy": "CVSS is how severe the storm forecast says a hurricane is in general. EPSS is the chance it will hit your coast. KEV is the list of cities it has already hit. Your own context is whether you live on the beach or inland.",
+        "technical": "Two findings appear: a CVSS 9.8 flaw on an isolated lab server with no exposure, and a CVSS 7.5 flaw on an internet-facing VPN appliance listed in KEV. The team fixes the VPN flaw first, adds the lab server to the normal patch cycle, rescans to confirm, and documents a time-limited exception for a legacy system with a compensating control.",
+        "table": {
+          "headers": [
+            "Input",
+            "What It Tells You"
+          ],
+          "rows": [
+            [
+              "CVSS",
+              "Technical severity"
+            ],
+            [
+              "EPSS",
+              "Likelihood of exploitation"
+            ],
+            [
+              "KEV",
+              "Already exploited in the wild"
+            ],
+            [
+              "Exposure",
+              "Internet-facing or internal"
+            ],
+            [
+              "Asset criticality",
+              "Business impact if exploited"
+            ],
+            [
+              "Compensating control",
+              "Reduces risk if no patch"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "CVSS",
+            "b": "Risk",
+            "diff": "CVSS is technical severity. Risk also depends on exposure, exploitability, and business impact."
+          },
+          {
+            "a": "CVE",
+            "b": "CVSS",
+            "diff": "A CVE identifies a flaw. CVSS scores its severity."
+          },
+          {
+            "a": "False Positive",
+            "b": "False Negative",
+            "diff": "A false positive is a finding that is not real. A false negative is a real flaw the scan missed."
+          }
+        ],
+        "soc": "The SOC and vulnerability team agree on service-level targets, validate scanner findings, and use threat intelligence to move actively exploited flaws to the top of the queue.",
+        "takeaways": [
+          "CVSS 9.0 to 10.0 is critical, but context decides priority.",
+          "EPSS predicts exploitation likelihood; KEV lists vulnerabilities already exploited.",
+          "Use patches, compensating controls, or documented time-limited exceptions, then rescan to verify."
+        ],
+        "taglish": "CVSS — iskor ng bigat ng kahinaan, 0 hanggang 10. CVE — ID ng kahinaan. EPSS — tsansa na maaabuso ito. KEV — listahan ng mga kahinaang aktibong inaabuso na. Context — kung internet-facing at gaano kahalaga ang asset ang magpapasya ng priority."
+      },
+      {
+        "id": "d4-t29",
+        "title": "Forensic Acquisition: Imaging, Write Blockers, Memory Capture, and Admissibility",
+        "tag": "4.8",
+        "minutes": 16,
+        "goal": "Walk through forensic acquisition — order of volatility, write blockers, bit-for-bit imaging, hashing, memory capture, chain of custody, legal hold, and what makes evidence admissible.",
+        "why": "The Digital Forensics lesson introduces the topic; this lesson drills the specific steps and tools the exam asks about.",
+        "simple": "Forensics preserves and analyzes evidence so that it is trustworthy. Collect evidence in order of volatility, from most to least short-lived: CPU registers and cache, RAM and running processes, network connections and routing tables, temporary files and swap, disk contents, remote logs and monitoring data, and archival media. Capturing memory first matters because it contains running processes, keys, and connections that vanish on power-off. For disks, create a bit-for-bit forensic image of the entire drive, including deleted and unallocated space, using a write blocker so the original cannot be changed, then work on the copy. Hash the original and the copy (for example SHA-256) and compare: matching hashes prove the copy is exact and that nothing changed later. Document everything with a chain of custody: who collected the evidence, when, where it was stored, and every transfer; gaps weaken or destroy its value in court. A legal hold tells the organization to preserve relevant data and suspends normal deletion; e-discovery is finding and producing electronic evidence for legal proceedings. Preserve logs, take screenshots or photographs of the scene, label and seal evidence, and store it securely. Provenance records where data came from. Analysis uses tools such as disk analysis suites and memory analyzers to build a timeline, and reporting should state findings, methods, and limitations clearly. Avoid altering the system: do not browse files on the live machine, and decide carefully between shutting down (loses memory) and isolating the machine from the network while it stays on.",
+        "keyTerms": [
+          {
+            "term": "Order of Volatility",
+            "def": "Collecting the most short-lived evidence first."
+          },
+          {
+            "term": "Write Blocker",
+            "def": "A device or software preventing changes to evidence media."
+          },
+          {
+            "term": "Forensic Image",
+            "def": "A bit-for-bit copy of storage, including deleted space."
+          },
+          {
+            "term": "Chain of Custody",
+            "def": "A record of who handled evidence, when, and where."
+          },
+          {
+            "term": "Legal Hold",
+            "def": "A directive to preserve data relevant to a legal matter."
+          },
+          {
+            "term": "Hash Verification",
+            "def": "Comparing hashes to prove a copy matches the original."
+          }
+        ],
+        "analogy": "Forensics is a crime-scene investigation for computers. You photograph the room before moving anything, bag evidence in sealed labeled bags, sign every handoff, and examine copies, never the original.",
+        "technical": "An analyst isolates a suspected laptop from the network but leaves it powered on, captures its memory first, then removes the drive and connects it to a write blocker to create a forensic image. They hash both, record the hashes, label the evidence bag, and log each transfer. Months later, when the case goes to court, the chain of custody and matching hashes support admissibility.",
+        "table": {
+          "headers": [
+            "Step",
+            "Purpose"
+          ],
+          "rows": [
+            [
+              "Isolate and document",
+              "Stop spread, record the scene"
+            ],
+            [
+              "Capture memory",
+              "Preserve volatile evidence"
+            ],
+            [
+              "Write blocker + image",
+              "Copy without changing original"
+            ],
+            [
+              "Hash original and copy",
+              "Prove integrity"
+            ],
+            [
+              "Chain of custody",
+              "Prove handling"
+            ],
+            [
+              "Analyze the copy",
+              "Build a timeline"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Chain of Custody",
+            "b": "Hash",
+            "diff": "Chain of custody documents handling over time. A hash proves the data itself has not changed."
+          },
+          {
+            "a": "Legal Hold",
+            "b": "Retention Policy",
+            "diff": "A legal hold overrides normal deletion for relevant data. Retention policy sets routine keep and delete schedules."
+          },
+          {
+            "a": "Imaging",
+            "b": "Copying Files",
+            "diff": "A forensic image captures everything on the drive, including deleted data. Copying files only captures visible files."
+          }
+        ],
+        "soc": "Often the SOC performs initial triage and containment, then hands the case to forensics. Good early handling, such as not rebooting a host and recording who touched it, determines whether evidence can be used.",
+        "takeaways": [
+          "Collect by order of volatility: memory before disk.",
+          "Image with a write blocker, hash the original and the copy, and analyze the copy.",
+          "Chain of custody and legal holds protect admissibility."
+        ],
+        "taglish": "Order of volatility — kunin muna ang pinakamabilis mawala (memory). Write blocker — pumipigil na mabago ang original. Forensic image — eksaktong kopya, kasama ang deleted space. Hash — patunay na pareho ang kopya. Chain of custody — talaan kung sino ang humawak. Legal hold — bawal burahin ang data na kailangan sa kaso."
       }
     ]
   },
@@ -5149,7 +5720,7 @@ const DOMAINS = [
       {
         "id": "d5-t10",
         "title": "Case Files: Famous Breaches and What They Teach",
-        "tag": "5.x",
+        "tag": "5.4",
         "minutes": 18,
         "goal": "Use well-known public breaches as memory anchors, linking each to the control failure and the exam concept it illustrates.",
         "why": "Stories stick where definitions don't. Linking a concept to an incident gives you a second path to the answer on exam day. This lesson is a casebook.",

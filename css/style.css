@@ -515,6 +515,8 @@ p { color: var(--text-secondary); margin: 0 0 14px; }
 }
 .l-label .l-num { color: var(--accent-strong); }
 .l-section > p { font-size: 17px; line-height: 1.7; color: var(--text-primary); }
+.l-section h3 { font-size: 18px; margin: 22px 0 6px; }
+.l-section h3:first-child { margin-top: 4px; }
 .l-section ul { padding-left: 22px; margin: 0 0 12px; }
 .l-section li { margin-bottom: 6px; color: var(--text-primary); font-size: 16.5px; line-height: 1.6; }
 

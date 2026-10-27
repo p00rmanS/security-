@@ -710,6 +710,14 @@
     );
   }
 
+  function deepDiveHtml(blocks) {
+    return blocks.map((b) => (
+      "<h3>" + escapeHtml(b.h) + "</h3>" +
+      (b.p ? "<p>" + escapeHtml(b.p) + "</p>" : "") +
+      (b.list ? "<ul>" + b.list.map((x) => "<li>" + escapeHtml(x) + "</li>").join("") + "</ul>" : "")
+    )).join("");
+  }
+
   function lessonBodyBlocks(kind, lesson) {
     let n = 0;
     let html = "";
@@ -719,6 +727,7 @@
       "<p><b>Goal.</b> " + escapeHtml(lesson.goal) + "</p>" +
       (lesson.why ? "<p><b>Why it matters.</b> " + escapeHtml(lesson.why) + "</p>" : ""));
     add("The explanation", "<p>" + escapeHtml(lesson.simple) + "</p>");
+    if (lesson.deepDive && lesson.deepDive.length) add("Going deeper", deepDiveHtml(lesson.deepDive));
     if (lesson.keyTerms && lesson.keyTerms.length) add("Key terms", keyTermsList(lesson.keyTerms));
     if (lesson.analogy && sectionVisible("analogy")) add("Analogy", '<div class="analogy-box">' + escapeHtml(lesson.analogy) + "</div>");
     if (lesson.technical && sectionVisible("technical")) add("Technical example", "<p>" + escapeHtml(lesson.technical) + "</p>");
@@ -728,6 +737,10 @@
         lesson.confusion.map((c) => '<div class="confusion-item"><b>' + escapeHtml(c.a) + "</b> vs <b>" + escapeHtml(c.b) + "</b><br>" + escapeHtml(c.diff) + "</div>").join(""));
     }
     if (lesson.soc && sectionVisible("soc")) add("On the job: SOC analyst", "<p>" + escapeHtml(lesson.soc) + "</p>");
+
+    if (lesson.patterns && lesson.patterns.length) {
+      add("Exam patterns: clue to answer", tableBlock({ headers: ["If the question says...", "Think..."], rows: lesson.patterns }));
+    }
 
     const items = lessonRemember(lesson);
     if (items.length) {
@@ -1389,7 +1402,7 @@
           ev.preventDefault();
           if (revealed) return;
           selectChoice(q, c.id);
-          render();
+          render({ keepScroll: true });
         });
       }
       choicesWrap.appendChild(row);
@@ -1409,7 +1422,7 @@
       checkBtn.disabled = selected.length === 0;
       checkBtn.addEventListener("click", () => {
         gradeCurrentAnswer(q);
-        render();
+        render({ keepScroll: true });
       });
     }
 
@@ -1417,7 +1430,7 @@
       if (state.flaggedQuestions[q.id]) delete state.flaggedQuestions[q.id];
       else state.flaggedQuestions[q.id] = true;
       saveState();
-      render();
+      render({ keepScroll: true });
     });
 
     wrap.querySelector("#qz-next").addEventListener("click", () => {
@@ -1431,7 +1444,9 @@
     });
 
     if (activeQuiz.secondsLeft !== null && !activeQuiz.timerHandle) {
-      activeQuiz.timerHandle = setInterval(() => {
+      const quizRef = activeQuiz;
+      quizRef.timerHandle = setInterval(() => {
+        if (activeQuiz !== quizRef) { clearInterval(quizRef.timerHandle); return; }
         activeQuiz.secondsLeft--;
         const disp = document.getElementById("qz-timer-display");
         if (disp) disp.textContent = formatTime(activeQuiz.secondsLeft);
@@ -1655,7 +1670,7 @@
         row.addEventListener("click", () => {
           progress.tasksCorrect[task.id] = c.id === task.correct;
           saveState();
-          render();
+          render({ keepScroll: true });
         });
       }
       choicesWrap.appendChild(row);
@@ -1940,9 +1955,9 @@
       '<label class="switch"><input type="checkbox" id="plan-skip-weekends"' + (plan.skipWeekends ? " checked" : "") + '><span class="switch-track"></span></label></div>' +
       "</div></div>" +
       '<div class="card-grid">' +
-      statCard("calendar", "Day " + currentDay + " / 100", "Current recommended day") +
-      statCard("checkCircle", checkedCount, "Days checked off") +
-      statCard("target", Math.round((checkedCount / 100) * 100) + "%", "Plan completion") +
+      statCard("Day " + currentDay + " / 100", "Current recommended day") +
+      statCard(checkedCount, "Days checked off") +
+      statCard(checkedCount + "%", "Plan completion") +
       "</div>" +
       '<div class="card" style="padding:0;"><div id="plan-list"></div></div>';
 
@@ -1957,11 +1972,15 @@
           '<input type="checkbox" data-plan-day="' + d.day + '"' + (checked ? " checked" : "") + ">" +
           '<span class="plan-day-num">Day ' + d.day + "</span>" +
           '<span class="plan-day-phase">' + escapeHtml(d.phase) + "</span>" +
-          '<span class="plan-day-topic">' + escapeHtml(d.title) + "</span>" +
+          '<span class="plan-day-topic">' + escapeHtml(d.title) +
+          (d.lessonIds && d.lessonIds.length ? ' <button class="link-btn" data-plan-open="' + d.lessonIds[0] + '">Open lesson</button>' : "") + "</span>" +
           '<span class="plan-day-date">' + dateStr + "</span>" +
           "</div>"
         );
       }).join("");
+      listWrap.querySelectorAll("[data-plan-open]").forEach((b) => {
+        b.addEventListener("click", () => navigate("lesson", b.getAttribute("data-plan-open")));
+      });
       listWrap.querySelectorAll("[data-plan-day]").forEach((cb) => {
         cb.addEventListener("change", () => {
           const dayNum = cb.getAttribute("data-plan-day");

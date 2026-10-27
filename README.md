@@ -40,6 +40,9 @@ js/data-fundamentals.js  A+/Network+ refresher content (12 topics)
 js/data-domains.js       5 SY0-701 domains: original 67 lessons (5 flagship + 62 topics)
 js/data-lessons-extra.js 9 more lessons + their tips, summaries, questions, glossary and acronyms,
                          merged into the globals above (76 domain lessons + 12 refresher = 88)
+js/data-lessons-deep-a.js, -b.js  11 in-depth lessons ("Going deeper" + "Exam patterns" sections)
+                         and their questions/glossary/acronyms; final total: 99 lessons, 200 questions,
+                         177 glossary terms, 253 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     162 original practice questions (178 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)

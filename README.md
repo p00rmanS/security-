@@ -34,17 +34,18 @@ index.html            Single-page shell; hash-routed (#/dashboard, #/domain/d1, 
 css/style.css          Design system: typography, icons, motion, light/dark theme
 js/data-examfacts.js     Official exam snapshot (SY0-701 facts, domain weights)
 js/data-protips.js       One exam Pro Tip per lesson id
+js/data-stories.js      "Story from the Field" narratives (true incidents + labeled scenarios) per lesson id
 js/data-quicksummaries.js One-line "In One Breath" summary per lesson id
 js/data-cramsheet.js     Mnemonics + must-memorize facts for the Cram Sheet page
 js/data-fundamentals.js  A+/Network+ refresher content (12 topics)
-js/data-domains.js       5 SY0-701 domains: original 67 lessons (5 flagship + 62 topics)
+js/data-domains.js       5 SY0-701 domains: 5 flagship lessons + topic lessons (see data-lessons-extra.js line below for totals)
 js/data-lessons-extra.js 9 more lessons + their tips, summaries, questions, glossary and acronyms,
-                         merged into the globals above (76 domain lessons + 12 refresher = 88)
+                         merged into the globals above
 js/data-lessons-deep-a.js, -b.js  11 in-depth lessons ("Going deeper" + "Exam patterns" sections)
-                         and their questions/glossary/acronyms; final total: 99 lessons, 200 questions,
-                         177 glossary terms, 253 acronyms
+js/data-stories.js       "Story from the Field" scenarios
+Totals with every file loaded: 135 lessons, 272 questions, 177 glossary terms, 253 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
-js/data-questions.js     162 original practice questions (178 total with data-lessons-extra.js)
+js/data-questions.js     226 domain + 12 refresher practice questions (250 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)
 js/data-acronyms.js      216 Security+ acronyms (223 with extras)
 js/data-labs.js          10 hands-on labs (fictional data only)

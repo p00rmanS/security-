@@ -731,6 +731,11 @@
     if (lesson.keyTerms && lesson.keyTerms.length) add("Key terms", keyTermsList(lesson.keyTerms));
     if (lesson.analogy && sectionVisible("analogy")) add("Analogy", '<div class="analogy-box">' + escapeHtml(lesson.analogy) + "</div>");
     if (lesson.technical && sectionVisible("technical")) add("Technical example", "<p>" + escapeHtml(lesson.technical) + "</p>");
+    (STORIES[lesson.id] || []).forEach((st) => {
+      add("Story from the field",
+        '<div class="story-box"><div class="story-head"><b>' + escapeHtml(st.title) + '</b><span class="story-kind story-' + (st.kind === "real" ? "real" : "scenario") + '">' +
+        (st.kind === "real" ? "True story" : "Scenario") + "</span></div><p>" + escapeHtml(st.text) + '</p><p class="story-moral"><b>Lesson:</b> ' + escapeHtml(st.moral) + "</p></div>");
+    });
     if (lesson.table) add("At a glance", tableBlock(lesson.table));
     if (lesson.confusion && lesson.confusion.length && sectionVisible("confusion")) {
       add("Exam traps: easily confused",

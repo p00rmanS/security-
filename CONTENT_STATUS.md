@@ -730,3 +730,25 @@ table correctly both in the focused reader and in their domain page's
 accordion view; and confirmed the Dashboard's lesson-completion
 denominator and the Cram Sheet's Pro Tip count both auto-updated from 73
 to 79 with no code change, since both are computed from the data.
+
+## Stories from the Field (latest pass)
+
+Added js/data-stories.js: 80+ short stories (true public incidents and clearly labeled invented scenarios) attached by lesson id and rendered as a 'Story from the Field' section on every fundamentals topic and domain topic lesson. Also added 5 lessons (phishing variants, credential attacks, malware families, hardware roots of trust, famous-breach case files), each with a Pro Tip and Quick Summary. Domain topic lessons: 62 -> 67. Real incidents are summarized from public reporting and simplified.
+
+## Rubric coverage pass (objective-by-objective audit)
+
+Audited every bullet in sections 1.1-5.6 of SECURITY_PLUS_COURSERA_PROJECT.md by keyword against lesson, glossary, comparison and lab content, then added 27 lessons for gaps. Domain topic lessons: 62 -> 94 (plus 5 flagships and 12 fundamentals). Every new lesson has the full lesson format, a Pro Tip, a Quick Summary, a story, and 2 tagged practice questions (question bank 162 -> 226, all with a reason for every wrong choice).
+
+New lessons by gap closed:
+- 1.2/1.4: Deception and Disruption (fake telemetry, honeytokens); Cryptographic Algorithms and Key Exchange (AES, ECC, DH, PFS, HMAC); Advanced Cryptography (modes, OCSP stapling, split knowledge, quantum); Physical Detection (sensors, cameras, Faraday)
+- 2.1-2.4: Phishing Variants; Credential Attacks (pass-the-hash); Malware Families (logic bomb, fileless, wiper); DoS/DDoS and Infrastructure Attacks; Proximity and Physical-Device Attacks (RFID, NFC, Bluetooth, USB); Web Application Attacks in Depth; Disinformation; Social Engineering Tactics Catalog (SIM swap, consent phishing); Memory and Logic Flaws (IDOR, use-after-free); Post-Exploitation (persistence, C2, exfiltration); Cybercrime Economy (RaaS)
+- 3.1-3.4: Hardware Roots of Trust (TPM/HSM); Data Types, Sovereignty, Residency; VPNs, IPsec and Secure Protocol Internals; Redundancy in Practice (RAID, active-active); Cloud-Native and DevSecOps; Secure Data Disposal
+- 4.x: Access Control Models (MAC/DAC/RBAC/ABAC); Security Tools (Nmap, Wireshark); Wireless Details (site survey, captive portal, WEP); Application Testing and Disclosure (SAST/DAST, bug bounty); Biometrics and Authentication Metrics (FAR/FRR/CER); Network Visibility and Filtering (taps, SPAN, SWG, sinkhole)
+- 5.x: Case Files (famous breaches); Frameworks, Standards and Regulations; Policies and Personnel Controls (dual control, mandatory vacation); Risk Registers, Ownership and Gap Analysis; Privacy Roles and Data Subject Rights
+
+Known remaining thin spots (honest list): only 2 practice questions per new lesson (older lessons have domain-level questions only); the 5 flagship lessons have no stories; no pass against the official CompTIA objective PDF was possible offline, so the audit is against the project rubric plus recalled SY0-701 objectives.
+
+## Latest pass
+
+6 more lessons (device placement and failure modes, MDM and deployment models, SIEM/log management, SAML/OAuth/OIDC, vulnerability prioritization with CVSS/EPSS/KEV, forensic acquisition) plus 12 questions. Totals: 100 domain topic lessons (+5 flagships), 112 lessons with stories overall, 238 questions. Automated checks: all data files parse, no duplicate ids, every question has a reason for each wrong choice, every lesson has Pro Tip, Quick Summary and story, no overflow at 375px, all 112 lesson routes and all main routes render with zero console errors, and a full 226-question quiz ran end to end.
+

@@ -10,7 +10,7 @@
   lessons: {
     d1: [
       {
-        id: "d1-t8",
+        id: "d1-t108",
         title: "Encryption in Depth: Symmetric, Asymmetric, Modes, and Key Exchange",
         tag: "1.4",
         minutes: 22,
@@ -98,7 +98,7 @@
 
     d2: [
       {
-        id: "d2-t14",
+        id: "d2-t114",
         title: "Malware in Depth: Types, Persistence, and Response",
         tag: "2.4",
         minutes: 22,
@@ -203,7 +203,7 @@
           "Hatiin natin ayon sa kilos. Ang virus, kailangan ng host file at ng user na magbubukas. Ang worm, kusang kumakalat sa network, walang kailangang i-click. Ang trojan, nagpapanggap na kapaki-pakinabang. Ang rootkit, nagtatago, kaya malinis daw ang scan pero may mali. Ang logic bomb, naghihintay ng kondisyon (petsa, o kapag tinanggal ang account ng empleyado). Ang fileless malware, nasa memory lang at gumagamit ng PowerShell, kaya hindi nahuhuli ng simpleng antivirus. Kapag may infection: i-isolate muna ang host, kunin ang memory, tapos hanapin kung saan pa kumalat. At para sa ransomware, ang pinakamabisa ay offline na backup."
       },
       {
-        id: "d2-t15",
+        id: "d2-t115",
         title: "Credential Attacks: Brute Force, Spraying, Stuffing, and Pass-the-Hash",
         tag: "2.4",
         minutes: 20,
@@ -385,22 +385,22 @@
   },
 
   tips: {
-    "d1-t8": "Match the key to the job: 'one shared key' or 'bulk data' = symmetric (AES). 'Key pair', 'signature', 'certificate' = asymmetric. If a question says encryption should also detect tampering, the mode is GCM, and if it says patterns in identical blocks are visible, the weakness is ECB.",
-    "d2-t14": "Read the spread and the hide: spreads alone = worm, needs a click = virus or trojan, hides from tools = rootkit, waits for a trigger = logic bomb, nothing on disk = fileless. Then pick the response: isolate first, rebuild if it is a rootkit or firmware.",
-    "d2-t15": "Count accounts and passwords: one account, many passwords = brute force. Many accounts, one password = spraying. Real leaked pairs = stuffing. If the attacker never learns the password, think pass-the-hash. MFA is almost always the best single answer.",
+    "d1-t108": "Match the key to the job: 'one shared key' or 'bulk data' = symmetric (AES). 'Key pair', 'signature', 'certificate' = asymmetric. If a question says encryption should also detect tampering, the mode is GCM, and if it says patterns in identical blocks are visible, the weakness is ECB.",
+    "d2-t114": "Read the spread and the hide: spreads alone = worm, needs a click = virus or trojan, hides from tools = rootkit, waits for a trigger = logic bomb, nothing on disk = fileless. Then pick the response: isolate first, rebuild if it is a rootkit or firmware.",
+    "d2-t115": "Count accounts and passwords: one account, many passwords = brute force. Many accounts, one password = spraying. Real leaked pairs = stuffing. If the attacker never learns the password, think pass-the-hash. MFA is almost always the best single answer.",
     "d3-t17": "Memorize attack-to-feature pairs: rogue DHCP = DHCP snooping, forged ARP = DAI, MAC flood = port security, rogue switch = BPDU Guard, 'must authenticate before the port works' = 802.1X with RADIUS."
   },
 
   summaries: {
-    "d1-t8": "Symmetric encryption is fast and protects data, asymmetric encryption solves key exchange and signing, real protocols like TLS combine them, and ephemeral key exchange gives forward secrecy.",
-    "d2-t14": "Malware is best sorted by behavior: how it spreads, how it hides, how it survives a reboot, and what it does; response starts with isolating the host and rebuilding when rootkits are involved.",
-    "d2-t15": "Brute force, spraying, stuffing, and pass-the-hash each leave a different pattern in the logs, and MFA with salted hashes and tiered admin practices stops most of them.",
+    "d1-t108": "Symmetric encryption is fast and protects data, asymmetric encryption solves key exchange and signing, real protocols like TLS combine them, and ephemeral key exchange gives forward secrecy.",
+    "d2-t114": "Malware is best sorted by behavior: how it spreads, how it hides, how it survives a reboot, and what it does; response starts with isolating the host and rebuilding when rootkits are involved.",
+    "d2-t115": "Brute force, spraying, stuffing, and pass-the-hash each leave a different pattern in the logs, and MFA with salted hashes and tiered admin practices stops most of them.",
     "d3-t17": "Switches trust every device by default, so port security, 802.1X, DHCP snooping, DAI, and BPDU guard each close a specific Layer 2 attack path from inside the network."
   },
 
   questions: [
     {
-      id: "q-x-d1-5", domainId: "d1", tag: "d1-t8", type: "single",
+      id: "q-x-d1-5", domainId: "d1", tag: "d1-t108", type: "single",
       prompt: "A security architect needs to encrypt large volumes of data on file servers with minimal performance impact. Which type of algorithm is MOST appropriate?",
       choices: [
         { id: "a", text: "Symmetric, such as AES" },
@@ -417,7 +417,7 @@
       }
     },
     {
-      id: "q-x-d1-6", domainId: "d1", tag: "d1-t8", type: "single",
+      id: "q-x-d1-6", domainId: "d1", tag: "d1-t108", type: "single",
       prompt: "A company wants assurance that if its web server's private key is stolen next year, previously recorded encrypted sessions still cannot be decrypted. Which feature provides this?",
       choices: [
         { id: "a", text: "Perfect forward secrecy using ephemeral key exchange" },
@@ -434,7 +434,7 @@
       }
     },
     {
-      id: "q-x-d2-3", domainId: "d2", tag: "d2-t14", type: "single",
+      id: "q-x-d2-3", domainId: "d2", tag: "d2-t114", type: "single",
       prompt: "A disgruntled administrator's account is disabled, and shortly afterward, a script they left behind deletes the company's customer database. Which type of malware does this describe?",
       choices: [
         { id: "a", text: "Logic bomb" },
@@ -451,7 +451,7 @@
       }
     },
     {
-      id: "q-x-d2-4", domainId: "d2", tag: "d2-t14", type: "single",
+      id: "q-x-d2-4", domainId: "d2", tag: "d2-t114", type: "single",
       prompt: "An EDR alert shows PowerShell running entirely in memory and calling out to an unfamiliar domain every minute. Antivirus scans found no malicious files. Which type of malware is MOST likely?",
       choices: [
         { id: "a", text: "Fileless malware" },
@@ -468,7 +468,7 @@
       }
     },
     {
-      id: "q-x-d2-5", domainId: "d2", tag: "d2-t15", type: "single",
+      id: "q-x-d2-5", domainId: "d2", tag: "d2-t115", type: "single",
       prompt: "Logs show a single source IP made one failed login attempt against each of 800 accounts using the password 'Winter2025!'. No accounts were locked out. What type of attack is this?",
       choices: [
         { id: "a", text: "Password spraying" },
@@ -485,7 +485,7 @@
       }
     },
     {
-      id: "q-x-d2-6", domainId: "d2", tag: "d2-t15", type: "single",
+      id: "q-x-d2-6", domainId: "d2", tag: "d2-t115", type: "single",
       prompt: "An attacker captures an NTLM hash from one workstation and uses it to authenticate to file servers without ever learning the plaintext password. Which attack is this?",
       choices: [
         { id: "a", text: "Pass-the-hash" },

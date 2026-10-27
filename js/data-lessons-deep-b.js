@@ -7,7 +7,7 @@
   lessons: {
     d4: [
       {
-        id: "d4-t21",
+        id: "d4-t121",
         title: "Access Control Models: DAC, MAC, RBAC, ABAC, and Rule-Based",
         tag: "4.6",
         minutes: 20,
@@ -98,7 +98,7 @@
           "Tandaan mo kung sino ang nagdedesisyon. DAC, ang may-ari ng file (kaya flexible pero minsan sablay). MAC, ang system mismo gamit ang labels at clearance, hindi pwedeng baguhin ng user. RBAC, batay sa trabaho o role (nurse, accountant). ABAC, tinitingnan pa ang oras, lokasyon, at kalagayan ng device bago payagan. Ang rule-based, parehong patakaran sa lahat, tulad ng 'bawal mag-login pagkatapos ng 6 PM'. At laging isaisip ang least privilege: ibigay lang ang kailangan, hindi higit pa."
       },
       {
-        id: "d4-t22",
+        id: "d4-t122",
         title: "Federation and Single Sign-On: SAML, OAuth, and OpenID Connect",
         tag: "4.6",
         minutes: 20,
@@ -193,7 +193,7 @@
           "Ang SSO, isang login lang para sa maraming app. Ang federation, pinalawak mo ito sa pagitan ng magkaibang organisasyon dahil may tiwala sila sa isa't isa. Tatlong pangalan ang dapat mong malinaw: SAML, para sa enterprise SSO (XML na assertion). OAuth 2.0, para sa authorization, ibig sabihin binibigyan mo ng limitadong access ang isang app (parang valet key) pero hindi nito sinasabi kung sino ka. OpenID Connect, nasa ibabaw ng OAuth at nagdadagdag ng ID token para sa authentication. Delikado ang nakaw na token, kasi pwede nitong lampasan ang MFA."
       },
       {
-        id: "d4-t23",
+        id: "d4-t123",
         title: "Vulnerability Scanning and Prioritization: CVSS, EPSS, and False Results",
         tag: "4.3",
         minutes: 22,
@@ -287,7 +287,7 @@
           "Ang vulnerability scan, parang inspeksyon ng gusali gamit ang checklist ng mga kilalang sira. Credentialed scan ay may susi sa lahat ng kwarto (mas tumpak), ang non-credentialed ay nakatingin lang sa labas. Ang CVE ay pangalan ng sira, ang CVSS ay grado ng kalubhaan (0 hanggang 10), at ang EPSS ay tsansa na pagsamantalahan ito. Hindi sapat ang CVSS lang: tingnan din kung nakalantad ba sa Internet, gaano kahalaga ang system, at kung ginagamit na ba ng mga attacker. Ang false positive ay pekeng alarma; ang false negative ay hindi nakita na totoong sira, kaya mas delikado."
       },
       {
-        id: "d4-t24",
+        id: "d4-t124",
         title: "Log Management: Syslog, SNMP, NetFlow, and Time Synchronization",
         tag: "4.4",
         minutes: 20,
@@ -386,7 +386,7 @@
           "Ang logs ang kasaysayan ng lahat ng nangyari sa systems. Ang syslog, nagpapadala ng logs sa gitnang server. Ang SNMP, para sa pagmo-monitor ng network devices (gamitin ang v3 kasi naka-encrypt). Ang NetFlow, parang phone bill: nakikita mong sino ang tumawag kanino at gaano katagal, pero hindi ang laman ng usapan. Ang packet capture, kumpletong recording. Ang SIEM ang nag-iipon, nag-aayos sa iisang format, at nag-uugnay ng mga event para magbigay ng alert. Importante ang NTP, kasi kung magkakaiba ang oras ng mga device, hindi mo maaayos ang tamang pagkakasunod-sunod ng pangyayari."
       },
       {
-        id: "d4-t25",
+        id: "d4-t125",
         title: "Endpoint Security: Antivirus, EDR, XDR, and Host-Based Controls",
         tag: "4.5",
         minutes: 18,
@@ -481,7 +481,7 @@
 
     d5: [
       {
-        id: "d5-t12",
+        id: "d5-t112",
         title: "Compliance and Regulations in Depth: GDPR, HIPAA, PCI DSS, SOX, and More",
         tag: "5.4",
         minutes: 24,
@@ -588,7 +588,7 @@
           "Hanapin lang ang uri ng data. Personal data ng mga tao sa EU, GDPR 'yan (72 oras para i-report ang breach, at puwedeng umabot sa 4% ng global na kita ang multa). Records ng pasyente, HIPAA. Credit card, PCI DSS (kontrata ng card brands, hindi batas). Pinansyal na ulat ng public company, SOX. Bangko at customer financial info, GLBA. Student records, FERPA. Bata na wala pang 13, COPPA. Consumers sa California, CCPA. At tandaan ang controller (nagdedesisyon kung bakit at paano gagamitin ang data) at processor (gumagawa lang para sa controller)."
       },
       {
-        id: "d5-t13",
+        id: "d5-t113",
         title: "Vendor Agreements and Contract Documents: SLA, MSA, SOW, NDA, BPA, and MOU",
         tag: "5.3",
         minutes: 18,
@@ -693,28 +693,28 @@
   },
 
   tips: {
-    "d4-t21": "Ask 'who decides?': owner = DAC, system with labels = MAC, job function = RBAC, attributes and context = ABAC, same condition for everyone (like time of day) = rule-based. If two answers are RBAC and 'rule-based', check whether the question is about a person's job or a general condition.",
-    "d4-t22": "OAuth answers 'what may this app do?' and OpenID Connect answers 'who is this user?'. If the scenario needs a login identity, pick OIDC or SAML; if it only needs delegated API access, pick OAuth.",
-    "d4-t23": "Do not choose the highest CVSS automatically. The exam's best answer usually accounts for exposure, asset criticality, and active exploitation. 'Cannot patch' points to a compensating control or a documented exception, never to ignoring it.",
-    "d4-t24": "Pair each protocol with its job and port: syslog = central logs (514), SNMP = device management (161 polls, 162 traps, use v3), NetFlow = metadata, NTP = time (123). When two systems disagree about the order of events, the answer is time synchronization.",
-    "d4-t25": "If the question needs host isolation, process history, or behavior-based detection, answer EDR, not antivirus. If it spans email, network, identity, and endpoint, answer XDR. 'Only approved applications may run' is always allowlisting.",
-    "d5-t12": "Let the data pick the law: EU residents' personal data = GDPR, patient information = HIPAA, card data = PCI DSS (a standard, not a law), public-company financial reporting = SOX, student records = FERPA, bank customer data = GLBA. 72 hours and 4 percent both point to GDPR.",
-    "d5-t13": "One agreement, one job: SLA = performance, SOW = this project's work, MSA = the umbrella terms, NDA = secrecy, MOU = intent (non-binding), MOA = formal responsibilities, BPA = partnership, ISA = secure connection."
+    "d4-t121": "Ask 'who decides?': owner = DAC, system with labels = MAC, job function = RBAC, attributes and context = ABAC, same condition for everyone (like time of day) = rule-based. If two answers are RBAC and 'rule-based', check whether the question is about a person's job or a general condition.",
+    "d4-t122": "OAuth answers 'what may this app do?' and OpenID Connect answers 'who is this user?'. If the scenario needs a login identity, pick OIDC or SAML; if it only needs delegated API access, pick OAuth.",
+    "d4-t123": "Do not choose the highest CVSS automatically. The exam's best answer usually accounts for exposure, asset criticality, and active exploitation. 'Cannot patch' points to a compensating control or a documented exception, never to ignoring it.",
+    "d4-t124": "Pair each protocol with its job and port: syslog = central logs (514), SNMP = device management (161 polls, 162 traps, use v3), NetFlow = metadata, NTP = time (123). When two systems disagree about the order of events, the answer is time synchronization.",
+    "d4-t125": "If the question needs host isolation, process history, or behavior-based detection, answer EDR, not antivirus. If it spans email, network, identity, and endpoint, answer XDR. 'Only approved applications may run' is always allowlisting.",
+    "d5-t112": "Let the data pick the law: EU residents' personal data = GDPR, patient information = HIPAA, card data = PCI DSS (a standard, not a law), public-company financial reporting = SOX, student records = FERPA, bank customer data = GLBA. 72 hours and 4 percent both point to GDPR.",
+    "d5-t113": "One agreement, one job: SLA = performance, SOW = this project's work, MSA = the umbrella terms, NDA = secrecy, MOU = intent (non-binding), MOA = formal responsibilities, BPA = partnership, ISA = secure connection."
   },
 
   summaries: {
-    "d4-t21": "Access control models differ by who decides: the owner (DAC), the system with labels (MAC), job roles (RBAC), attributes and context (ABAC), or fixed rules (rule-based), all guided by least privilege.",
-    "d4-t22": "Single sign-on and federation let one trusted identity provider vouch for you; SAML and OpenID Connect handle authentication while OAuth handles delegated authorization.",
-    "d4-t23": "Vulnerability management means choosing the right scan, reading CVSS with exposure and exploit likelihood in mind, spotting false positives and negatives, and fixing, mitigating, or formally accepting each finding.",
-    "d4-t24": "Syslog, SNMP, NetFlow, and packet capture feed a SIEM that correlates events, but only synchronized clocks and tamper-resistant, off-host logs make that evidence trustworthy.",
-    "d4-t25": "Antivirus blocks known malware, EDR watches behavior and lets you isolate hosts, XDR widens the view, and allowlisting and file integrity monitoring harden individual endpoints.",
-    "d5-t12": "Each regulation follows a type of data: GDPR for EU personal data, HIPAA for health records, PCI DSS for payment cards, SOX for public-company reporting, plus privacy roles and breach-notification duties.",
-    "d5-t13": "Vendor relationships are governed by documents with distinct jobs, SLA for performance, MSA for umbrella terms, SOW for the work, NDA for secrecy, plus due diligence before signing and monitoring afterward."
+    "d4-t121": "Access control models differ by who decides: the owner (DAC), the system with labels (MAC), job roles (RBAC), attributes and context (ABAC), or fixed rules (rule-based), all guided by least privilege.",
+    "d4-t122": "Single sign-on and federation let one trusted identity provider vouch for you; SAML and OpenID Connect handle authentication while OAuth handles delegated authorization.",
+    "d4-t123": "Vulnerability management means choosing the right scan, reading CVSS with exposure and exploit likelihood in mind, spotting false positives and negatives, and fixing, mitigating, or formally accepting each finding.",
+    "d4-t124": "Syslog, SNMP, NetFlow, and packet capture feed a SIEM that correlates events, but only synchronized clocks and tamper-resistant, off-host logs make that evidence trustworthy.",
+    "d4-t125": "Antivirus blocks known malware, EDR watches behavior and lets you isolate hosts, XDR widens the view, and allowlisting and file integrity monitoring harden individual endpoints.",
+    "d5-t112": "Each regulation follows a type of data: GDPR for EU personal data, HIPAA for health records, PCI DSS for payment cards, SOX for public-company reporting, plus privacy roles and breach-notification duties.",
+    "d5-t113": "Vendor relationships are governed by documents with distinct jobs, SLA for performance, MSA for umbrella terms, SOW for the work, NDA for secrecy, plus due diligence before signing and monitoring afterward."
   },
 
   questions: [
     {
-      id: "q-x-d4-5", domainId: "d4", tag: "d4-t21", type: "single",
+      id: "q-x-d4-5", domainId: "d4", tag: "d4-t121", type: "single",
       prompt: "A hospital grants access to patient charts based on each employee's job title, such as nurse or billing clerk. Which access control model is this?",
       choices: [
         { id: "a", text: "Role-based access control (RBAC)" },
@@ -731,7 +731,7 @@
       }
     },
     {
-      id: "q-x-d4-6", domainId: "d4", tag: "d4-t21", type: "single",
+      id: "q-x-d4-6", domainId: "d4", tag: "d4-t121", type: "single",
       prompt: "A policy allows access to a document only if the user is in the finance department, is using a company-managed device, and is connecting during business hours. Which model is MOST accurately described?",
       choices: [
         { id: "a", text: "Attribute-based access control (ABAC)" },
@@ -748,7 +748,7 @@
       }
     },
     {
-      id: "q-x-d4-7", domainId: "d4", tag: "d4-t22", type: "single",
+      id: "q-x-d4-7", domainId: "d4", tag: "d4-t122", type: "single",
       prompt: "A web app wants to read a user's calendar without ever receiving the user's password, and the user should be able to limit what the app can do. Which standard is designed for this?",
       choices: [
         { id: "a", text: "OAuth 2.0" },
@@ -765,7 +765,7 @@
       }
     },
     {
-      id: "q-x-d4-8", domainId: "d4", tag: "d4-t22", type: "single",
+      id: "q-x-d4-8", domainId: "d4", tag: "d4-t122", type: "single",
       prompt: "A company wants employees to authenticate once at the corporate identity provider and then access several cloud applications using signed XML assertions. Which technology fits?",
       choices: [
         { id: "a", text: "SAML" },
@@ -782,7 +782,7 @@
       }
     },
     {
-      id: "q-x-d4-9", domainId: "d4", tag: "d4-t23", type: "single",
+      id: "q-x-d4-9", domainId: "d4", tag: "d4-t123", type: "single",
       prompt: "A vulnerability scanner reports a critical flaw on a server, but a manual check shows the software was already patched. What is this result called?",
       choices: [
         { id: "a", text: "A false positive" },
@@ -799,7 +799,7 @@
       }
     },
     {
-      id: "q-x-d4-10", domainId: "d4", tag: "d4-t23", type: "single",
+      id: "q-x-d4-10", domainId: "d4", tag: "d4-t123", type: "single",
       prompt: "A legacy server has a high-severity vulnerability, and the vendor will not release a patch. The server must stay online. What is the BEST next step?",
       choices: [
         { id: "a", text: "Apply compensating controls such as network isolation and monitoring, and document an approved exception" },
@@ -816,7 +816,7 @@
       }
     },
     {
-      id: "q-x-d4-11", domainId: "d4", tag: "d4-t24", type: "single",
+      id: "q-x-d4-11", domainId: "d4", tag: "d4-t124", type: "single",
       prompt: "An investigator finds that events from the firewall and a domain controller appear several minutes apart for the same attack, making the timeline unreliable. Which control would MOST directly fix this?",
       choices: [
         { id: "a", text: "Synchronizing all systems with NTP" },
@@ -833,7 +833,7 @@
       }
     },
     {
-      id: "q-x-d4-12", domainId: "d4", tag: "d4-t24", type: "single",
+      id: "q-x-d4-12", domainId: "d4", tag: "d4-t124", type: "single",
       prompt: "A security team wants to detect large data transfers to unusual destinations while storing as little data as possible and not capturing payload content. Which data source is BEST?",
       choices: [
         { id: "a", text: "NetFlow" },
@@ -850,7 +850,7 @@
       }
     },
     {
-      id: "q-x-d4-13", domainId: "d4", tag: "d4-t25", type: "single",
+      id: "q-x-d4-13", domainId: "d4", tag: "d4-t125", type: "single",
       prompt: "An analyst needs to remotely isolate a compromised laptop from the network while keeping a connection to investigate and view the full process history. Which tool provides this?",
       choices: [
         { id: "a", text: "Endpoint detection and response (EDR)" },
@@ -867,7 +867,7 @@
       }
     },
     {
-      id: "q-x-d4-14", domainId: "d4", tag: "d4-t25", type: "single",
+      id: "q-x-d4-14", domainId: "d4", tag: "d4-t125", type: "single",
       prompt: "A security team wants servers to run ONLY an approved list of programs, blocking everything else, including unknown malware. Which control is this?",
       choices: [
         { id: "a", text: "Application allowlisting" },
@@ -884,7 +884,7 @@
       }
     },
     {
-      id: "q-x-d5-5", domainId: "d5", tag: "d5-t12", type: "single",
+      id: "q-x-d5-5", domainId: "d5", tag: "d5-t112", type: "single",
       prompt: "A US-based online store suffers a breach exposing personal data of customers in the European Union. Within what time frame must it notify the supervisory authority under GDPR?",
       choices: [
         { id: "a", text: "72 hours of becoming aware of the breach" },
@@ -901,7 +901,7 @@
       }
     },
     {
-      id: "q-x-d5-6", domainId: "d5", tag: "d5-t12", type: "single",
+      id: "q-x-d5-6", domainId: "d5", tag: "d5-t112", type: "single",
       prompt: "A company stores and processes customers' credit card numbers. Which statement about its main compliance obligation is correct?",
       choices: [
         { id: "a", text: "PCI DSS applies; it is a contractual industry standard rather than a law" },
@@ -918,7 +918,7 @@
       }
     },
     {
-      id: "q-x-d5-7", domainId: "d5", tag: "d5-t13", type: "single",
+      id: "q-x-d5-7", domainId: "d5", tag: "d5-t113", type: "single",
       prompt: "A company contracts with an IT provider that promises 99.9 percent uptime and issues service credits when that target is missed. Which document defines this commitment?",
       choices: [
         { id: "a", text: "Service Level Agreement (SLA)" },
@@ -935,7 +935,7 @@
       }
     },
     {
-      id: "q-x-d5-8", domainId: "d5", tag: "d5-t13", type: "single",
+      id: "q-x-d5-8", domainId: "d5", tag: "d5-t113", type: "single",
       prompt: "A company has signed a master services agreement with a consulting firm. For a new engagement, it now needs a document listing the specific deliverables, schedule, and price. Which document should it use?",
       choices: [
         { id: "a", text: "Statement of Work (SOW)" },

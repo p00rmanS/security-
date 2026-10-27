@@ -319,6 +319,411 @@ const DOMAINS = [
         ],
         taglish:
           "Bukod sa proseso ng pag-apruba, may specific na technical checklist din dapat isipin: kailangan bang i-update ang allow/deny list? Ano ang bawal gawin habang ongoing ang pagbabago (restricted activities)? Gaano katagal ang inaasahang downtime, at kailangan ba ng restart bago ito bumisa? Pinaka-importante: sino/ano pa ang umaasa (dependencies) sa binabago mo — kasi kadalasan, dito nagmumula ang 'biglaang' outage na parang walang kinalaman sa ginawang pagbabago."
+      },
+      {
+        "id": "d1-t36",
+        "title": "Cryptographic Algorithms and Key Exchange Reference",
+        "tag": "1.4",
+        "minutes": 16,
+        "goal": "Match each common algorithm (AES, 3DES, RSA, ECC, Diffie-Hellman, SHA, MD5, HMAC) to its job, and explain perfect forward secrecy and key stretching.",
+        "why": "The Cryptographic Solutions lesson explains the concepts; the exam also expects you to recognize specific algorithm names and say which category each belongs to and which are considered weak.",
+        "simple": "Symmetric algorithms use one shared key and are fast, so they encrypt bulk data: AES is the modern standard (128, 192, or 256-bit keys), while DES and 3DES are legacy and should not be used in new designs. Asymmetric algorithms use a public/private key pair and are slower, so they are used for key exchange, digital signatures, and certificates: RSA is based on large-number factoring and needs long keys, while elliptic-curve cryptography (ECC) gives equivalent strength with much shorter keys, which suits mobile and IoT devices. Diffie-Hellman is a key-agreement method that lets two parties build a shared secret over an untrusted network without ever sending it. Perfect forward secrecy (PFS), usually provided by ephemeral Diffie-Hellman, means each session uses a fresh key, so stealing a server's long-term private key later does not let an attacker decrypt previously recorded sessions. Hash functions produce a fixed-size fingerprint for integrity: SHA-2 and SHA-3 are current, while MD5 and SHA-1 are broken for security use because collisions can be created. HMAC combines a hash with a secret key to prove both integrity and authenticity of a message. Key stretching (PBKDF2, bcrypt, scrypt) deliberately makes password hashing slow to frustrate guessing, and salts defeat precomputed tables. Real systems combine them: asymmetric crypto or Diffie-Hellman agrees on a session key, then symmetric crypto encrypts the traffic (a hybrid approach, which is how TLS works). A bigger key is stronger against brute force but a weak algorithm stays weak at any key size.",
+        "keyTerms": [
+          {
+            "term": "AES",
+            "def": "Modern symmetric block cipher with 128, 192, or 256-bit keys."
+          },
+          {
+            "term": "RSA / ECC",
+            "def": "Asymmetric algorithms; ECC reaches similar strength with shorter keys."
+          },
+          {
+            "term": "Diffie-Hellman",
+            "def": "Key agreement over an untrusted network without sending the key."
+          },
+          {
+            "term": "Perfect Forward Secrecy",
+            "def": "Fresh per-session keys so a later key theft cannot decrypt recorded traffic."
+          },
+          {
+            "term": "HMAC",
+            "def": "A hash combined with a secret key for integrity and authenticity."
+          },
+          {
+            "term": "Key Stretching",
+            "def": "Deliberately slow password hashing such as PBKDF2 or bcrypt."
+          }
+        ],
+        "analogy": "Think of shipping a locked suitcase. Symmetric crypto is one key that both of you own copies of: quick, but how do you get the key to the other person? Diffie-Hellman is like mixing paint colors in public so only the two of you can recreate the final shade. PFS is changing the lock for every trip, so a stolen old key opens nothing.",
+        "technical": "A web server negotiates TLS using ephemeral Diffie-Hellman (ECDHE) to agree on a session key, authenticates itself with an RSA or ECC certificate, then encrypts the session with AES. A year later the server's private key leaks; because PFS was used, previously captured sessions stay unreadable. Separately, a developer storing passwords chooses bcrypt with a per-user salt instead of plain SHA-256, making each guess slow.",
+        "table": {
+          "headers": [
+            "Algorithm",
+            "Type",
+            "Job / Status"
+          ],
+          "rows": [
+            [
+              "AES",
+              "Symmetric",
+              "Bulk encryption; current standard"
+            ],
+            [
+              "3DES / DES",
+              "Symmetric",
+              "Legacy; avoid"
+            ],
+            [
+              "RSA",
+              "Asymmetric",
+              "Key exchange, signatures; long keys"
+            ],
+            [
+              "ECC",
+              "Asymmetric",
+              "Same strength, shorter keys"
+            ],
+            [
+              "Diffie-Hellman",
+              "Key agreement",
+              "Build shared secret; basis of PFS"
+            ],
+            [
+              "SHA-2 / SHA-3",
+              "Hash",
+              "Integrity; current"
+            ],
+            [
+              "MD5 / SHA-1",
+              "Hash",
+              "Collisions found; do not use for security"
+            ],
+            [
+              "HMAC",
+              "Keyed hash",
+              "Integrity plus authenticity"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Encryption",
+            "b": "Hashing",
+            "diff": "Encryption is reversible with the key and protects confidentiality. Hashing is one-way and checks integrity."
+          },
+          {
+            "a": "HMAC",
+            "b": "Digital Signature",
+            "diff": "HMAC uses a shared secret key, so it cannot prove which of the two parties made it. A digital signature uses a private key and provides non-repudiation."
+          },
+          {
+            "a": "Key Exchange",
+            "b": "Encryption",
+            "diff": "Key exchange only establishes the shared secret. The actual data is then encrypted with a symmetric cipher."
+          }
+        ],
+        "soc": "Analysts spot weak crypto during scans and reviews: services offering TLS 1.0, 3DES, or MD5-signed certificates are flagged as findings, and traffic that can be decrypted later because PFS is absent is raised as a risk.",
+        "takeaways": [
+          "AES = symmetric workhorse; RSA/ECC = asymmetric; Diffie-Hellman = key agreement.",
+          "PFS means stealing the long-term key later does not expose old sessions.",
+          "MD5, SHA-1, DES, and 3DES are legacy; salting plus key stretching protect stored passwords."
+        ],
+        "taglish": "AES — pang-encrypt ng maraming data, isang shared key. RSA/ECC — public at private key, para sa key exchange at signature. Diffie-Hellman — paraan para magkasundo sa secret key kahit hindi ito ipinapadala. PFS — bagong key bawat session, kaya kahit manakaw ang lumang key hindi mabubuksan ang lumang traffic. MD5 at SHA-1 — luma na, hindi na dapat gamitin."
+      },
+      {
+        "id": "d1-t37",
+        "title": "Deception and Disruption: Honeypots, Honeytokens, and Fake Telemetry",
+        "tag": "1.2",
+        "minutes": 12,
+        "goal": "Explain how honeypots, honeynets, honeyfiles, honeytokens, and fake telemetry detect, delay, and study attackers.",
+        "why": "Deception is a named topic in the General Security Concepts objectives, and the exam asks which technology matches a described trap.",
+        "simple": "Deception technology plants things that no legitimate user should touch, so any interaction is a high-confidence alert. A honeypot is a decoy system that looks like a real, attractive target; a honeynet is a whole decoy network of them. A honeyfile is a decoy document (for example a file named 'passwords' or 'payroll') that triggers an alert when opened. A honeytoken is a decoy data element such as a fake credential, API key, database record, or email address that alerts when it is used or seen anywhere it should not be. Fake telemetry feeds attackers false data, such as fabricated network traffic or sensor readings, so what they steal or learn is misleading. Disruption techniques make the attacker's job harder or slower, such as a tarpit that holds connections open very slowly, or moving-target defenses that change addresses or ports. Uses include early detection, collecting attacker tools and techniques for threat intelligence, and wasting attacker time. Cautions: honeypots must be isolated so they cannot become a stepping stone, they need monitoring to be useful, and capturing an attacker's activity raises legal and privacy considerations that policy should address.",
+        "keyTerms": [
+          {
+            "term": "Honeypot",
+            "def": "A decoy system built to attract and observe attackers."
+          },
+          {
+            "term": "Honeynet",
+            "def": "A network of honeypots simulating a real environment."
+          },
+          {
+            "term": "Honeyfile",
+            "def": "A decoy file that alerts when opened."
+          },
+          {
+            "term": "Honeytoken",
+            "def": "A decoy credential or data record that alerts when used."
+          },
+          {
+            "term": "Fake Telemetry",
+            "def": "False data fed to attackers to mislead them."
+          },
+          {
+            "term": "Tarpit",
+            "def": "A service that deliberately answers very slowly to waste attacker time."
+          }
+        ],
+        "analogy": "A honeypot is a bait car left running with a hidden tracker: no honest person has any reason to touch it, so anyone who does is interesting. A honeytoken is a marked banknote in the till, silent until someone spends it.",
+        "technical": "Security places a fake database credential in a configuration file on a server. Months later an alert fires: that exact credential was used from an external IP. Nobody legitimate has the credential, so the file was read by an intruder, and the alert reveals which server was breached. A fake 'Q4-salaries.xlsx' on a file share acts as a honeyfile and alerts when opened by an account that has no reason to browse it.",
+        "table": {
+          "headers": [
+            "Deception",
+            "What It Is",
+            "Alerts On"
+          ],
+          "rows": [
+            [
+              "Honeypot",
+              "Decoy system",
+              "Any connection"
+            ],
+            [
+              "Honeynet",
+              "Decoy network",
+              "Lateral movement in the decoy"
+            ],
+            [
+              "Honeyfile",
+              "Decoy document",
+              "Opening or copying it"
+            ],
+            [
+              "Honeytoken",
+              "Decoy credential or record",
+              "Use of the fake item"
+            ],
+            [
+              "Fake telemetry",
+              "Misleading data",
+              "Attacker acting on false information"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Honeypot",
+            "b": "Honeytoken",
+            "diff": "A honeypot is a decoy SYSTEM. A honeytoken is a decoy piece of DATA that can live inside real systems."
+          },
+          {
+            "a": "Honeypot",
+            "b": "Production Server",
+            "diff": "A honeypot has no business function, so any activity on it is suspicious by definition."
+          },
+          {
+            "a": "Deception",
+            "b": "Prevention",
+            "diff": "Deception mainly detects and studies attackers. It does not replace preventive controls."
+          }
+        ],
+        "soc": "Alerts from deception assets are among the highest-confidence alerts in the SOC, because they have almost no false positives. A tripped honeytoken tells you which credential leaked and where it was used.",
+        "takeaways": [
+          "Any touch on a decoy is suspicious by design, so alerts are high confidence.",
+          "Honeypot/honeynet = decoy systems; honeyfile = decoy document; honeytoken = decoy data or credential.",
+          "Decoys must be isolated and monitored, and legal implications should be considered."
+        ],
+        "taglish": "Honeypot — pekeng sistema na pang-bitag. Honeynet — buong pekeng network. Honeyfile — pekeng dokumento na nag-aalarma kapag binuksan. Honeytoken — pekeng credential o record na nag-aalarma kapag ginamit. Walang lehitimong dahilan para gamitin ang mga iyon, kaya mataas ang tiwala sa alerto."
+      },
+      {
+        "id": "d1-t8",
+        "title": "Physical Detection: Sensors, Cameras, and Faraday Cages",
+        "tag": "1.2",
+        "minutes": 13,
+        "goal": "Distinguish the physical sensor types, surveillance options, and shielding methods that detect or deter intrusion.",
+        "why": "The Physical Security Controls lesson covers barriers and access; the exam also tests detection technology — which sensor suits which situation.",
+        "simple": "Physical detection answers 'did something happen?' Video surveillance (CCTV) records activity and acts as both a deterrent and detective control, and modern systems can add motion triggers or analytics. Motion and presence sensors include infrared (detects body heat), ultrasonic (sound reflections), microwave (radio reflections), and pressure sensors (weight on a mat or floor). Door and window contact sensors alarm when opened. Security guards provide judgment and response, and also act as deterrents, while access logs from badge readers give detective evidence of who entered. Lighting is a deterrent and helps cameras. Barriers (fences, bollards, access control vestibules or mantraps) are preventive, since they delay or stop entry. A Faraday cage blocks electromagnetic signals, protecting equipment from eavesdropping or preventing devices from transmitting or receiving; secure rooms and some evidence bags use this. Protected distribution systems and signal shielding address emissions. Tamper-evident seals show that something was opened, and cable locks and USB data blockers physically prevent theft or data exchange. Match each control to function: preventive stops, deterrent discourages, detective notices, and corrective repairs, and note that many devices serve more than one function.",
+        "keyTerms": [
+          {
+            "term": "CCTV / Video Surveillance",
+            "def": "Cameras that record and deter; detective and deterrent."
+          },
+          {
+            "term": "Infrared Sensor",
+            "def": "Detects body heat."
+          },
+          {
+            "term": "Ultrasonic / Microwave Sensor",
+            "def": "Detect movement through reflected sound or radio waves."
+          },
+          {
+            "term": "Pressure Sensor",
+            "def": "Detects weight on a floor or mat."
+          },
+          {
+            "term": "Faraday Cage",
+            "def": "An enclosure that blocks electromagnetic signals."
+          },
+          {
+            "term": "Access Control Vestibule",
+            "def": "A two-door entry that holds one person at a time; preventive."
+          }
+        ],
+        "analogy": "Sensors are a building's senses. Infrared feels warmth, ultrasonic hears echoes, a pressure mat feels footsteps, and cameras give the building eyes and a memory. A Faraday cage is a lead-lined room where no radio can whisper in or out.",
+        "technical": "A data center's secure room has a badge reader (access log), an access control vestibule (prevents tailgating), cameras with motion triggers (detective and deterrent), and infrared motion sensors that alarm after hours. A forensics lab places seized phones in Faraday bags so remote wipe commands cannot reach them.",
+        "table": {
+          "headers": [
+            "Control",
+            "Function",
+            "Example Use"
+          ],
+          "rows": [
+            [
+              "Camera",
+              "Deterrent and detective",
+              "Record entry areas"
+            ],
+            [
+              "Infrared sensor",
+              "Detective",
+              "After-hours motion detection"
+            ],
+            [
+              "Pressure sensor",
+              "Detective",
+              "Floor or mat alarm"
+            ],
+            [
+              "Vestibule / bollard",
+              "Preventive",
+              "Stop tailgating or vehicles"
+            ],
+            [
+              "Faraday cage",
+              "Preventive",
+              "Block wireless snooping or remote wipe"
+            ],
+            [
+              "Lighting",
+              "Deterrent",
+              "Discourage loitering"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Deterrent",
+            "b": "Preventive",
+            "diff": "A deterrent discourages (a visible camera). A preventive control physically stops (a locked door or bollard)."
+          },
+          {
+            "a": "Infrared",
+            "b": "Ultrasonic",
+            "diff": "Infrared senses heat from a body. Ultrasonic senses movement using reflected sound."
+          }
+        ],
+        "soc": "SOC and facilities teams correlate badge logs with camera footage and sensor alarms. A door forced open with no badge event is a strong physical-intrusion signal.",
+        "takeaways": [
+          "Cameras and lighting deter and detect; barriers and vestibules prevent.",
+          "Know the sensor types: infrared, ultrasonic, microwave, pressure.",
+          "Faraday cages block electromagnetic signals, including remote-wipe or eavesdropping."
+        ],
+        "taglish": "CCTV — nagre-record at nakakatakot sa magnanakaw. Infrared — nararamdaman ang init ng katawan. Ultrasonic at microwave — nararamdaman ang galaw. Pressure — nararamdaman ang bigat. Faraday cage — hindi nakakalabas o nakakapasok ang signal."
+      },
+      {
+        "id": "d1-t9",
+        "title": "Advanced Cryptography Concepts: Modes, Trust Chains, and Split Knowledge",
+        "tag": "1.4",
+        "minutes": 15,
+        "goal": "Explain cipher modes, the PKI chain of trust, OCSP stapling, key ceremonies, split knowledge, pepper, and why quantum computing matters for encryption.",
+        "why": "These less-common cryptography terms are used as distractors or as the single deciding detail in exam questions.",
+        "simple": "A block cipher encrypts fixed-size blocks, and its mode of operation matters: ECB encrypts identical blocks identically, which leaks patterns and should be avoided; CBC chains blocks but needs a random initialization vector (IV); GCM provides both encryption and authentication and is widely recommended. Stream ciphers encrypt bit by bit. A nonce is a number used once, and reusing a nonce or IV can break security. In PKI, a certificate chain links a server certificate to an intermediate CA and then to a root CA; a trust anchor is a root certificate your system already trusts, and the chain of trust is valid only if every link verifies. X.509 is the certificate format. Revocation can be checked using a CRL (a list) or OCSP (a live query), and OCSP stapling lets the server attach a fresh signed status response so clients need not query the CA. Key ceremonies are formal, witnessed procedures for generating and handling highly sensitive keys such as a root CA key. Split knowledge divides a secret so no one person has all of it, and M-of-N schemes require a quorum, such as three of five key holders. A pepper is a secret value added to passwords before hashing and stored separately from the database, unlike a salt, which is stored next to the hash. Homomorphic encryption allows computing on encrypted data without decrypting it. Quantum computers could break current asymmetric algorithms like RSA and ECC, so post-quantum cryptography develops algorithms believed resistant, and long-lived secrets face 'harvest now, decrypt later' risk. The one-time pad is theoretically unbreakable but impractical because the key must be as long as the message and never reused.",
+        "keyTerms": [
+          {
+            "term": "Initialization Vector",
+            "def": "A random starting value that keeps identical plaintext from producing identical ciphertext."
+          },
+          {
+            "term": "GCM",
+            "def": "A cipher mode providing encryption plus authentication."
+          },
+          {
+            "term": "OCSP Stapling",
+            "def": "The server attaches a fresh signed revocation status for clients."
+          },
+          {
+            "term": "Split Knowledge",
+            "def": "Dividing a secret so no single person holds all of it."
+          },
+          {
+            "term": "Pepper",
+            "def": "A secret value added to passwords and stored apart from the hash database."
+          },
+          {
+            "term": "Post-Quantum Cryptography",
+            "def": "Algorithms intended to resist quantum attacks."
+          }
+        ],
+        "analogy": "ECB is stamping every page of a book with the same pattern, so you can see the shape of the picture even without reading it. A key ceremony is a bank vault opening with three officers and a witness, nobody trusted alone. OCSP stapling is carrying a freshly signed doctor's note instead of making the customer phone the clinic.",
+        "technical": "A bank splits its root CA key among five officers and requires three to be present to use it (M-of-N with split knowledge), performing signing in a witnessed key ceremony. A web server uses OCSP stapling so browsers get a fresh signed revocation status without contacting the CA. A security architect encrypting data that must stay secret for thirty years begins planning post-quantum migration.",
+        "table": {
+          "headers": [
+            "Term",
+            "Plain Meaning",
+            "Why It Matters"
+          ],
+          "rows": [
+            [
+              "ECB",
+              "Same input block, same output",
+              "Leaks patterns; avoid"
+            ],
+            [
+              "GCM",
+              "Encrypt plus authenticate",
+              "Preferred mode"
+            ],
+            [
+              "IV / Nonce",
+              "Random or unique start value",
+              "Never reuse"
+            ],
+            [
+              "OCSP stapling",
+              "Server supplies revocation proof",
+              "Speed and privacy"
+            ],
+            [
+              "Split knowledge",
+              "No one holds the whole secret",
+              "Protects root keys"
+            ],
+            [
+              "Pepper",
+              "Secret outside the database",
+              "Extra protection for hashes"
+            ],
+            [
+              "Post-quantum",
+              "Quantum-resistant algorithms",
+              "Long-lived secrets"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Salt",
+            "b": "Pepper",
+            "diff": "A salt is unique per password and stored beside the hash. A pepper is a shared secret kept elsewhere."
+          },
+          {
+            "a": "CRL",
+            "b": "OCSP",
+            "diff": "A CRL is a downloadable list of revoked certificates. OCSP checks one certificate's status on demand."
+          },
+          {
+            "a": "Split Knowledge",
+            "b": "Dual Control",
+            "diff": "Split knowledge divides what is known. Dual control requires two people to act. They are often used together."
+          }
+        ],
+        "soc": "Analysts see crypto issues as certificate validation errors, expired or revoked certificates, and scanner findings of weak cipher modes. Certificate chain errors usually mean a missing intermediate certificate.",
+        "takeaways": [
+          "Avoid ECB; prefer GCM; never reuse an IV or nonce.",
+          "A chain of trust runs from the server certificate through intermediates to a trusted root.",
+          "Split knowledge and M-of-N protect critical keys; quantum computing threatens RSA and ECC."
+        ],
+        "taglish": "ECB — pare-parehong input, pare-parehong output, kaya may nakikitang pattern. GCM — may encryption at authentication. OCSP stapling — server na ang nagbibigay ng patunay na hindi revoked. Split knowledge — hinati ang lihim para walang isang taong may hawak ng lahat. Pepper — dagdag na lihim na hiwalay sa database."
       }
     ]
   },
@@ -817,6 +1222,1098 @@ const DOMAINS = [
         ],
         taglish:
           "ARP poisoning — nagpapadala ng pekeng ARP reply para akalain ng mga device na ang MAC address mo ang default gateway, kaya dadaan muna sa'yo ang traffic bago ito ipasa (on-path attack). MAC flooding — binabaha ang CAM table ng switch ng maraming pekeng MAC address hanggang mag-overflow, at kapag nangyari yun, minsan nagbo-broadcast na lang ang switch sa lahat ng port. DNS spoofing — pinapalitan ang tamang IP address na sinasagot ng DNS, kaya kahit tama ang tinype mong pangalan ng website, sa maling server ka dadalhin. DHCP starvation — ubos-ubusan ng IP address hanggang wala nang matira sa totoong device, tapos papasok ang rogue DHCP server na magbibigay ng maling settings."
+      },
+      {
+        "id": "d2-t43",
+        "title": "Phishing Variants and Impersonation Attacks",
+        "tag": "2.2",
+        "minutes": 15,
+        "goal": "Tell apart the named variants of phishing and impersonation — smishing, vishing, whaling, business email compromise, typosquatting, watering hole, and deepfakes — from the scenario description alone.",
+        "why": "The exam rarely says 'phishing.' It describes a text message, a lookalike domain, or a cloned voice, and expects the precise name. This lesson is the vocabulary list, with a story for each.",
+        "simple": "Phishing is a fraudulent message that tricks someone into acting. Variants differ by channel and target. Smishing uses SMS text messages; vishing uses voice calls; spear phishing is aimed at a specific person using researched details; whaling targets senior executives. Business email compromise (BEC) impersonates or hijacks a trusted business email account to redirect payments or request sensitive data, often with no malware or link at all. Typosquatting (URL hijacking) registers a domain that is a common misspelling of a real one, hoping for mistyped visits; a lookalike domain swaps characters (rn for m) to deceive on a quick glance. A watering hole attack compromises a website the target group is known to visit and waits for them there, instead of going after them directly. Brand impersonation copies a trusted company's look and tone. Deepfakes use AI to generate convincing fake audio or video of a real person, making vishing and fake executive requests much more believable. Pharming silently redirects users to a fake site by corrupting name resolution, even if they type the correct address. The defenses overlap: verify through a second channel, use email authentication (SPF, DKIM, DMARC), keep payment-change procedures strict, and train people to slow down.",
+        "keyTerms": [
+          {
+            "term": "Smishing",
+            "def": "Phishing delivered by SMS or messaging apps."
+          },
+          {
+            "term": "Vishing",
+            "def": "Phishing delivered by voice call, increasingly with cloned voices."
+          },
+          {
+            "term": "Whaling",
+            "def": "Spear phishing aimed at senior executives."
+          },
+          {
+            "term": "Business Email Compromise",
+            "def": "Impersonating or hijacking a trusted business email account to redirect money or data."
+          },
+          {
+            "term": "Typosquatting",
+            "def": "Registering a misspelled version of a real domain to catch mistakes."
+          },
+          {
+            "term": "Watering Hole",
+            "def": "Compromising a site a target group already visits."
+          },
+          {
+            "term": "Pharming",
+            "def": "Redirecting users to a fake site by corrupting name resolution."
+          },
+          {
+            "term": "Deepfake",
+            "def": "AI-generated fake audio or video of a real person."
+          }
+        ],
+        "analogy": "Phishing is a con artist working different doors. Smishing slips a note under your door, vishing phones you, whaling goes straight to the owner of the house, and a watering hole poisons the well in the village square instead of knocking on anyone's door. Typosquatting is a shop with a nearly identical sign on the next street, waiting for lost customers.",
+        "technical": "An accounts-payable clerk receives an email that looks like it comes from a long-time supplier, asking to update bank details. The domain differs by one letter. There is no link or attachment, so the gateway passes it. A call-back to the number already on file would have caught it. In another case, an attacker compromises a regional industry association's website and serves a malicious script only to visitors from member companies: a watering hole. In a third, a finance director joins a video call with what looks like the CFO, generated by a deepfake, and is told to transfer funds.",
+        "table": {
+          "headers": [
+            "Variant",
+            "Channel / Method",
+            "Key Giveaway"
+          ],
+          "rows": [
+            [
+              "Smishing",
+              "SMS text",
+              "Short link, fake delivery or bank alert"
+            ],
+            [
+              "Vishing",
+              "Phone call",
+              "Urgent caller, asks for codes or payments"
+            ],
+            [
+              "Whaling",
+              "Email to executives",
+              "Target is a senior leader"
+            ],
+            [
+              "BEC",
+              "Email from trusted account",
+              "No link; payment or data change request"
+            ],
+            [
+              "Typosquatting",
+              "Misspelled domain",
+              "Lookalike URL"
+            ],
+            [
+              "Watering hole",
+              "Compromised site the group visits",
+              "Targets a specific community"
+            ],
+            [
+              "Pharming",
+              "Corrupted name resolution",
+              "Correct URL, wrong site"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Phishing",
+            "b": "Pharming",
+            "diff": "Phishing needs the victim to be tricked by a message. Pharming redirects victims even when they type the correct address, because name resolution itself was corrupted."
+          },
+          {
+            "a": "Spear Phishing",
+            "b": "Whaling",
+            "diff": "Both are targeted. Whaling specifically targets senior executives; spear phishing targets any specific person or group."
+          },
+          {
+            "a": "Typosquatting",
+            "b": "Watering Hole",
+            "diff": "Typosquatting waits for the victim to make a typing mistake. A watering hole compromises a legitimate site the victim already trusts and visits."
+          }
+        ],
+        "soc": "Analysts see BEC as a mailbox rule that auto-forwards or hides replies, a sudden change in payment details, and logins from unfamiliar locations. Reports of lookalike domains go to threat intel and the domain is blocked. Email authentication failures in headers (SPF, DKIM, DMARC) are a first thing to check on a reported message.",
+        "takeaways": [
+          "Name the variant by channel and target: smishing (SMS), vishing (voice), whaling (executives), BEC (trusted account, no malware).",
+          "Typosquatting waits for mistakes; a watering hole waits at a trusted site; pharming redirects even correct URLs.",
+          "Verify any money, credential, or data request through a second, known channel."
+        ],
+        "taglish": "Smishing — phishing sa text. Vishing — sa tawag. Whaling — ang target ay mga malalaking opisyal (CEO, CFO). BEC — nagpapanggap o na-hack na email ng kakilalang negosyo para ipalipat ang pera, kadalasan walang link. Typosquatting — maling-spell na website na umaasang magkakamali ka ng type. Watering hole — kinuha ang website na madalas puntahan ng target. Pharming — napupunta ka sa pekeng site kahit tama ang tina-type mo."
+      },
+      {
+        "id": "d2-t14",
+        "title": "Credential Attacks: Hashes, Tickets, and Reuse",
+        "tag": "2.4",
+        "minutes": 15,
+        "goal": "Distinguish credential-based attacks — pass-the-hash, rainbow tables, credential dumping, password spraying and stuffing — and match each to the right defense.",
+        "why": "Most real breaches involve stolen or guessed credentials, and the exam expects you to know HOW attackers use them after getting in, not just how they guess them.",
+        "simple": "Brute force tries every possible password; a dictionary attack tries likely words. Password spraying tries a few common passwords against many accounts to dodge lockouts; credential stuffing replays username-password pairs leaked from one site against others, betting on reuse. Offline attacks start with a stolen password hash database: a rainbow table is a precomputed lookup of hashes, defeated by salting, and slow hashing algorithms make each guess expensive. Credential dumping pulls hashes or tokens out of a compromised machine's memory or authentication store. Pass-the-hash uses a stolen password hash directly to authenticate, without ever learning the password, because some protocols accept the hash as proof. Pass-the-ticket does the same with stolen Kerberos tickets. Defenses stack: multifactor authentication, unique passwords through a password manager, account lockout and throttling, strong salted slow hashes, privileged access management, limiting where admins log in, and detecting abnormal authentication patterns.",
+        "keyTerms": [
+          {
+            "term": "Password Spraying",
+            "def": "Trying a few common passwords against many accounts to avoid lockout."
+          },
+          {
+            "term": "Credential Stuffing",
+            "def": "Replaying leaked username-password pairs against other services."
+          },
+          {
+            "term": "Rainbow Table",
+            "def": "A precomputed table of hashes; defeated by salting."
+          },
+          {
+            "term": "Credential Dumping",
+            "def": "Extracting hashes, tickets, or passwords from memory or a credential store."
+          },
+          {
+            "term": "Pass-the-Hash",
+            "def": "Authenticating with a stolen hash instead of the password."
+          },
+          {
+            "term": "Salt",
+            "def": "Random data added to a password before hashing so identical passwords hash differently."
+          }
+        ],
+        "analogy": "Brute force is trying every key on a giant ring. Spraying is trying one common key on every door in the building. Stuffing is trying a key you stole from one building on a hundred others, hoping people reuse locks. Pass-the-hash is stealing the photocopy of the key and finding the door doesn't care that it's a copy.",
+        "technical": "An attacker gets local admin on one workstation, dumps credentials from memory, and finds an admin's NTLM hash. Without cracking it, they use pass-the-hash to authenticate to a file server, then another, moving laterally. Meanwhile an unrelated attacker runs a spraying campaign: one seasonal password against every account at the company, once each, staying under the lockout threshold.",
+        "table": {
+          "headers": [
+            "Attack",
+            "What It Needs",
+            "Best Defense"
+          ],
+          "rows": [
+            [
+              "Brute force / dictionary",
+              "Time or a wordlist",
+              "Lockout, long passwords, MFA"
+            ],
+            [
+              "Password spraying",
+              "Common passwords + many usernames",
+              "MFA, banned-password list, monitoring"
+            ],
+            [
+              "Credential stuffing",
+              "Leaked credential lists",
+              "Unique passwords, MFA"
+            ],
+            [
+              "Rainbow table",
+              "Stolen hash database",
+              "Salting and slow hashing"
+            ],
+            [
+              "Pass-the-hash",
+              "Stolen hash on a compromised host",
+              "Limit admin logons, LAPS, credential guard, MFA"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Password Spraying",
+            "b": "Brute Force",
+            "diff": "Brute force hammers one account with many guesses and trips lockouts. Spraying uses few guesses per account across many accounts to avoid them."
+          },
+          {
+            "a": "Credential Stuffing",
+            "b": "Password Spraying",
+            "diff": "Stuffing uses real leaked pairs and depends on reuse. Spraying guesses common passwords with no prior knowledge."
+          },
+          {
+            "a": "Pass-the-Hash",
+            "b": "Cracking a Hash",
+            "diff": "Cracking recovers the password. Pass-the-hash never needs the password because the hash itself is accepted as proof."
+          }
+        ],
+        "soc": "Detections look for one source failing against many accounts (spraying), many accounts failing from one source quickly (stuffing), and a single account authenticating to many machines in a short time (pass-the-hash lateral movement). Event logs on failed and successful logons, tied to source IP, tell the story.",
+        "takeaways": [
+          "Spraying is few guesses across many accounts; stuffing is leaked pairs reused; brute force is many guesses at one.",
+          "Salting defeats rainbow tables; slow hashing slows cracking.",
+          "Pass-the-hash uses a stolen hash without knowing the password; limit where privileged accounts log in."
+        ],
+        "taglish": "Password spraying — isang karaniwang password, subukan sa maraming account para hindi ma-lock. Credential stuffing — ginagamit ang nanakaw na username at password mula sa ibang site, kasi marami ang gumagamit ng parehong password. Rainbow table — handa nang listahan ng hashes; tinatalo ng salt. Pass-the-hash — hindi na kailangang malaman ang password, sapat na ang ninakaw na hash."
+      },
+      {
+        "id": "d2-t15",
+        "title": "Malware Families: Logic Bombs, Rootkits, Fileless, and More",
+        "tag": "2.4",
+        "minutes": 16,
+        "goal": "Recognize each malware family by behavior — trojan, worm, virus, ransomware, rootkit, logic bomb, fileless, RAT, botnet, cryptojacking, and wiper.",
+        "why": "Questions describe what the malware DOES and ask for its type. Behavior, not name, is what you match.",
+        "simple": "A virus attaches to a host file and needs user action to spread; a worm spreads on its own across networks; a trojan disguises itself as something useful. Ransomware encrypts data and demands payment, sometimes also stealing it first for double extortion. A rootkit hides its presence and gives persistent privileged access, often by modifying the OS or firmware. A logic bomb lies dormant until a condition occurs, such as a date or an employee's account being disabled. Fileless malware runs in memory using legitimate tools such as PowerShell, leaving few files for antivirus to scan. A remote access trojan (RAT) gives an attacker remote control. A botnet is a network of compromised machines controlled through command-and-control, used for DDoS, spam, or proxying. Cryptojacking steals computing power to mine cryptocurrency. A wiper destroys data permanently, often disguised as ransomware. Spyware and keyloggers collect activity and keystrokes. Detection mixes signatures, behavior analytics, and EDR; prevention mixes patching, application allow-listing, least privilege, and backups.",
+        "keyTerms": [
+          {
+            "term": "Worm",
+            "def": "Self-propagating malware that spreads without user action."
+          },
+          {
+            "term": "Trojan",
+            "def": "Malware disguised as legitimate software."
+          },
+          {
+            "term": "Rootkit",
+            "def": "Malware that hides itself and keeps privileged access."
+          },
+          {
+            "term": "Logic Bomb",
+            "def": "Malicious code that triggers on a condition such as a date or event."
+          },
+          {
+            "term": "Fileless Malware",
+            "def": "Runs in memory using built-in tools, leaving little on disk."
+          },
+          {
+            "term": "RAT",
+            "def": "Remote access trojan giving an attacker remote control."
+          },
+          {
+            "term": "Botnet",
+            "def": "A network of compromised devices under attacker control."
+          },
+          {
+            "term": "Wiper",
+            "def": "Malware designed to destroy data rather than ransom it."
+          }
+        ],
+        "analogy": "A virus is a germ that needs a host. A worm is a cold that spreads on its own through a crowded office. A trojan is the wooden horse. A rootkit is a burglar who also rewires the security cameras. A logic bomb is a time-delayed alarm clock that only goes off when a certain thing happens.",
+        "technical": "A disgruntled developer plants code that checks whether their account still exists; the day it is disabled, the code deletes production data: a logic bomb. A phishing document runs PowerShell directly in memory to download a RAT, never writing a file antivirus can scan: fileless malware. After encryption, a ransom note appears, but the data is overwritten and cannot be recovered even with payment: a wiper masquerading as ransomware.",
+        "table": {
+          "headers": [
+            "Type",
+            "Defining Behavior",
+            "Giveaway"
+          ],
+          "rows": [
+            [
+              "Virus",
+              "Attaches to a host file",
+              "Needs user action"
+            ],
+            [
+              "Worm",
+              "Spreads by itself",
+              "Network-wide outbreak"
+            ],
+            [
+              "Trojan",
+              "Disguised as legitimate",
+              "User installs it willingly"
+            ],
+            [
+              "Rootkit",
+              "Hides and persists",
+              "Tools report clean but system acts odd"
+            ],
+            [
+              "Logic bomb",
+              "Triggered by condition",
+              "Dormant, then date or event"
+            ],
+            [
+              "Fileless",
+              "Memory only, native tools",
+              "Little on disk"
+            ],
+            [
+              "Wiper",
+              "Destroys data",
+              "No real recovery"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Virus",
+            "b": "Worm",
+            "diff": "A virus needs a host file and user action. A worm spreads on its own."
+          },
+          {
+            "a": "Rootkit",
+            "b": "Trojan",
+            "diff": "A trojan is about HOW it gets in (disguise). A rootkit is about hiding itself and staying privileged once in."
+          },
+          {
+            "a": "Ransomware",
+            "b": "Wiper",
+            "diff": "Ransomware wants payment and (in theory) can restore data. A wiper destroys data permanently."
+          }
+        ],
+        "soc": "Memory-only malware shows up as suspicious parent-child process chains (an Office app launching PowerShell) and unusual outbound connections rather than file hits. A rootkit may be suspected when security tools disagree or report clean on a clearly misbehaving host, which often means reimaging. Logic bombs are best caught by code review and insider-risk monitoring.",
+        "takeaways": [
+          "Match malware by behavior: spreads alone (worm), hides (rootkit), waits for a trigger (logic bomb), memory-only (fileless), destroys (wiper).",
+          "Fileless attacks need behavior-based detection like EDR.",
+          "Rootkit suspicion usually means rebuild from known-good media."
+        ],
+        "taglish": "Virus — kailangan ng host file at aksyon ng user. Worm — kumakalat mag-isa. Trojan — nagpapanggap na lehitimo. Rootkit — nagtatago at may mataas na access. Logic bomb — natutulog hanggang may kondisyon (petsa o pangyayari). Fileless — nasa memory lang, walang file. Wiper — sinisira talaga ang data, hindi na maibabalik."
+      },
+      {
+        "id": "d2-t16",
+        "title": "DoS, DDoS, and Network Infrastructure Attacks",
+        "tag": "2.4",
+        "minutes": 16,
+        "goal": "Describe how denial-of-service attacks work (volumetric, protocol, application, amplification) and recognize infrastructure attacks such as VLAN hopping and BGP or DNS hijacking.",
+        "why": "Availability attacks and routing/switching attacks appear in scenario questions that describe symptoms rather than names.",
+        "simple": "A denial-of-service (DoS) attack tries to make a service unavailable; a distributed DoS (DDoS) does it from many sources, often a botnet. Volumetric attacks flood bandwidth. Protocol attacks exhaust connection state: a SYN flood sends many TCP connection requests and never completes the handshake, filling the server's connection table. Application-layer attacks send expensive requests, such as repeated heavy searches or HTTP floods, that look like normal users. Amplification and reflection attacks spoof the victim's IP address and send small requests to open servers (such as DNS or NTP) that reply with much larger responses to the victim. Smurf attacks used broadcast ICMP in a similar way. Mitigations: upstream scrubbing or DDoS protection services, CDNs, rate limiting, SYN cookies, anycast, over-provisioning, and blocking spoofed traffic with ingress and egress filtering. Infrastructure attacks target the plumbing: VLAN hopping abuses switch trunking, using switch spoofing or double tagging to reach another VLAN, and is prevented by disabling unused ports, not leaving ports in auto-trunk mode, and changing the native VLAN. BGP hijacking announces routes that attract another network's traffic, and DNS hijacking changes where names resolve. Replay attacks capture and resend valid messages, defeated by timestamps, nonces, and session tokens. Spanning Tree attacks manipulate the switch topology and are mitigated by BPDU guard.",
+        "keyTerms": [
+          {
+            "term": "DDoS",
+            "def": "A denial of service launched from many sources, often a botnet."
+          },
+          {
+            "term": "SYN Flood",
+            "def": "Exhausts TCP connection state by never completing the handshake."
+          },
+          {
+            "term": "Amplification / Reflection",
+            "def": "Spoofed small requests to servers that send big replies to the victim."
+          },
+          {
+            "term": "VLAN Hopping",
+            "def": "Reaching another VLAN by abusing switch trunking."
+          },
+          {
+            "term": "BGP Hijacking",
+            "def": "Falsely announcing routes to attract another network's traffic."
+          },
+          {
+            "term": "Replay Attack",
+            "def": "Resending a captured valid message."
+          }
+        ],
+        "analogy": "A DDoS is ten thousand people calling one phone line so that real customers get a busy signal. Amplification is mailing a small postcard to a thousand shops with the victim's return address, and each shop replies with a huge catalog to the victim.",
+        "technical": "A game company's login server collapses under a flood of half-open TCP connections; enabling SYN cookies and upstream scrubbing restores service. In another case, a laptop plugged into an unused switch port negotiates a trunk and starts talking to the server VLAN; the fix is to disable the unused port, set it to access mode, and move the native VLAN.",
+        "table": {
+          "headers": [
+            "Attack",
+            "Targets",
+            "Mitigation"
+          ],
+          "rows": [
+            [
+              "Volumetric DDoS",
+              "Bandwidth",
+              "Scrubbing service, CDN"
+            ],
+            [
+              "SYN flood",
+              "Connection table",
+              "SYN cookies, rate limiting"
+            ],
+            [
+              "Amplification",
+              "Victim via third-party servers",
+              "Disable open resolvers, filter spoofed traffic"
+            ],
+            [
+              "VLAN hopping",
+              "Switch trunking",
+              "Disable auto-trunk, change native VLAN"
+            ],
+            [
+              "BGP/DNS hijack",
+              "Routing/name resolution",
+              "RPKI, DNSSEC, monitoring"
+            ],
+            [
+              "Replay",
+              "Authentication messages",
+              "Nonces, timestamps"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "DoS",
+            "b": "DDoS",
+            "diff": "DDoS comes from many distributed sources, which is harder to block by blocking one address."
+          },
+          {
+            "a": "Reflection",
+            "b": "Amplification",
+            "diff": "Reflection bounces traffic off a third party. Amplification makes the reflected reply much larger than the request. They are usually combined."
+          },
+          {
+            "a": "DNS Poisoning",
+            "b": "DNS Amplification",
+            "diff": "Poisoning corrupts answers to redirect victims. Amplification abuses DNS servers to flood a victim."
+          }
+        ],
+        "soc": "DDoS shows as sudden traffic spikes, many half-open connections, or saturated links. Analysts confirm with NetFlow and firewall logs, engage the upstream provider, and apply rate limits while the business impact is communicated.",
+        "takeaways": [
+          "DDoS = many sources; SYN flood exhausts connection state; amplification uses spoofed requests to third parties.",
+          "VLAN hopping is stopped by disabling auto-trunking and unused ports.",
+          "Replay is defeated by nonces, timestamps, and session tokens."
+        ],
+        "taglish": "DoS — pinapahinto ang serbisyo. DDoS — maraming pinanggagalingan. SYN flood — pinupuno ang connection table. Amplification — maliit na request, malaking reply papunta sa biktima. VLAN hopping — nakakalundag sa ibang VLAN dahil sa trunk. Replay — ulit-ulit na pagpapadala ng nakuhang valid na mensahe."
+      },
+      {
+        "id": "d2-t17",
+        "title": "Proximity and Physical-Device Attacks: RFID, NFC, Skimming, Bluetooth, and USB",
+        "tag": "2.2",
+        "minutes": 14,
+        "goal": "Identify attacks that use radio proximity and physical devices — RFID/NFC cloning, card skimming, Bluetooth attacks, malicious USB, juice jacking, and QR code abuse.",
+        "why": "These are listed as threat vectors and show up in short scenarios that depend on recognizing the specific mechanism.",
+        "simple": "RFID and NFC are short-range wireless technologies used in badges, payment cards, and phones. Cloning copies a badge's credentials with a reader and writes them to another card, and relay attacks extend the range of a legitimate tap. Skimming captures card data with a malicious reader overlay on an ATM or payment terminal. Defenses include shielding sleeves, newer cryptographic cards with challenge-response, tamper inspection, and chip-based payment. Bluetooth risks include bluejacking (sending unsolicited messages), bluesnarfing (stealing data from a device), and weak pairing; mitigations are turning Bluetooth off when unused, non-discoverable mode, and updated firmware. Malicious USB devices are dangerous because they can impersonate a keyboard and type commands (a rubber-ducky style attack) or carry malware; defenses are USB port control, data blockers, and removing autorun. Juice jacking abuses public charging ports to transfer data or install malware; use your own charger or a USB data blocker. QR code abuse (quishing) sends victims to malicious sites through a code that cannot be inspected by eye. Wireless de-authentication attacks force clients off a network, often as part of an evil twin attack, and are reduced by management frame protection in modern Wi-Fi.",
+        "keyTerms": [
+          {
+            "term": "RFID/NFC Cloning",
+            "def": "Copying a contactless credential and reusing it."
+          },
+          {
+            "term": "Skimming",
+            "def": "Capturing card data with a hidden reader."
+          },
+          {
+            "term": "Bluesnarfing",
+            "def": "Stealing data over Bluetooth."
+          },
+          {
+            "term": "Bluejacking",
+            "def": "Sending unsolicited Bluetooth messages."
+          },
+          {
+            "term": "Juice Jacking",
+            "def": "Attacking through public USB charging ports."
+          },
+          {
+            "term": "Quishing",
+            "def": "Phishing through malicious QR codes."
+          }
+        ],
+        "analogy": "Contactless badges are like hotel keycards that can be photocopied by someone brushing past you with the right reader in a bag. A skimmer is a fake sleeve over the card slot that quietly copies the card as it passes through.",
+        "technical": "An attacker walks behind an employee in a lobby with a hidden reader, copies the door badge, and writes it to a blank card, then enters the server room. A reception worker finds a free USB drive; plugged in, it presents itself as a keyboard and types commands that download malware. A parking-meter QR sticker was swapped for one that leads to a fake payment page.",
+        "table": {
+          "headers": [
+            "Attack",
+            "Vector",
+            "Defense"
+          ],
+          "rows": [
+            [
+              "RFID cloning",
+              "Short-range radio",
+              "Shielded sleeves, challenge-response cards"
+            ],
+            [
+              "Skimming",
+              "Hardware reader overlay",
+              "Inspect terminals, use chip or tap"
+            ],
+            [
+              "Bluesnarfing",
+              "Bluetooth",
+              "Turn off, patch, non-discoverable"
+            ],
+            [
+              "Malicious USB",
+              "Physical port",
+              "Port control, data blockers"
+            ],
+            [
+              "Juice jacking",
+              "Public charger",
+              "Own charger or data blocker"
+            ],
+            [
+              "Quishing",
+              "QR code",
+              "Preview URLs, training"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Bluejacking",
+            "b": "Bluesnarfing",
+            "diff": "Bluejacking only sends unwanted messages. Bluesnarfing steals data."
+          },
+          {
+            "a": "Skimming",
+            "b": "Cloning",
+            "diff": "Skimming captures the card data. Cloning writes captured data to a fake card to reuse it."
+          },
+          {
+            "a": "Phishing",
+            "b": "Quishing",
+            "diff": "Quishing is phishing where the lure is a QR code instead of a clickable link."
+          }
+        ],
+        "soc": "Badge cloning shows up as the same badge used in two places or at impossible times. Endpoint tools that block unknown USB device classes alert on a 'keyboard' that appears when no keyboard was plugged in.",
+        "takeaways": [
+          "RFID/NFC cloning copies contactless credentials; skimming captures card data.",
+          "Bluetooth: bluejacking annoys, bluesnarfing steals.",
+          "Malicious USB can act as a keyboard; public chargers can carry data attacks."
+        ],
+        "taglish": "RFID/NFC cloning — kinokopya ang badge. Skimming — kinukuha ang datos ng card gamit ang nakatagong reader. Bluejacking — nagpapadala ng mensahe. Bluesnarfing — nagnanakaw ng datos. Juice jacking — pagsalakay sa pamamagitan ng public USB charger. Quishing — phishing gamit ang QR code."
+      },
+      {
+        "id": "d2-t18",
+        "title": "Web Application Attacks in Depth: XSS, CSRF, SSRF, and Injection",
+        "tag": "2.3",
+        "minutes": 18,
+        "goal": "Explain how SQL injection, cross-site scripting, CSRF, SSRF, directory traversal, and session attacks work and which coding or configuration defense stops each.",
+        "why": "The vulnerabilities lesson names these attacks. The exam asks which attack a described behavior is and which control best prevents it.",
+        "simple": "SQL injection places database commands into an input field because the application builds queries by joining strings; the fix is parameterized queries (prepared statements) plus input validation and least-privilege database accounts. Cross-site scripting (XSS) injects script that runs in a victim's browser: stored XSS saves the script in the site (like a comment), reflected XSS bounces it from a crafted link, and DOM-based XSS happens entirely in client-side code. Defenses are output encoding, input validation, content security policy, and secure cookie flags. Cross-site request forgery (CSRF) tricks a logged-in user's browser into sending an unwanted request to a site that trusts the session cookie; anti-CSRF tokens and SameSite cookies stop it. Server-side request forgery (SSRF) makes the server itself send requests, often to internal services or cloud metadata endpoints the attacker cannot reach directly; defenses are allow-lists for outbound destinations and network controls. Directory (path) traversal uses sequences like ../ to read files outside the web root; fix with input canonicalization and restricted file permissions. Session attacks include session hijacking (stealing a token), session fixation (forcing a known session id), and cookie theft, mitigated by Secure and HttpOnly flags, regenerating session ids at login, and short timeouts. Insecure APIs expose similar problems: weak authorization on object ids, excessive data exposure, and missing rate limits. A web application firewall adds a layer but does not replace secure code.",
+        "keyTerms": [
+          {
+            "term": "SQL Injection",
+            "def": "Malicious SQL inserted through an input; stopped by parameterized queries."
+          },
+          {
+            "term": "XSS",
+            "def": "Script injected so it runs in other users' browsers."
+          },
+          {
+            "term": "CSRF",
+            "def": "Forcing a logged-in user's browser to submit an unwanted request."
+          },
+          {
+            "term": "SSRF",
+            "def": "Making the server send requests to places the attacker cannot reach."
+          },
+          {
+            "term": "Directory Traversal",
+            "def": "Using ../ to read files outside the intended folder."
+          },
+          {
+            "term": "Session Fixation",
+            "def": "Forcing a victim to use a session ID the attacker already knows."
+          }
+        ],
+        "analogy": "SQL injection is writing extra instructions on a form that the clerk then reads aloud as if they were part of the form. XSS is slipping a note into a public bulletin board that makes every reader's browser do something. CSRF is forging your signature on a request by exploiting that you are already inside the building. SSRF is tricking the receptionist into opening an internal door on the attacker's behalf.",
+        "technical": "A login form concatenates user input into a query; entering ' OR '1'='1 bypasses authentication. A comment box stores a script that steals the session cookies of everyone who views it. A banking page lacks anti-CSRF tokens, so a malicious page makes the victim's browser submit a transfer. A URL-fetch feature lets an attacker request the cloud provider's internal metadata address through the server.",
+        "table": {
+          "headers": [
+            "Attack",
+            "Who Is Abused",
+            "Best Defense"
+          ],
+          "rows": [
+            [
+              "SQL injection",
+              "The database",
+              "Parameterized queries"
+            ],
+            [
+              "XSS",
+              "Other users' browsers",
+              "Output encoding, CSP"
+            ],
+            [
+              "CSRF",
+              "A logged-in user's session",
+              "Anti-CSRF tokens, SameSite"
+            ],
+            [
+              "SSRF",
+              "The server's network position",
+              "Allow-list outbound requests"
+            ],
+            [
+              "Directory traversal",
+              "The file system",
+              "Canonicalize paths, least privilege"
+            ],
+            [
+              "Session hijack/fixation",
+              "Session tokens",
+              "Secure/HttpOnly, regenerate IDs"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "XSS",
+            "b": "CSRF",
+            "diff": "XSS runs attacker script in the victim's browser using the site's trust in the page. CSRF abuses the site's trust in the victim's browser session to send a forged request."
+          },
+          {
+            "a": "CSRF",
+            "b": "SSRF",
+            "diff": "CSRF forges a request from the user's browser. SSRF forges a request from the server."
+          },
+          {
+            "a": "Input Validation",
+            "b": "Output Encoding",
+            "diff": "Validation filters what comes in. Encoding makes data safe where it is displayed."
+          }
+        ],
+        "soc": "WAF and web server logs show injection strings (quotes, UNION, script tags), long strings of ../ sequences, and odd outbound requests from the web tier. The analyst checks whether the attack succeeded by looking at response codes and database errors.",
+        "takeaways": [
+          "Parameterized queries stop SQL injection; output encoding and CSP reduce XSS.",
+          "CSRF = forged request from the user's browser; SSRF = forged request from the server.",
+          "Secure, HttpOnly, and SameSite cookie flags and regenerated session IDs protect sessions."
+        ],
+        "taglish": "SQL injection — may dagdag na SQL command sa input; solusyon: parameterized queries. XSS — script na tumatakbo sa browser ng ibang user. CSRF — pinipilit ang browser mo na magpadala ng request. SSRF — ang mismong server ang pinapagpadala ng request. Directory traversal — ../ para makabasa ng file sa labas ng folder."
+      },
+      {
+        "id": "d2-t19",
+        "title": "Disinformation, Influence Operations, and Impersonation Online",
+        "tag": "2.2",
+        "minutes": 11,
+        "goal": "Define misinformation and disinformation, describe how they are used as attacks, and relate them to brand impersonation, deepfakes, and reputational harm.",
+        "why": "The objectives list misinformation and disinformation among threat vectors, which many learners skip because it feels non-technical.",
+        "simple": "Misinformation is false information shared without intent to deceive; disinformation is false information created and spread on purpose to mislead, manipulate, or cause harm. Influence operations by nation-states, hacktivists, or criminals combine fake accounts, bots, and doctored media to shape opinions, damage a company's reputation, move a stock price, or support phishing. Brand impersonation uses a trusted company's name, logo, and tone on fake websites, social accounts, and messages. Deepfakes make audio and video evidence of a person saying or doing things they never did. For organizations the risks are fraud (a fake executive instruction), reputational damage, market manipulation, and customer confusion. Controls are mostly process and awareness: verify via official channels, monitor for fake domains and social accounts and request takedowns, use email authentication to prevent spoofing of your domain, publish a clear communications plan for incidents, train staff to question urgent or sensational content, and use media provenance and content authentication where available.",
+        "keyTerms": [
+          {
+            "term": "Misinformation",
+            "def": "False information shared without intent to harm."
+          },
+          {
+            "term": "Disinformation",
+            "def": "False information spread deliberately."
+          },
+          {
+            "term": "Influence Operation",
+            "def": "A coordinated effort to shape opinions using fake accounts or content."
+          },
+          {
+            "term": "Brand Impersonation",
+            "def": "Copying a trusted brand to deceive customers or staff."
+          },
+          {
+            "term": "Deepfake",
+            "def": "AI-generated fake audio or video of a real person."
+          }
+        ],
+        "analogy": "Misinformation is a rumor your neighbor repeats in good faith. Disinformation is the person who invented the rumor on purpose to cause a panic.",
+        "technical": "A fake social account posing as a bank's support team replies to customers' complaints with a link to a cloned login page. The bank's brand-monitoring service spotted the account, filed takedowns, and posted a warning on its official channels. In another case, a fabricated press release hit the news and moved a company's share price briefly before being debunked.",
+        "table": {
+          "headers": [
+            "Term",
+            "Intent",
+            "Example"
+          ],
+          "rows": [
+            [
+              "Misinformation",
+              "No intent to harm",
+              "Sharing an outdated warning"
+            ],
+            [
+              "Disinformation",
+              "Deliberate",
+              "Fake press release"
+            ],
+            [
+              "Brand impersonation",
+              "Deceive customers",
+              "Cloned support account"
+            ],
+            [
+              "Deepfake",
+              "Deceive with fake media",
+              "Fake CEO video"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Misinformation",
+            "b": "Disinformation",
+            "diff": "The difference is intent. Misinformation is an honest mistake; disinformation is deliberate."
+          },
+          {
+            "a": "Brand Impersonation",
+            "b": "Typosquatting",
+            "diff": "Typosquatting is a lookalike domain. Brand impersonation is the wider act of copying a brand's identity anywhere, including social accounts and emails."
+          }
+        ],
+        "soc": "The SOC and brand-protection teams track lookalike domains, fake accounts, and abuse reports. They coordinate takedowns and feed indicators into email and web filters.",
+        "takeaways": [
+          "Disinformation is deliberate; misinformation is not.",
+          "Brand impersonation and deepfakes support fraud and reputational attacks.",
+          "Defenses are verification, monitoring, takedowns, email authentication, and awareness."
+        ],
+        "taglish": "Misinformation — maling impormasyon na naibahagi nang hindi sinasadya. Disinformation — sinadya ang pagpapakalat. Brand impersonation — ginagaya ang kilalang brand para manloko. Deepfake — pekeng audio o video na gawa ng AI."
+      },
+      {
+        "id": "d2-t20",
+        "title": "Social Engineering Tactics Catalog: Tricks Beyond Phishing",
+        "tag": "2.2",
+        "minutes": 14,
+        "goal": "Recognize specific social-engineering tactics — SIM swapping, dumpster diving, diversion theft, elicitation, quid pro quo, prepending, invoice scams, and consent phishing.",
+        "why": "The exam describes a trick in a sentence and expects its name. This lesson is the second catalog of names, beyond phishing.",
+        "simple": "Dumpster diving searches discarded trash for useful information, defeated by shredding and secure disposal. Diversion theft redirects a delivery or payment to the attacker's location or account. Elicitation draws information out through ordinary conversation, using flattery or feigned ignorance, without ever seeming to ask for secrets. Quid pro quo offers something in return, such as free IT help in exchange for credentials. Baiting leaves tempting media or offers, such as an infected USB drive. Tailgating and piggybacking follow someone through a secured door. Shoulder surfing watches a screen or keypad. Pretexting invents a believable scenario, and impersonation poses as a specific role. Prepending is adding a trusted-looking label or prefix, like 'Re:' or a fake [SECURE] tag, to make a message appear legitimate or part of an ongoing conversation. Invoice and gift card scams push for urgent payment. SIM swapping tricks a mobile carrier into moving a victim's number to the attacker's SIM so they receive SMS codes, defeating SMS-based multifactor authentication; carrier PINs and app-based or hardware authenticators reduce the risk. Consent phishing (illicit consent grant) tricks a user into granting a malicious application access to their account through a genuine login page, so no password is stolen. Watering hole and island hopping use trusted third parties as stepping stones. Defenses: verification procedures, clear escalation paths, awareness training with realistic examples, shredding, visitor management, and phishing-resistant authentication.",
+        "keyTerms": [
+          {
+            "term": "Dumpster Diving",
+            "def": "Searching discarded material for useful information."
+          },
+          {
+            "term": "Diversion Theft",
+            "def": "Redirecting a delivery or payment to the attacker."
+          },
+          {
+            "term": "Elicitation",
+            "def": "Drawing information out through natural-seeming conversation."
+          },
+          {
+            "term": "Quid Pro Quo",
+            "def": "Offering a favor in exchange for access or information."
+          },
+          {
+            "term": "SIM Swapping",
+            "def": "Moving a victim's phone number to an attacker's SIM."
+          },
+          {
+            "term": "Consent Phishing",
+            "def": "Tricking a user into authorizing a malicious app."
+          }
+        ],
+        "analogy": "Each tactic is a different con. Dumpster diving is reading someone's mail from their bin, elicitation is a friendly chat in which you share more than you meant to, and SIM swapping is persuading the phone company to hand your front-door key to a stranger.",
+        "technical": "An attacker calls a mobile carrier posing as a customer who 'lost' their phone, gets the number moved to a new SIM, and then uses password resets that send SMS codes to take over email and banking accounts. A user receives an email inviting them to authorize a 'document viewer' app on their genuine Microsoft or Google login page; granting consent gives the app lasting mailbox access without any password theft.",
+        "table": {
+          "headers": [
+            "Tactic",
+            "Method",
+            "Best Defense"
+          ],
+          "rows": [
+            [
+              "Dumpster diving",
+              "Reads discarded items",
+              "Shredding, secure bins"
+            ],
+            [
+              "Diversion theft",
+              "Redirect delivery/payment",
+              "Verify changes out-of-band"
+            ],
+            [
+              "Elicitation",
+              "Casual questioning",
+              "Training, need-to-know"
+            ],
+            [
+              "Quid pro quo",
+              "Favor for access",
+              "Verify the helper"
+            ],
+            [
+              "SIM swapping",
+              "Number moved to attacker",
+              "Carrier PIN, non-SMS MFA"
+            ],
+            [
+              "Consent phishing",
+              "Malicious app authorization",
+              "Restrict app consent, review grants"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Baiting",
+            "b": "Quid Pro Quo",
+            "diff": "Baiting leaves something tempting and waits. Quid pro quo offers a service in exchange for information."
+          },
+          {
+            "a": "Tailgating",
+            "b": "Piggybacking",
+            "diff": "Tailgating follows without the person knowing. Piggybacking has the person knowingly let you in."
+          },
+          {
+            "a": "SIM Swapping",
+            "b": "Phishing",
+            "diff": "SIM swapping attacks the carrier to hijack a number. Phishing tricks the user directly."
+          }
+        ],
+        "soc": "Analysts watch for sudden mobile-number changes followed by password resets, unusual OAuth app grants, and repeated visitors near secured doors. Consent grants are reviewed like any privileged access change.",
+        "takeaways": [
+          "Match the trick to its name by what the attacker does, not what the victim does.",
+          "SIM swapping defeats SMS-based MFA; use app or hardware authenticators.",
+          "Consent phishing needs no password, only a user clicking Allow on a real login page."
+        ],
+        "taglish": "Dumpster diving — kinakalkal ang basura. Diversion theft — inililihis ang delivery o bayad. Elicitation — kunwari kwentuhan lang pero kumukuha ng impormasyon. SIM swapping — inililipat ang numero mo sa SIM ng attacker. Consent phishing — pinapa-allow ang app na malisyoso sa totoong login page."
+      },
+      {
+        "id": "d2-t21",
+        "title": "Memory and Logic Flaws: Use-After-Free, Integer Overflow, IDOR, and More",
+        "tag": "2.3",
+        "minutes": 16,
+        "goal": "Recognize additional software flaws — use-after-free, integer overflow, memory leaks, format strings, insecure deserialization, IDOR, clickjacking, XXE, open redirects, and malicious updates.",
+        "why": "Beyond SQL injection and XSS, the exam describes other flaws by behavior and expects the name and the fix.",
+        "simple": "Memory flaws: a use-after-free bug uses memory after it has been released, so attacker-controlled data may be treated as valid objects; an integer overflow happens when arithmetic exceeds the storage size, producing wrong sizes that then cause buffer errors; a memory leak fails to release memory until the system slows or crashes (a denial-of-service risk); a format string flaw lets input control the output formatting function and read or write memory; a null pointer dereference crashes a program. Defenses include memory-safe languages, bounds checking, ASLR and DEP/NX memory protections, compiler hardening, and fuzzing. Logic and design flaws: insecure direct object reference (IDOR) lets a user change an ID in a request, such as an account number, and view someone else's record because authorization was not checked; broken access control is the broader category. Insecure deserialization turns untrusted data back into objects and can lead to code execution; XML external entity (XXE) injection abuses XML parsers to read files or make requests; an open redirect forwards users to attacker-chosen sites from a trusted domain, helping phishing; clickjacking overlays invisible frames so users click something different than they see, countered by frame-blocking headers; race conditions and TOCTOU exploit timing. A malicious update compromises an update channel or package so that users install attacker code, relevant to the supply chain; mitigations are code signing, verified hashes, and trusted repositories. Fixes include secure coding standards, code review, SAST/DAST, input validation, authorization checks on every request, and patching.",
+        "keyTerms": [
+          {
+            "term": "Use-After-Free",
+            "def": "Using memory after it has been released."
+          },
+          {
+            "term": "Integer Overflow",
+            "def": "Arithmetic exceeds storage and produces a wrong value."
+          },
+          {
+            "term": "IDOR",
+            "def": "Changing an identifier to access another user's data without an authorization check."
+          },
+          {
+            "term": "Insecure Deserialization",
+            "def": "Rebuilding objects from untrusted data, risking code execution."
+          },
+          {
+            "term": "XXE",
+            "def": "Abuse of XML parsers to read files or make requests."
+          },
+          {
+            "term": "Clickjacking",
+            "def": "Hidden overlays trick users into clicking something unintended."
+          }
+        ],
+        "analogy": "IDOR is changing the number on your hotel room key envelope and finding the clerk gives you the next guest's room. Use-after-free is a coat-check ticket that still works after your coat was given away to someone else.",
+        "technical": "A web app's URL shows /invoice?id=1042. Changing it to 1043 shows another customer's invoice because the app checks login but not ownership: IDOR. A game server parses saved-state files by deserializing them directly, and a crafted file executes attacker code. A malicious package update in a popular library delivers malware to every build that pulls the latest version without verifying it.",
+        "table": {
+          "headers": [
+            "Flaw",
+            "What Goes Wrong",
+            "Typical Fix"
+          ],
+          "rows": [
+            [
+              "Use-after-free",
+              "Stale memory reference",
+              "Memory-safe code, ASLR"
+            ],
+            [
+              "Integer overflow",
+              "Wrong size calculation",
+              "Range checks"
+            ],
+            [
+              "IDOR",
+              "Missing ownership check",
+              "Authorize every request"
+            ],
+            [
+              "Insecure deserialization",
+              "Untrusted objects rebuilt",
+              "Validate, avoid native deserialization"
+            ],
+            [
+              "XXE",
+              "XML parser follows external entities",
+              "Disable external entities"
+            ],
+            [
+              "Clickjacking",
+              "Hidden frame overlay",
+              "Frame-blocking headers"
+            ],
+            [
+              "Malicious update",
+              "Poisoned update channel",
+              "Code signing, hash checks"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "IDOR",
+            "b": "Privilege Escalation",
+            "diff": "IDOR is a missing authorization check on a specific object. Privilege escalation is the broader outcome of gaining more rights than intended."
+          },
+          {
+            "a": "Memory Leak",
+            "b": "Buffer Overflow",
+            "diff": "A leak slowly consumes memory. An overflow writes past a buffer's boundary."
+          },
+          {
+            "a": "Clickjacking",
+            "b": "CSRF",
+            "diff": "Clickjacking tricks the user into clicking. CSRF forges a request without any visible click."
+          }
+        ],
+        "soc": "Analysts spot IDOR attempts as sequential ID guessing in web logs, repeated 200 responses for incrementing IDs from one session. Crash dumps and repeated process restarts hint at memory flaws being probed.",
+        "takeaways": [
+          "IDOR = missing ownership check; fix by authorizing every request.",
+          "Memory flaws (use-after-free, integer overflow, leaks) are fixed by memory-safe code, bounds checking, ASLR, and patching.",
+          "Malicious updates are countered with code signing and verification."
+        ],
+        "taglish": "IDOR — binabago ang ID sa request at nakikita ang datos ng iba. Use-after-free — ginagamit pa ang memory na pinakawalan na. Integer overflow — lumampas sa laki kaya mali ang resulta. XXE — inaabuso ang XML parser. Clickjacking — nakatagong layer kaya iba ang nai-click mo."
+      },
+      {
+        "id": "d2-t22",
+        "title": "After the Break-In: Persistence, Lateral Movement, C2, and Exfiltration",
+        "tag": "2.4",
+        "minutes": 17,
+        "goal": "Describe what attackers do after initial access — persistence, privilege escalation, lateral movement, living off the land, command and control, DNS tunneling, and data exfiltration — and how defenders see each stage.",
+        "why": "SOC work is mostly about the middle and end of an attack. The exam expects you to recognize these stages from log or alert descriptions.",
+        "simple": "After initial access, an attacker establishes persistence so they survive reboots and password changes: new accounts, scheduled tasks, registry run keys, startup items, web shells, or implanted services. They escalate privileges to gain admin rights, then move laterally, using stolen credentials, remote management tools, or protocols such as SMB and RDP to reach other machines, a step also called pivoting. Living off the land means using built-in tools like PowerShell, WMI, and PsExec so activity looks like normal administration and avoids malware signatures. Command and control (C2) is the channel by which the attacker directs compromised hosts; beaconing is the regular, periodic check-in that characterizes it. Attackers hide C2 in legitimate-looking traffic such as HTTPS, use domain generation algorithms or fast-flux DNS to evade blocking, and can tunnel data through DNS queries (DNS tunneling). Data exfiltration moves stolen data out, often after staging it in one location and compressing or encrypting it, sometimes in small chunks over time. Ransomware operators may steal first and then encrypt (double extortion). Defenses: monitoring for unusual process chains, new scheduled tasks and accounts, internal scanning and east-west spikes, beaconing patterns, long or odd DNS queries, and large outbound transfers, plus segmentation, least privilege, MFA, egress filtering, and endpoint detection and response.",
+        "keyTerms": [
+          {
+            "term": "Persistence",
+            "def": "Techniques that keep access after reboots or credential changes."
+          },
+          {
+            "term": "Lateral Movement",
+            "def": "Moving from one compromised system to others."
+          },
+          {
+            "term": "Living off the Land",
+            "def": "Abusing built-in tools to blend in with normal activity."
+          },
+          {
+            "term": "Beaconing",
+            "def": "Regular, periodic check-ins from malware to its controller."
+          },
+          {
+            "term": "DNS Tunneling",
+            "def": "Hiding data or commands inside DNS queries and responses."
+          },
+          {
+            "term": "Exfiltration",
+            "def": "Moving stolen data out of the environment."
+          }
+        ],
+        "analogy": "A burglar who got in through a window now copies a spare key (persistence), wanders room to room (lateral movement), wears a staff uniform (living off the land), phones the boss at set times (beaconing), and carries the loot out a little at a time (exfiltration).",
+        "technical": "An analyst sees a workstation making a tiny outbound request every sixty seconds to a newly registered domain, a scheduled task created last night that nobody approved, and PsExec launched from a non-admin laptop to a file server. Together these show beaconing, persistence, and lateral movement. Later, an unusual volume of long TXT DNS queries from the same host indicates DNS tunneling.",
+        "table": {
+          "headers": [
+            "Stage",
+            "What the Attacker Does",
+            "What Defenders See"
+          ],
+          "rows": [
+            [
+              "Persistence",
+              "Scheduled task, new account, run key",
+              "New tasks or accounts, autoruns"
+            ],
+            [
+              "Lateral movement",
+              "Uses SMB, RDP, PsExec",
+              "One account on many hosts"
+            ],
+            [
+              "Living off the land",
+              "Uses PowerShell, WMI",
+              "Odd parent-child process chains"
+            ],
+            [
+              "C2 beaconing",
+              "Periodic check-in",
+              "Regular small outbound connections"
+            ],
+            [
+              "DNS tunneling",
+              "Data in DNS queries",
+              "Long, high-volume DNS requests"
+            ],
+            [
+              "Exfiltration",
+              "Staging then outbound transfer",
+              "Large or unusual outbound data"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Persistence",
+            "b": "Privilege Escalation",
+            "diff": "Persistence keeps access over time. Privilege escalation raises the level of access."
+          },
+          {
+            "a": "Lateral Movement",
+            "b": "Pivoting",
+            "diff": "Lateral movement is the goal of spreading across systems. Pivoting is using one compromised host as a relay to reach others."
+          },
+          {
+            "a": "Beaconing",
+            "b": "Exfiltration",
+            "diff": "Beaconing is a recurring check-in for instructions. Exfiltration is moving stolen data out."
+          }
+        ],
+        "soc": "Detection ties these together with the MITRE ATT&CK framework: each behavior maps to a tactic. SOC analysts hunt for beacon intervals in proxy logs, new persistence artifacts after an alert, and east-west connections that break normal patterns.",
+        "takeaways": [
+          "After entry attackers persist, escalate, move laterally, communicate with C2, then exfiltrate.",
+          "Living off the land uses built-in tools, so behavior and process chains matter more than file signatures.",
+          "Beaconing, DNS tunneling, and large outbound transfers are classic network indicators."
+        ],
+        "taglish": "Persistence — para manatili ang access. Lateral movement — lumilipat sa ibang computer. Living off the land — gumagamit ng built-in na tools para hindi mahalata. Beaconing — regular na pag-uulat sa controller. DNS tunneling — nakatago ang data sa DNS queries. Exfiltration — paglabas ng ninakaw na data."
+      },
+      {
+        "id": "d2-t23",
+        "title": "The Cybercrime Economy: Ransomware-as-a-Service and Access Brokers",
+        "tag": "2.1",
+        "minutes": 12,
+        "goal": "Explain how modern cybercrime is organized — ransomware-as-a-service, initial access brokers, double extortion, and botnets-for-hire — and why this changes defense priorities.",
+        "why": "Threat actor questions focus on motivation and resources; understanding the criminal economy explains why attacks are so common and so professional.",
+        "simple": "Organized crime operates like a supply chain with specialists. Initial access brokers sell footholds into networks, such as stolen VPN credentials. Ransomware-as-a-service (RaaS) operators provide the malware, payment portal, and support, and affiliates carry out the attacks and split the profits. Double extortion encrypts data and also steals it, threatening to publish it, so backups alone do not solve the problem; some groups add a third pressure such as contacting customers or launching DDoS attacks. Malware-as-a-service, phishing kits, and botnets-for-hire (booter or stresser services) let unskilled actors rent capabilities. Cryptocurrency is used for payment, and negotiators, money launderers, and bulletproof hosting providers complete the ecosystem. Motivation is mostly financial, so attackers target what pays: backups, remote access, unpatched edge devices, and organizations that cannot tolerate downtime. Defensive implications: multifactor authentication on remote access, fast patching of internet-facing systems, immutable and tested backups, segmentation, EDR, a practiced incident response plan, and a decision framework prepared in advance for ransom demands with legal and law-enforcement advice. Paying does not guarantee recovery or deletion of stolen data.",
+        "keyTerms": [
+          {
+            "term": "Initial Access Broker",
+            "def": "Sells ready-made access to compromised networks."
+          },
+          {
+            "term": "RaaS",
+            "def": "Ransomware offered as a service, with affiliates doing the attacks."
+          },
+          {
+            "term": "Double Extortion",
+            "def": "Encrypting data and threatening to leak stolen data."
+          },
+          {
+            "term": "Booter / Stresser",
+            "def": "A rented DDoS service."
+          },
+          {
+            "term": "Affiliate",
+            "def": "A partner who runs attacks using a RaaS platform and shares profits."
+          }
+        ],
+        "analogy": "Think of a franchise. The RaaS operator provides the brand, the software, and customer support, and the affiliates run local branches. Initial access brokers are the real-estate agents who sell keys to buildings.",
+        "technical": "A broker buys VPN credentials leaked in an infostealer log and sells them for a small fee. A ransomware affiliate uses them, steals files, encrypts servers, and demands payment under a RaaS program. The victim restores from backups but the attacker still threatens to publish the stolen data, forcing legal, privacy, and communications responses.",
+        "table": {
+          "headers": [
+            "Role",
+            "What They Provide"
+          ],
+          "rows": [
+            [
+              "Initial access broker",
+              "Foothold into a network"
+            ],
+            [
+              "RaaS operator",
+              "Malware, portal, support"
+            ],
+            [
+              "Affiliate",
+              "Runs the attack"
+            ],
+            [
+              "Booter service",
+              "Rented DDoS"
+            ],
+            [
+              "Launderer / negotiator",
+              "Moves and manages the money"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Single Extortion",
+            "b": "Double Extortion",
+            "diff": "Single extortion encrypts and demands payment for the key. Double extortion also steals data and threatens to publish it."
+          },
+          {
+            "a": "RaaS",
+            "b": "Malware",
+            "diff": "RaaS is the business model and platform. The malware is just one component."
+          },
+          {
+            "a": "Initial Access Broker",
+            "b": "Affiliate",
+            "diff": "The broker sells access. The affiliate uses access to carry out the ransomware attack."
+          }
+        ],
+        "soc": "Dark-web monitoring and threat intelligence may reveal that company credentials are for sale. Fast response means resetting credentials and checking VPN logs before an affiliate uses them.",
+        "takeaways": [
+          "Cybercrime is a specialized supply chain: brokers, RaaS operators, affiliates, and launderers.",
+          "Double extortion makes backups necessary but not sufficient.",
+          "Defend the paths that pay: remote access, edge devices, and backups."
+        ],
+        "taglish": "Initial access broker — nagbebenta ng pasok sa network. RaaS — ransomware na parang serbisyo, may mga affiliate. Double extortion — i-eencrypt at nanakawin din ang data para pagbantaan na ilalabas. Booter — bayad na DDoS."
       }
     ]
   },
@@ -1424,6 +2921,488 @@ const DOMAINS = [
         ],
         taglish:
           "Full backup — kinokopya lahat tuwing gagawin, pinakasimple i-restore pero pinakamabagal at malaki. Incremental — kokopyahin lang yung nagbago mula sa pinakahuling backup (kahit incremental din yun), pinakamabilis pero kailangan buong chain (full + lahat ng incremental) para i-restore nang maayos. Differential — kokopyahin ang nagbago mula sa huling full backup lang, kaya lumalaki habang tumatagal pero dalawang file lang (full + pinakabagong differential) ang kailangan i-restore. 3-2-1 rule — dapat may 3 kopya, sa 2 magkaibang klase ng storage, at 1 nasa ibang lokasyon (offsite), para hindi maubos lahat sa iisang sakuna. Immutable/offline backup — hindi kayang baguhin o burahin kahit ng attacker na nakapasok na sa network, kaya bagsak ang plano ng ransomware na sirain din ang backup."
+      },
+      {
+        "id": "d3-t46",
+        "title": "Data Types, Sovereignty, Residency, and Geographic Controls",
+        "tag": "3.3",
+        "minutes": 14,
+        "goal": "Identify data types (regulated, trade secret, intellectual property, legal, financial, human- vs non-human-readable) and explain data sovereignty, residency, and geolocation controls.",
+        "why": "Data protection questions often hinge on where data lives and which law applies, not only on encryption.",
+        "simple": "Data comes in types that drive handling rules: regulated data (such as health or payment card data) is governed by law or industry standard; trade secrets and intellectual property give a company competitive advantage; legal and financial information have confidentiality and retention rules; personal data identifies a person. Data can be human-readable (documents) or non-human-readable (encoded formats, binaries, structured records), and both need protection. Data sovereignty means data is subject to the laws of the country where it is stored or collected, which may conflict with other countries' demands. Data residency is the physical or geographic location where data is kept, and some laws or contracts require that it stay in a region. Geolocation and geofencing restrict or allow access based on a user's or device's location, and cloud regions let organizations choose where data is stored. Related controls: encryption with customer-managed keys, access restrictions by location, contract terms with cloud providers, data localization requirements, retention schedules, and disposal rules. Cross-border transfers add legal complexity, so teams record where data flows and use approved transfer mechanisms. Data owners decide classification and handling; custodians implement; privacy officers advise on legal duties.",
+        "keyTerms": [
+          {
+            "term": "Regulated Data",
+            "def": "Data controlled by law or standard, such as health or card data."
+          },
+          {
+            "term": "Data Sovereignty",
+            "def": "Data is subject to the laws of the country where it is located."
+          },
+          {
+            "term": "Data Residency",
+            "def": "The geographic location where data is stored."
+          },
+          {
+            "term": "Geofencing",
+            "def": "Restricting access or features by location."
+          },
+          {
+            "term": "Data Localization",
+            "def": "A rule that certain data must stay within a country or region."
+          }
+        ],
+        "analogy": "Data sovereignty is like a suitcase being subject to the customs rules of whichever country it is sitting in. Residency is simply which country's airport the suitcase is parked at.",
+        "technical": "A European company chooses a cloud region inside its own jurisdiction, keeps encryption keys on-premises, and blocks administrator logins from countries where it has no staff. Marketing asks to use a US analytics tool; the privacy team checks cross-border transfer rules before approving it.",
+        "table": {
+          "headers": [
+            "Concept",
+            "Question It Answers",
+            "Example"
+          ],
+          "rows": [
+            [
+              "Data sovereignty",
+              "Which country's law applies?",
+              "Storing data in a foreign cloud region"
+            ],
+            [
+              "Data residency",
+              "Where is it physically stored?",
+              "Region selection"
+            ],
+            [
+              "Geofencing",
+              "Where is the user?",
+              "Block logins outside the country"
+            ],
+            [
+              "Data localization",
+              "Must it stay local?",
+              "Law requires in-country storage"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Sovereignty",
+            "b": "Residency",
+            "diff": "Residency is WHERE the data is. Sovereignty is WHOSE law applies because of where it is."
+          },
+          {
+            "a": "Data Owner",
+            "b": "Data Custodian",
+            "diff": "The owner is accountable for the data and its classification. The custodian operates the controls that protect it."
+          }
+        ],
+        "soc": "Analysts watch for data flowing to unexpected regions, impossible-travel logins, and cloud storage created outside approved regions, which can breach residency rules.",
+        "takeaways": [
+          "Sovereignty is about whose law applies; residency is about where it is stored.",
+          "Regulated data, trade secrets, and personal data each carry different handling rules.",
+          "Geofencing and cloud region controls enforce location policies."
+        ],
+        "taglish": "Data sovereignty — sumusunod ang data sa batas ng bansang kinalalagyan nito. Data residency — kung saan pisikal na nakalagay ang data. Geofencing — nililimitahan ang access ayon sa lokasyon."
+      },
+      {
+        "id": "d3-t18",
+        "title": "Redundancy in Practice: RAID, Clustering, Active-Active, and Multipath",
+        "tag": "3.4",
+        "minutes": 15,
+        "goal": "Choose among RAID levels, clustering, active-active and active-passive designs, NIC teaming, and multipath for a stated availability or performance need.",
+        "why": "The High Availability lesson explains the idea; the exam asks you to pick the specific redundancy technique for a scenario.",
+        "simple": "RAID combines disks for performance or fault tolerance. RAID 0 stripes data for speed with no redundancy, so one disk failure loses everything. RAID 1 mirrors two disks. RAID 5 stripes with distributed parity and survives one disk failure; RAID 6 uses double parity and survives two; RAID 10 mirrors and stripes for both speed and redundancy. RAID is availability for disks, not a backup, since deletion or ransomware is mirrored instantly. Clustering groups servers so that if one fails another takes over. In an active-active design all nodes serve traffic at once, so capacity is shared and failure only reduces it; in an active-passive design a standby node waits and takes over on failure, which is simpler but leaves hardware idle. NIC teaming combines network cards for redundancy or throughput, and multipath connects a server to storage through several paths so a cable or switch failure does not cut access. Other practices: redundant power supplies, UPS and generators, geographic dispersion across sites, and platform diversity (using different operating systems or vendors so one flaw does not take out everything). Test failover regularly, since untested redundancy often fails when needed.",
+        "keyTerms": [
+          {
+            "term": "RAID 1",
+            "def": "Mirrors data across two disks."
+          },
+          {
+            "term": "RAID 5",
+            "def": "Striping with parity; survives one disk failure."
+          },
+          {
+            "term": "RAID 10",
+            "def": "Mirrored stripes; speed plus redundancy."
+          },
+          {
+            "term": "Active-Active",
+            "def": "All nodes serve traffic simultaneously."
+          },
+          {
+            "term": "Active-Passive",
+            "def": "A standby node takes over only on failure."
+          },
+          {
+            "term": "Multipath",
+            "def": "Several routes to storage so one path failing is harmless."
+          }
+        ],
+        "analogy": "RAID 1 is keeping a photocopy of every page. RAID 5 is splitting a document across disks plus a clever checksum that lets you rebuild any one missing piece. Active-passive is a spare driver sitting in the van; active-active is two drivers sharing the route.",
+        "technical": "A database server uses RAID 10 for fast writes with redundancy, two cluster nodes in active-passive for failover, and teamed network cards. During a drill, the team pulls the primary node's plug and confirms the standby takes over within the RTO.",
+        "table": {
+          "headers": [
+            "Technique",
+            "Protects Against",
+            "Note"
+          ],
+          "rows": [
+            [
+              "RAID 0",
+              "Nothing (speed only)",
+              "No fault tolerance"
+            ],
+            [
+              "RAID 1",
+              "One disk failure",
+              "Mirror"
+            ],
+            [
+              "RAID 5",
+              "One disk failure",
+              "Parity"
+            ],
+            [
+              "RAID 6",
+              "Two disk failures",
+              "Double parity"
+            ],
+            [
+              "RAID 10",
+              "Disk failures plus speed",
+              "Mirror and stripe"
+            ],
+            [
+              "Active-active",
+              "Node failure",
+              "Capacity shared"
+            ],
+            [
+              "Active-passive",
+              "Node failure",
+              "Standby idle"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "RAID",
+            "b": "Backup",
+            "diff": "RAID keeps the system running when a disk dies. It does not protect against deletion, corruption, or ransomware. Only backups do."
+          },
+          {
+            "a": "Active-Active",
+            "b": "Active-Passive",
+            "diff": "Active-active uses all nodes at once. Active-passive keeps a standby unused until failure."
+          },
+          {
+            "a": "Geographic Dispersion",
+            "b": "Platform Diversity",
+            "diff": "Dispersion spreads sites apart. Diversity varies the technology so one flaw does not affect everything."
+          }
+        ],
+        "soc": "Monitoring alerts on degraded RAID arrays and failed cluster heartbeats. Analysts correlate repeated disk errors with a coming failure and schedule replacement in a maintenance window.",
+        "takeaways": [
+          "RAID 0 has no redundancy; RAID 1, 5, 6, and 10 tolerate disk failure; none replace backups.",
+          "Active-active shares load; active-passive keeps a standby.",
+          "Test failover; untested redundancy is a guess."
+        ],
+        "taglish": "RAID 0 — bilis lang, walang proteksyon. RAID 1 — mirror. RAID 5 — parity, kaya ang isang disk na masira ay kaya pang i-recover. RAID 10 — mirror at stripe. Active-active — sabay na gumagana. Active-passive — may nakahandang standby. Ang RAID ay hindi backup."
+      },
+      {
+        "id": "d3-t19",
+        "title": "Cloud-Native Architecture and DevSecOps",
+        "tag": "3.1",
+        "minutes": 17,
+        "goal": "Explain containers, microservices, serverless, API gateways, virtual private clouds, CI/CD pipelines, and cloud security posture management, with their main security concerns.",
+        "why": "Modern architecture terms appear throughout the objectives, and the exam tests the security implications of each, not just their definitions.",
+        "simple": "A container packages an application and its dependencies and shares the host operating system kernel, so it is lighter than a virtual machine but offers weaker isolation; a container escape is an attack that breaks out to the host. Container images should come from trusted registries and be scanned. Microservices split an application into small services that talk over APIs, which adds many network paths to secure, so service-to-service authentication and east-west controls matter. Serverless (functions as a service) runs code without managing servers, so the provider handles the platform while you remain responsible for code, permissions, and data. An API gateway fronts APIs to enforce authentication, rate limiting, and logging. A virtual private cloud (VPC) is a logically isolated network inside a public cloud, divided into subnets with security groups and network ACLs. Infrastructure as code defines environments in version-controlled templates, which brings consistency and review, but misconfigurations can be repeated at scale and secrets must not be embedded. CI/CD pipelines automate building, testing, and deploying, and DevSecOps builds security checks into them: static and dynamic testing, dependency and secret scanning, and image scanning. Cloud security posture management (CSPM) continuously checks cloud configuration against best practices, and a cloud workload protection platform protects workloads at runtime. Immutable infrastructure replaces rather than patches running systems, which reduces drift.",
+        "keyTerms": [
+          {
+            "term": "Container",
+            "def": "A lightweight package sharing the host kernel."
+          },
+          {
+            "term": "Container Escape",
+            "def": "Breaking out of a container to the host."
+          },
+          {
+            "term": "Microservices",
+            "def": "An application built from many small API-connected services."
+          },
+          {
+            "term": "Serverless",
+            "def": "Running code as functions with the provider managing servers."
+          },
+          {
+            "term": "VPC",
+            "def": "An isolated virtual network inside a public cloud."
+          },
+          {
+            "term": "CSPM",
+            "def": "Tools that continuously check cloud configuration against best practice."
+          }
+        ],
+        "analogy": "A VM is a separate apartment with its own plumbing. A container is a room in a shared apartment: lighter and faster to set up, but the walls are thinner. Microservices are a food court of many small stalls instead of one giant restaurant, which means many more doors that need guards.",
+        "technical": "A team stores a pipeline's cloud key in the repository by mistake; a secret-scanning step in CI blocks the commit. Another team runs CSPM, which flags a storage bucket made public and a security group open to the internet. They fix both, then add the rule to infrastructure-as-code so it cannot return.",
+        "table": {
+          "headers": [
+            "Concept",
+            "Key Benefit",
+            "Main Security Concern"
+          ],
+          "rows": [
+            [
+              "Container",
+              "Lightweight, portable",
+              "Shared kernel, image trust"
+            ],
+            [
+              "Microservices",
+              "Scalable, independent",
+              "Many APIs, east-west traffic"
+            ],
+            [
+              "Serverless",
+              "No servers to manage",
+              "Permissions and code flaws"
+            ],
+            [
+              "API gateway",
+              "Central control",
+              "Misconfiguration, auth gaps"
+            ],
+            [
+              "VPC",
+              "Isolated cloud network",
+              "Open security groups"
+            ],
+            [
+              "IaC / CI/CD",
+              "Repeatable, reviewed",
+              "Secrets, repeated misconfigs"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Container",
+            "b": "Virtual Machine",
+            "diff": "A VM virtualizes hardware and runs its own OS. A container shares the host kernel, so it is lighter but less isolated."
+          },
+          {
+            "a": "Serverless",
+            "b": "Container",
+            "diff": "With serverless you give the provider only a function. With containers you manage the image and runtime."
+          },
+          {
+            "a": "CSPM",
+            "b": "Vulnerability Scanner",
+            "diff": "CSPM checks cloud CONFIGURATION. A vulnerability scanner looks for flaws in software and hosts."
+          }
+        ],
+        "soc": "Cloud logs (control-plane audit logs, flow logs, and function logs) are investigation sources, and misconfiguration findings from CSPM feed the vulnerability workflow.",
+        "takeaways": [
+          "Containers share the host kernel; escapes are the main risk.",
+          "Serverless: provider secures the platform, you secure code, permissions, and data.",
+          "DevSecOps adds security checks (secret, dependency, image scanning) into CI/CD."
+        ],
+        "taglish": "Container — gumagamit ng parehong kernel ng host kaya mas magaan pero mas manipis ang proteksyon. Microservices — maraming maliit na serbisyo. Serverless — function lang ang ibinibigay mo. VPC — hiwalay na network sa cloud. CSPM — tumitingin kung tama ang configuration sa cloud."
+      },
+      {
+        "id": "d3-t21",
+        "title": "Secure Data Disposal: Wiping, Degaussing, Crypto Erase, and Destruction",
+        "tag": "3.3",
+        "minutes": 12,
+        "goal": "Choose the right sanitization or destruction method — overwrite, degauss, crypto erase, shredding, pulverizing, incineration — and explain certificates of destruction and why SSDs are different.",
+        "why": "Data disposal is a classic exam topic: the right answer depends on media type, sensitivity, and whether the media will be reused.",
+        "simple": "Sanitization makes data unrecoverable, and the method must match the media and the sensitivity. Clearing overwrites data with patterns and is acceptable for reuse within the organization. Purging uses stronger techniques so data cannot be recovered even with lab methods; destruction physically destroys the media. Overwriting (wiping) writes new data over old and works on magnetic disks. Degaussing uses a strong magnetic field to erase magnetic media, but it does not work on SSDs or optical media. Cryptographic erase (crypto erase) destroys the encryption key for self-encrypting or fully encrypted drives, leaving data unreadable instantly, which is the practical choice for SSDs and cloud storage. SSDs spread data across cells and wear-leveling can hide old data, so simple overwriting can miss it. Physical destruction includes shredding, pulverizing, drilling, crushing, and incineration. Paper is shredded or pulped, with cross-cut shredding preferred. A certificate of destruction from a vendor documents what was destroyed, when, and how, supporting audit and legal requirements. Disposal ties into retention policy, legal holds (do not destroy what is under hold), and chain of custody for media in transit. Deleting a file or formatting a drive does not sanitize it. Cloud environments rely on provider guarantees plus crypto erase by deleting keys.",
+        "keyTerms": [
+          {
+            "term": "Clear / Purge / Destroy",
+            "def": "Increasing levels of sanitization, from overwrite to physical destruction."
+          },
+          {
+            "term": "Degaussing",
+            "def": "Erasing magnetic media with a strong magnetic field."
+          },
+          {
+            "term": "Crypto Erase",
+            "def": "Destroying the encryption key to make data unreadable."
+          },
+          {
+            "term": "Pulverizing",
+            "def": "Physically grinding media into tiny pieces."
+          },
+          {
+            "term": "Certificate of Destruction",
+            "def": "A record proving media was destroyed."
+          }
+        ],
+        "analogy": "Deleting a file is removing the entry from a library catalog while the book stays on the shelf. Wiping is replacing the book's pages with blanks. Crypto erase is burning the only key to a vault. Shredding is burning the whole book.",
+        "technical": "A company retires 200 laptops with full-disk encryption: IT performs crypto erase by destroying keys, wipes them, and resells them. Backup tapes from a closed project are degaussed and shredded by a vendor who provides a certificate of destruction. Old SSDs from a database server are physically shredded because they held highly sensitive data.",
+        "table": {
+          "headers": [
+            "Method",
+            "Works On",
+            "Note"
+          ],
+          "rows": [
+            [
+              "Overwrite / wipe",
+              "Magnetic disks, some SSDs",
+              "Reuse possible"
+            ],
+            [
+              "Degauss",
+              "Magnetic media",
+              "Not SSDs or optical"
+            ],
+            [
+              "Crypto erase",
+              "Encrypted drives, SSDs, cloud",
+              "Fast; key destruction"
+            ],
+            [
+              "Shred / pulverize",
+              "Any media",
+              "Physical, irreversible"
+            ],
+            [
+              "Incinerate",
+              "Any media",
+              "Highest assurance"
+            ],
+            [
+              "Certificate of destruction",
+              "Documentation",
+              "Audit evidence"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Deleting",
+            "b": "Sanitizing",
+            "diff": "Deleting removes a pointer; the data usually remains. Sanitizing makes it unrecoverable."
+          },
+          {
+            "a": "Degaussing",
+            "b": "Crypto Erase",
+            "diff": "Degaussing uses magnets on magnetic media. Crypto erase destroys keys and works on SSDs."
+          },
+          {
+            "a": "Purging",
+            "b": "Destroying",
+            "diff": "Purging renders data unrecoverable while media may be reused. Destroying physically ruins the media."
+          }
+        ],
+        "soc": "Asset management tracks media through to disposal with chain of custody. Auditors ask for certificates of destruction as evidence.",
+        "takeaways": [
+          "Match method to media: degauss magnetic, crypto erase encrypted/SSD, shred or pulverize for highest assurance.",
+          "Deleting or formatting is not sanitization.",
+          "Keep a certificate of destruction and honor legal holds before disposal."
+        ],
+        "taglish": "Overwrite — pinapalitan ang laman. Degauss — magnet para sa magnetic media, hindi gumagana sa SSD. Crypto erase — sinisira ang key kaya hindi na mabasa ang data. Shredding at pulverizing — pisikal na pagsira. Certificate of destruction — patunay na nawasak."
+      },
+      {
+        "id": "d3-t22",
+        "title": "Security Device Placement: Inline vs Passive, Fail-Open vs Fail-Closed",
+        "tag": "3.2",
+        "minutes": 14,
+        "goal": "Decide where to place firewalls, IDS, IPS, proxies, and sensors, and explain inline versus passive monitoring, fail-open versus fail-closed behavior, and active versus passive detection.",
+        "why": "The exam describes a design goal, such as blocking attacks without risking an outage, and asks where a device belongs and how it should behave on failure.",
+        "simple": "An inline device sits directly in the traffic path, so all traffic passes through it and it can block; a firewall and an intrusion prevention system (IPS) are typically inline. A passive device receives a copy of traffic, for example from a tap or SPAN port, and can only observe and alert; an intrusion detection system (IDS) is typically passive. Inline placement gives control but adds a possible point of failure and latency. Failure mode matters: fail-open means that when the device fails, traffic continues to flow unprotected, which preserves availability; fail-closed (fail-secure) means that when it fails, traffic is blocked, which preserves security. Choose fail-open when availability is the priority, such as life-safety systems, and fail-closed when security is the priority, such as a perimeter protecting sensitive data. A physical door lock has the same choice: fail-safe unlocks in a power loss so people can leave, fail-secure stays locked. Detection can be active (it takes action, as an IPS does) or passive (it only records, as an IDS does). Placement guidance: put firewalls at network boundaries and between zones, place a screened subnet (DMZ) for public-facing services, put web application firewalls and reverse proxies in front of web servers, place sensors where they can see important traffic such as at the internet edge, data center entrance, and critical segments, and use load balancers for high availability. Avoid single points of failure by deploying devices in redundant pairs, and monitor the health of security devices themselves.",
+        "keyTerms": [
+          {
+            "term": "Inline",
+            "def": "Placed directly in the traffic path, able to block."
+          },
+          {
+            "term": "Passive",
+            "def": "Receives a copy of traffic and can only observe."
+          },
+          {
+            "term": "Fail-Open",
+            "def": "On failure, traffic continues without protection."
+          },
+          {
+            "term": "Fail-Closed",
+            "def": "On failure, traffic is blocked."
+          },
+          {
+            "term": "IDS",
+            "def": "Detects and alerts; typically passive."
+          },
+          {
+            "term": "IPS",
+            "def": "Detects and blocks; typically inline."
+          }
+        ],
+        "analogy": "An inline device is a security guard standing in the doorway; everyone must pass. A passive device is a guard watching the doorway on camera. Fail-open is a door that unlocks in a power failure so no one is trapped. Fail-closed is a vault door that locks itself.",
+        "technical": "A hospital puts an IPS inline at the internet edge for blocking, but configures a bypass so a failure lets traffic pass (fail-open) because patient systems must stay reachable. A bank puts its payment gateway behind an inline firewall set to fail-closed so a failure stops transactions instead of exposing them. An IDS on a SPAN port monitors an internal network segment without any risk of causing an outage.",
+        "table": {
+          "headers": [
+            "Device",
+            "Placement",
+            "Behavior"
+          ],
+          "rows": [
+            [
+              "Firewall",
+              "Inline at boundaries",
+              "Blocks per rules"
+            ],
+            [
+              "IPS",
+              "Inline",
+              "Detects and blocks"
+            ],
+            [
+              "IDS",
+              "Passive (tap or SPAN)",
+              "Detects and alerts"
+            ],
+            [
+              "WAF / reverse proxy",
+              "In front of web servers",
+              "Filters web requests"
+            ],
+            [
+              "Fail-open",
+              "Failure mode",
+              "Keeps availability"
+            ],
+            [
+              "Fail-closed",
+              "Failure mode",
+              "Keeps security"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "IDS",
+            "b": "IPS",
+            "diff": "An IDS alerts and is usually passive. An IPS can block and is usually inline."
+          },
+          {
+            "a": "Fail-Open",
+            "b": "Fail-Closed",
+            "diff": "Fail-open favors availability. Fail-closed favors security."
+          },
+          {
+            "a": "Fail-Safe",
+            "b": "Fail-Secure",
+            "diff": "Fail-safe puts human safety first (doors unlock). Fail-secure keeps assets protected (doors stay locked)."
+          }
+        ],
+        "soc": "SOC teams must know whether an alert came from an inline or passive sensor, since a passive IDS alert means the traffic was not blocked and may need manual containment.",
+        "takeaways": [
+          "Inline devices can block but add risk; passive devices only observe.",
+          "Fail-open favors availability; fail-closed favors security.",
+          "IPS is inline and blocks; IDS is passive and alerts."
+        ],
+        "taglish": "Inline — nasa mismong daan ng traffic kaya nakaka-block. Passive — kopya lang ng traffic ang nakikita. Fail-open — kapag nasira, tuloy pa rin ang traffic (walang proteksyon). Fail-closed — kapag nasira, naka-block lahat. IDS — nag-aalarma. IPS — nagba-block."
       }
     ]
   },
@@ -2139,6 +4118,1077 @@ const DOMAINS = [
         ],
         taglish:
           "SCAP — istandardisadong paraan para awtomatikong i-check ang configuration/vulnerabilities ng system laban sa isang alituntunin (benchmark), kumpara sa paggawa nito nang manu-mano isa-isa. Benchmark (tulad ng CIS Benchmark) — yun mismong listahan ng tamang setting na pinagbabatayan. Agent-based scanning — may naka-install na software sa bawat system, malalim at tuloy-tuloy ang tingin kahit offline; agentless — panlabas lang, mas madaling i-deploy pero limitado lang sa nakikita habang naka-konekta. File Integrity Monitoring (FIM) — binabantayan kung may nagbago sa mahahalagang file na hindi dapat nagbago — parang selyo na agad malalaman mo kung nahawakan."
+      },
+      {
+        "id": "d4-t49",
+        "title": "Access Control Models: MAC, DAC, RBAC, ABAC, and Rule-Based",
+        "tag": "4.6",
+        "minutes": 14,
+        "goal": "Match mandatory, discretionary, role-based, attribute-based, and rule-based access control to the scenario that describes them.",
+        "why": "Identity lessons cover accounts and authentication; the exam separately tests how access decisions are made.",
+        "simple": "Access control models decide who can do what. Discretionary access control (DAC) lets the owner of a resource decide who gets access, as with ordinary file sharing; it is flexible but easy to misconfigure. Mandatory access control (MAC) enforces access using labels and clearances set by a central authority, and owners cannot override it; it is used in high-security and government settings. Role-based access control (RBAC) grants permissions to roles, such as 'Accountant,' and users get access by being assigned roles, which scales well and supports least privilege and separation of duties. Attribute-based access control (ABAC) decides using attributes of the user, resource, and context, such as department, device health, time, and location, which allows fine-grained, dynamic policies. Rule-based access control applies fixed rules to everyone, such as firewall ACLs or 'no logins after midnight,' regardless of role. Related ideas: least privilege, need to know, separation of duties, just-in-time access, privileged access management, and periodic access reviews. Choose the model by need: simple sharing is DAC, strict labels are MAC, job-based permissions are RBAC, context-aware decisions are ABAC.",
+        "keyTerms": [
+          {
+            "term": "DAC",
+            "def": "The resource owner decides who gets access."
+          },
+          {
+            "term": "MAC",
+            "def": "A central authority enforces labels and clearances."
+          },
+          {
+            "term": "RBAC",
+            "def": "Permissions are assigned to roles, and users get roles."
+          },
+          {
+            "term": "ABAC",
+            "def": "Access decided by attributes such as role, device, time, and location."
+          },
+          {
+            "term": "Rule-Based",
+            "def": "Fixed rules apply to everyone regardless of role."
+          },
+          {
+            "term": "Need to Know",
+            "def": "Access only to the information required for the task."
+          }
+        ],
+        "analogy": "DAC is lending your own notebook to whomever you like. MAC is a government classification system where you can only read documents up to your clearance no matter who wants to share. RBAC is a uniform: the badge comes with the job. ABAC is a smart door that checks who you are, what device you carry, where you are, and what time it is.",
+        "technical": "A hospital grants clinicians access by role (RBAC), but the system also denies access to a patient's record unless the clinician is assigned to that patient and is on a managed device (ABAC attributes). A military file system labels documents Secret and Top Secret and prevents owners from sharing above a user's clearance (MAC). A firewall's ACL applies the same rules to all traffic (rule-based).",
+        "table": {
+          "headers": [
+            "Model",
+            "Who Decides",
+            "Typical Use"
+          ],
+          "rows": [
+            [
+              "DAC",
+              "Resource owner",
+              "Everyday file shares"
+            ],
+            [
+              "MAC",
+              "Central authority with labels",
+              "Government, military"
+            ],
+            [
+              "RBAC",
+              "Admin assigns roles",
+              "Most enterprises"
+            ],
+            [
+              "ABAC",
+              "Policy engine using attributes",
+              "Context-aware, zero trust"
+            ],
+            [
+              "Rule-based",
+              "Fixed rules",
+              "Firewall ACLs, time restrictions"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "RBAC",
+            "b": "ABAC",
+            "diff": "RBAC uses the role alone. ABAC combines many attributes and context, so it is more flexible and more complex."
+          },
+          {
+            "a": "DAC",
+            "b": "MAC",
+            "diff": "In DAC the owner chooses. In MAC owners cannot override the central labels."
+          },
+          {
+            "a": "Role-Based",
+            "b": "Rule-Based",
+            "diff": "Role-based depends on who you are. Rule-based applies the same rule to everyone."
+          }
+        ],
+        "soc": "Analysts review role assignments, flag excessive permissions, and investigate access that breaks context rules, such as admin access from an unmanaged device.",
+        "takeaways": [
+          "DAC = owner decides; MAC = labels set centrally; RBAC = roles; ABAC = attributes and context; rule-based = fixed rules.",
+          "RBAC supports least privilege and separation of duties.",
+          "ABAC underpins zero trust policy decisions."
+        ],
+        "taglish": "DAC — ang may-ari ang nagpapasya. MAC — gobyerno o sistema ang nagtatakda ng label, hindi mababago ng may-ari. RBAC — access ayon sa role. ABAC — access ayon sa katangian (device, oras, lugar). Rule-based — iisang patakaran para sa lahat."
+      },
+      {
+        "id": "d4-t50",
+        "title": "Security Tools in Practice: Nmap, Wireshark, tcpdump, and Scanners",
+        "tag": "4.4",
+        "minutes": 16,
+        "goal": "Recognize what common security tools do — Nmap, Wireshark, tcpdump, vulnerability scanners, netcat, curl, hashing utilities — and read the kind of output each produces.",
+        "why": "The exam shows a command or output and asks which tool or purpose it matches. This is a tool-recognition lesson.",
+        "simple": "Nmap is a network scanner that finds live hosts, open ports, services, and operating system guesses; it is used for discovery and reconnaissance, and is run only on systems you are authorized to scan. Wireshark is a graphical packet analyzer that captures and decodes traffic so you can inspect protocols, follow a conversation, and troubleshoot or investigate; tcpdump is its command-line counterpart. A vulnerability scanner such as Nessus or OpenVAS checks hosts for known weaknesses and missing patches and produces a prioritized report. Netcat (nc) reads and writes data across network connections, which makes it useful for testing ports and also for attackers' reverse shells. Curl fetches web content from the command line, and nslookup or dig query DNS. Hashing tools (sha256sum, Get-FileHash) verify file integrity against a published value. Metasploit is a penetration testing framework used to exploit known vulnerabilities in authorized tests. Log tools include syslog collectors, SIEM platforms, and a log aggregator that centralizes data. Packet capture shows full content (if unencrypted), while NetFlow shows only metadata about who talked to whom and how much. Match the tool to the question: what is open (Nmap), what is on the wire (Wireshark/tcpdump), what is weak (scanner), is the file unchanged (hash).",
+        "keyTerms": [
+          {
+            "term": "Nmap",
+            "def": "Network scanner for hosts, ports, and services."
+          },
+          {
+            "term": "Wireshark",
+            "def": "GUI packet capture and analysis."
+          },
+          {
+            "term": "tcpdump",
+            "def": "Command-line packet capture."
+          },
+          {
+            "term": "Vulnerability Scanner",
+            "def": "Checks systems for known weaknesses and missing patches."
+          },
+          {
+            "term": "Netcat",
+            "def": "Reads and writes data over network connections."
+          },
+          {
+            "term": "NetFlow",
+            "def": "Metadata about network conversations without packet contents."
+          }
+        ],
+        "analogy": "Nmap is walking the hallway trying every door handle. Wireshark is recording every conversation in the hallway. A vulnerability scanner is a building inspector with a checklist of known defects.",
+        "technical": "An analyst runs nmap -sV against an authorized server and sees open ports 22 and 443 with service versions. They then capture traffic with tcpdump on the server to confirm there are no unexpected outbound connections, open the capture in Wireshark, and follow a TCP stream. Finally, they verify a downloaded installer's SHA-256 hash against the vendor's published value.",
+        "table": {
+          "headers": [
+            "Tool",
+            "Answers the Question",
+            "Note"
+          ],
+          "rows": [
+            [
+              "Nmap",
+              "What hosts and ports are open?",
+              "Authorized scans only"
+            ],
+            [
+              "Wireshark / tcpdump",
+              "What is actually on the wire?",
+              "Full packet detail"
+            ],
+            [
+              "Vulnerability scanner",
+              "What known flaws exist?",
+              "Prioritized findings"
+            ],
+            [
+              "Netcat",
+              "Can I connect or send data?",
+              "Also used by attackers"
+            ],
+            [
+              "NetFlow",
+              "Who talked to whom and how much?",
+              "Metadata only"
+            ],
+            [
+              "Hash tool",
+              "Is the file unchanged?",
+              "Compare to published hash"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Nmap",
+            "b": "Vulnerability Scanner",
+            "diff": "Nmap discovers hosts, ports, and services. A vulnerability scanner goes further and tests for known weaknesses."
+          },
+          {
+            "a": "Wireshark",
+            "b": "NetFlow",
+            "diff": "Wireshark shows packet contents. NetFlow shows only conversation metadata and is far smaller and cheaper to keep."
+          },
+          {
+            "a": "Packet Capture",
+            "b": "Log File",
+            "diff": "Capture records actual traffic. A log records what an application or device chose to write down."
+          }
+        ],
+        "soc": "A SOC analyst uses NetFlow to find unusual traffic volume, then escalates to packet capture for the suspicious host. Unexpected Nmap-like scanning patterns in firewall logs indicate reconnaissance.",
+        "takeaways": [
+          "Nmap = ports and services; Wireshark/tcpdump = packets; scanners = known weaknesses; hashes = integrity.",
+          "NetFlow is metadata; packet capture is full content.",
+          "Only scan or capture on systems you are authorized to test."
+        ],
+        "taglish": "Nmap — hinahanap ang bukas na port at serbisyo. Wireshark at tcpdump — kinukuha at binabasa ang packets. Vulnerability scanner — hinahanap ang kilalang kahinaan. Netcat — pang-test ng koneksyon. NetFlow — metadata lang ng usapan."
+      },
+      {
+        "id": "d4-t21",
+        "title": "Wireless Details: Site Surveys, Captive Portals, and Legacy Weaknesses",
+        "tag": "4.1",
+        "minutes": 13,
+        "goal": "Explain site surveys and heat maps, captive portals, WEP/WPA weaknesses, deauthentication attacks, and how WPA3, 802.1X, and management frame protection address them.",
+        "why": "The Wireless Deep Dive lesson covers the main protocols; this lesson fills in operational details and legacy weaknesses the exam still asks about.",
+        "simple": "A wireless site survey measures signal strength and interference to plan where access points go, and a heat map visualizes coverage; surveys also reveal rogue access points and dead zones. Channel planning avoids interference between neighboring access points. A captive portal redirects new users to a web page for login or terms before granting access, common for guest Wi-Fi; it controls access but does not by itself encrypt traffic. Legacy protocols are weak: WEP used a flawed RC4 implementation and can be cracked in minutes, WPA with TKIP was an interim fix now deprecated, and WPA2 with AES-CCMP is solid when using a strong passphrase or enterprise authentication. WPA3 improves on this with SAE, which resists offline password guessing, and stronger encryption; open networks can use enhanced open (OWE) to encrypt without a password. WPS (a PIN shortcut) is vulnerable and should be disabled. Deauthentication attacks send forged management frames to knock clients offline, often as part of evil-twin or handshake-capture attacks, and protected management frames (802.11w) help prevent them. WPA2/WPA3 Enterprise uses 802.1X with a RADIUS server so each user authenticates individually with certificates or credentials, which avoids a shared password. Additional practices: separate guest and corporate SSIDs on different VLANs, disable unused features, update firmware, and monitor for rogue APs.",
+        "keyTerms": [
+          {
+            "term": "Site Survey",
+            "def": "Measuring wireless coverage and interference to place access points."
+          },
+          {
+            "term": "Heat Map",
+            "def": "A visual of signal strength across an area."
+          },
+          {
+            "term": "Captive Portal",
+            "def": "A login or terms page shown before network access."
+          },
+          {
+            "term": "WPS",
+            "def": "A PIN-based setup shortcut with known weaknesses."
+          },
+          {
+            "term": "SAE",
+            "def": "The WPA3 handshake that resists offline guessing."
+          },
+          {
+            "term": "Deauthentication Attack",
+            "def": "Forged frames that disconnect clients from a network."
+          }
+        ],
+        "analogy": "A site survey is walking a building with a signal meter to find where the Wi-Fi is strong or weak. A captive portal is a reception desk at the guest door. WEP is a lock whose key can be cut from a photograph in minutes.",
+        "technical": "A new office runs a site survey, places access points by the heat map, and sets up corporate Wi-Fi with WPA3-Enterprise and 802.1X, and guest Wi-Fi on a separate VLAN with a captive portal. WPS is disabled everywhere. The survey also finds an unknown access point in a meeting room, which is removed.",
+        "table": {
+          "headers": [
+            "Standard",
+            "Status",
+            "Note"
+          ],
+          "rows": [
+            [
+              "WEP",
+              "Broken",
+              "Never use"
+            ],
+            [
+              "WPA (TKIP)",
+              "Deprecated",
+              "Interim"
+            ],
+            [
+              "WPA2 (AES-CCMP)",
+              "Acceptable",
+              "Use strong passphrase or 802.1X"
+            ],
+            [
+              "WPA3 (SAE)",
+              "Current",
+              "Resists offline guessing"
+            ],
+            [
+              "WPS",
+              "Vulnerable",
+              "Disable"
+            ],
+            [
+              "Open + captive portal",
+              "No encryption",
+              "Use OWE where possible"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Captive Portal",
+            "b": "Encryption",
+            "diff": "A portal controls who gets access. It does not encrypt the traffic that follows."
+          },
+          {
+            "a": "WPA2-Personal",
+            "b": "WPA2-Enterprise",
+            "diff": "Personal uses one shared passphrase. Enterprise uses 802.1X so each user authenticates individually."
+          },
+          {
+            "a": "Evil Twin",
+            "b": "Rogue AP",
+            "diff": "An evil twin copies a legitimate SSID to trick users. A rogue AP is any unauthorized access point, often plugged in by an employee."
+          }
+        ],
+        "soc": "Wireless controllers alert on rogue APs, repeated deauthentication frames, and clients roaming strangely. Those are early indicators of an evil twin or capture attempt.",
+        "takeaways": [
+          "Site surveys and heat maps plan coverage and find rogue APs.",
+          "WEP is broken, WPA2-AES is acceptable, and WPA3 uses SAE.",
+          "Captive portals gate access but do not encrypt; 802.1X gives per-user authentication."
+        ],
+        "taglish": "Site survey — sinusukat ang lakas ng signal. Captive portal — login page bago makagamit ng Wi-Fi. WEP — sira na. WPA3 — ang kasalukuyang pinakamahusay. WPS — dapat i-disable. 802.1X — bawat user may sariling login."
+      },
+      {
+        "id": "d4-t22",
+        "title": "Application Testing and Vulnerability Disclosure: SAST, DAST, Fuzzing, and Bug Bounties",
+        "tag": "4.3",
+        "minutes": 15,
+        "goal": "Distinguish static and dynamic testing, fuzzing, code review, penetration testing, bug bounty programs, and responsible disclosure.",
+        "why": "The exam asks which testing method fits a situation (source code available or not, running or not) and how organizations handle outside vulnerability reports.",
+        "simple": "Static application security testing (SAST) analyzes source code or binaries without running them, finding flaws early; dynamic testing (DAST) tests a running application from the outside, finding runtime and configuration issues. Interactive testing (IAST) instruments the app while tests run. Software composition analysis checks third-party libraries for known vulnerabilities and licenses, supporting an SBOM. Fuzzing sends malformed or random input to a program to expose crashes and unexpected behavior. Manual code review has people read the code, especially for logic and authorization flaws that tools miss. Penetration testing simulates an attacker, and its type (black, gray, white box) depends on how much the tester knows. A bug bounty program rewards outside researchers for valid vulnerability reports within defined rules and scope. Responsible (coordinated) disclosure means the researcher reports privately and gives the vendor time to fix before publishing, and a vulnerability disclosure policy tells researchers how and where to report and promises not to pursue good-faith testers. Secure development practices include threat modeling, secure coding standards, code signing, dependency pinning, and testing in CI/CD. Validate each finding before reacting: false positives are common in automated tools, and fixes must be retested.",
+        "keyTerms": [
+          {
+            "term": "SAST",
+            "def": "Analyzes code without running it."
+          },
+          {
+            "term": "DAST",
+            "def": "Tests a running application from outside."
+          },
+          {
+            "term": "Fuzzing",
+            "def": "Feeding unexpected or random input to find crashes."
+          },
+          {
+            "term": "Software Composition Analysis",
+            "def": "Finds vulnerable third-party components."
+          },
+          {
+            "term": "Bug Bounty",
+            "def": "A program that pays researchers for valid vulnerability reports."
+          },
+          {
+            "term": "Responsible Disclosure",
+            "def": "Reporting privately and allowing time to fix before publishing."
+          }
+        ],
+        "analogy": "SAST is proofreading a manuscript before it's printed. DAST is test-driving the finished car. Fuzzing is slamming the car into random potholes to see what breaks. A bug bounty is a standing offer: find a flaw, tell us nicely, get paid.",
+        "technical": "A pipeline runs SAST on every commit, dependency scanning for libraries with known CVEs, and DAST against a staging deployment each night. A security researcher finds an authorization flaw, reports it through the company's disclosure page, and receives a bounty after the fix ships. Fuzzing a file parser reveals a crash that turns out to be an exploitable overflow.",
+        "table": {
+          "headers": [
+            "Method",
+            "Needs Source?",
+            "Finds"
+          ],
+          "rows": [
+            [
+              "SAST",
+              "Yes",
+              "Coding flaws early"
+            ],
+            [
+              "DAST",
+              "No",
+              "Runtime and configuration flaws"
+            ],
+            [
+              "Fuzzing",
+              "No",
+              "Crashes, input handling bugs"
+            ],
+            [
+              "SCA",
+              "Dependency list",
+              "Vulnerable libraries"
+            ],
+            [
+              "Manual review",
+              "Yes",
+              "Logic and authorization flaws"
+            ],
+            [
+              "Bug bounty",
+              "No",
+              "Real-world flaws from outsiders"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "SAST",
+            "b": "DAST",
+            "diff": "SAST reads code that is not running. DAST attacks the running application."
+          },
+          {
+            "a": "Bug Bounty",
+            "b": "Penetration Test",
+            "diff": "A pen test is a scoped engagement with hired testers. A bounty is an open invitation paid per valid finding."
+          },
+          {
+            "a": "Responsible Disclosure",
+            "b": "Full Disclosure",
+            "diff": "Responsible disclosure gives the vendor time to fix first. Full disclosure publishes immediately."
+          }
+        ],
+        "soc": "Triage involves reproducing a report, rating severity with CVSS and business context, assigning the fix, and retesting. Automated findings need validation to eliminate false positives.",
+        "takeaways": [
+          "SAST = static, code not running; DAST = dynamic, running app; fuzzing = bad input.",
+          "Bug bounties and disclosure policies create safe channels for outside reports.",
+          "Validate findings and retest fixes."
+        ],
+        "taglish": "SAST — sinusuri ang code habang hindi pa tumatakbo. DAST — sinusubukan ang tumatakbong app. Fuzzing — nagpapadala ng kakaibang input. Bug bounty — bayad sa nakahanap ng kahinaan. Responsible disclosure — ipinapaalam muna sa vendor bago ilathala."
+      },
+      {
+        "id": "d4-t23",
+        "title": "Biometrics, Smart Cards, and Authentication Metrics",
+        "tag": "4.6",
+        "minutes": 14,
+        "goal": "Explain biometric error rates (FAR, FRR, CER), smart cards and tokens, one-time password types (TOTP, HOTP), and the weaknesses of SMS and push-based MFA.",
+        "why": "Authentication-factor questions test both the category of a method and its error or attack characteristics.",
+        "simple": "Factors are something you know, have, are, and sometimes where you are or what you do. Biometrics (something you are) include fingerprint, face, iris, voice, and behavioral patterns. Biometric systems have error rates: false acceptance rate (FAR) is how often an impostor is wrongly accepted (a security failure), false rejection rate (FRR) is how often a legitimate user is wrongly rejected (a usability failure), and the crossover error rate (CER, equal error rate) is where FAR and FRR are equal and is the usual measure for comparing systems; a lower CER is better. Biometrics cannot be changed if compromised, so storage and privacy protections matter. Smart cards (such as PIV and CAC) contain a chip with a certificate and private key and are used with a PIN, giving two factors. Hardware tokens and security keys (FIDO2) provide phishing-resistant authentication. One-time passwords: TOTP is time-based and changes every 30 seconds or so, HOTP is counter-based. SMS codes can be intercepted or redirected by SIM swapping, push notifications can suffer from approval fatigue (prompt bombing), and number matching improves them. Authenticator apps and hardware keys are stronger. Choose factors by risk, usability, and cost, and combine factors from different categories, since a password plus a security question is still one factor type.",
+        "keyTerms": [
+          {
+            "term": "FAR",
+            "def": "False acceptance rate: an impostor is accepted."
+          },
+          {
+            "term": "FRR",
+            "def": "False rejection rate: a legitimate user is rejected."
+          },
+          {
+            "term": "CER",
+            "def": "Crossover error rate, where FAR equals FRR; lower is better."
+          },
+          {
+            "term": "Smart Card",
+            "def": "A chip card holding a certificate and private key, used with a PIN."
+          },
+          {
+            "term": "TOTP",
+            "def": "A time-based one-time password."
+          },
+          {
+            "term": "HOTP",
+            "def": "A counter-based one-time password."
+          }
+        ],
+        "analogy": "A biometric scanner is a nightclub bouncer. FAR is the bouncer letting a stranger in, FRR is the bouncer turning away a regular, and CER is the sensitivity setting where those two mistakes happen equally often.",
+        "technical": "A data center uses a smart card plus PIN and an iris scan, giving three factors across categories. A vendor claims a fingerprint reader has a CER of 2 percent, while another has 5 percent; the first is more accurate. The company moves staff from SMS codes to app-based number matching and security keys after a SIM-swap incident.",
+        "table": {
+          "headers": [
+            "Measure / Method",
+            "Meaning",
+            "Note"
+          ],
+          "rows": [
+            [
+              "FAR",
+              "Impostor accepted",
+              "Security failure"
+            ],
+            [
+              "FRR",
+              "Legitimate user rejected",
+              "Usability failure"
+            ],
+            [
+              "CER",
+              "Where FAR = FRR",
+              "Lower is better"
+            ],
+            [
+              "Smart card + PIN",
+              "Have + know",
+              "Two factors"
+            ],
+            [
+              "TOTP / HOTP",
+              "Time or counter based codes",
+              "Authenticator apps"
+            ],
+            [
+              "SMS code",
+              "Delivered by carrier",
+              "Weakest option"
+            ],
+            [
+              "Security key (FIDO2)",
+              "Hardware, phishing-resistant",
+              "Strongest common option"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "FAR",
+            "b": "FRR",
+            "diff": "FAR is about letting the wrong person in. FRR is about blocking the right person."
+          },
+          {
+            "a": "TOTP",
+            "b": "HOTP",
+            "diff": "TOTP depends on the clock. HOTP depends on an incrementing counter."
+          },
+          {
+            "a": "Two Factors",
+            "b": "Two Passwords",
+            "diff": "Two factors must come from different categories. A password plus a PIN is still something you know."
+          }
+        ],
+        "soc": "Authentication logs show MFA failures, repeated prompts, and unusual sign-in locations. Analysts watch for push fatigue and sudden changes of registered phone numbers.",
+        "takeaways": [
+          "FAR = impostor in, FRR = legitimate user out, CER = where they meet; lower CER is better.",
+          "Smart cards combine possession and PIN; security keys resist phishing.",
+          "SMS and plain push approvals are weaker MFA options."
+        ],
+        "taglish": "FAR — nakapasok ang hindi dapat. FRR — hindi pinapasok ang dapat. CER — kung saan pantay ang dalawa; mas mababa mas mabuti. Smart card — may chip na may certificate, kasama ang PIN. TOTP — code na nagbabago base sa oras. SMS at push approval — mas mahina."
+      },
+      {
+        "id": "d4-t24",
+        "title": "Network Visibility and Filtering: Taps, SPAN, Flow Data, SWGs, and Sinkholes",
+        "tag": "4.5",
+        "minutes": 15,
+        "goal": "Explain how defenders see and filter traffic — network taps, port mirroring (SPAN), NetFlow/sFlow/IPFIX, secure web gateways, URL and DNS filtering, sinkholes, allow and block lists, and application control.",
+        "why": "Enterprise control questions ask which tool provides visibility or blocking in a given situation.",
+        "simple": "To see traffic, defenders use a network tap, a physical device that copies traffic from a link, or port mirroring (SPAN), where a switch copies traffic from one port to a monitoring port; these feed IDS sensors and packet capture. Flow data (NetFlow, sFlow, IPFIX) records metadata about conversations — who, to where, how much, when — and is far smaller than full packets, good for spotting scans, beaconing, and data transfers. Log aggregation collects logs centrally with synchronized time and defined retention so investigations and compliance needs can be met. To control traffic, a secure web gateway (SWG) sits between users and the internet, enforcing URL and content filtering, malware scanning, and policy, including TLS inspection. URL filtering and DNS filtering block categories or known-bad destinations; a DNS sinkhole answers malicious domain lookups with a harmless address, blocking communication and revealing infected hosts that try to reach it. Allow lists permit only approved items and deny everything else, which is stricter than block lists that deny known-bad items and allow the rest. Application control (allow-listing) restricts what software can run. Reputation services score domains and IPs, and egress filtering limits outbound traffic to only what is needed, which blocks C2 and exfiltration. Place sensors where they see the relevant traffic, balance privacy and legal considerations when decrypting traffic, and tune rules to avoid blocking legitimate business.",
+        "keyTerms": [
+          {
+            "term": "Network Tap",
+            "def": "A device that copies traffic from a network link for monitoring."
+          },
+          {
+            "term": "SPAN / Port Mirroring",
+            "def": "A switch feature copying traffic from ports to a monitoring port."
+          },
+          {
+            "term": "Flow Data",
+            "def": "Metadata about conversations, such as NetFlow, sFlow, or IPFIX."
+          },
+          {
+            "term": "Secure Web Gateway",
+            "def": "A proxy enforcing web policy, filtering, and scanning."
+          },
+          {
+            "term": "DNS Sinkhole",
+            "def": "Redirecting malicious domain lookups to a harmless address."
+          },
+          {
+            "term": "Allow List",
+            "def": "Only approved items are permitted; everything else is denied."
+          }
+        ],
+        "analogy": "A tap is a wiretap on a cable. SPAN is asking the switch to carbon-copy conversations to your desk. Flow data is the phone bill showing who called whom and for how long, not what was said. A sinkhole is rerouting a criminal's phone calls to a recorded message.",
+        "technical": "A sensor connected to a SPAN port feeds an IDS. Flow records show one server sending large volumes to an unfamiliar address overnight. The DNS filter's sinkhole logs a workstation repeatedly resolving a known malware domain, pointing straight at an infected host. The company moves from block lists to application allow-listing on a cash-handling kiosk.",
+        "table": {
+          "headers": [
+            "Tool",
+            "Gives",
+            "Best For"
+          ],
+          "rows": [
+            [
+              "Network tap",
+              "Full packet copy, reliable",
+              "Dedicated monitoring"
+            ],
+            [
+              "SPAN",
+              "Switch-based copy",
+              "Quick, flexible monitoring"
+            ],
+            [
+              "NetFlow / IPFIX",
+              "Conversation metadata",
+              "Spotting patterns at scale"
+            ],
+            [
+              "Secure web gateway",
+              "Web policy enforcement",
+              "Filtering and scanning users' web traffic"
+            ],
+            [
+              "DNS sinkhole",
+              "Redirects bad lookups",
+              "Blocking C2 and finding infected hosts"
+            ],
+            [
+              "Allow list",
+              "Deny by default",
+              "High-security systems"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Tap",
+            "b": "SPAN",
+            "diff": "A tap is a separate physical device with no impact on the switch. SPAN is a switch configuration that can drop packets under load."
+          },
+          {
+            "a": "Allow List",
+            "b": "Block List",
+            "diff": "An allow list denies everything not approved. A block list allows everything not known to be bad."
+          },
+          {
+            "a": "Flow Data",
+            "b": "Packet Capture",
+            "diff": "Flow records metadata only. Packet capture keeps the actual contents."
+          }
+        ],
+        "soc": "Analysts use sinkhole logs to identify which internal devices are infected, flow data to track suspicious volumes, and SWG logs to see what users downloaded.",
+        "takeaways": [
+          "Taps and SPAN provide packets; flow data gives metadata; SWGs and DNS filters block.",
+          "A sinkhole redirects bad lookups and reveals infected hosts.",
+          "Allow lists are stricter than block lists."
+        ],
+        "taglish": "Tap at SPAN — kumokopya ng traffic para sa monitoring. NetFlow — metadata lang, parang phone bill. Secure web gateway — nagfi-filter ng web traffic ng users. DNS sinkhole — inilalagay sa walang-panganib na address ang bad domain para ma-block at makita ang infected na device. Allow list — pinapayagan lang ang aprubado."
+      },
+      {
+        "id": "d4-t25",
+        "title": "Mobile Device Management and Deployment Models",
+        "tag": "4.1",
+        "minutes": 15,
+        "goal": "Explain BYOD, COPE, CYOD, and corporate-owned models, and the controls MDM provides: containerization, remote wipe, geofencing, app control, and enrollment, plus sideloading and rooting risks.",
+        "why": "Mobile devices carry corporate data everywhere, so the exam asks which deployment model and MDM control fits a scenario.",
+        "simple": "Deployment models differ in who owns the device. Bring your own device (BYOD) uses personal phones, which cuts cost but blurs privacy and control. Corporate-owned, personally enabled (COPE) gives employees company devices they may also use personally. Choose your own device (CYOD) lets employees pick from an approved list. Corporate-owned, business-only devices give the tightest control. Mobile device management (MDM) enforces policy: required passcodes and screen locks, device and storage encryption, minimum OS versions, approved apps, remote lock and remote wipe, location tracking or geofencing, and compliance checks that can block non-compliant devices from corporate resources. Mobile application management (MAM) controls just the business apps and data. Containerization separates business data from personal data on one device so that only the business container can be wiped or controlled. Unified endpoint management (UEM) extends this to laptops and other endpoints. Risks: sideloading installs apps from outside official stores and bypasses vetting; jailbreaking and rooting remove OS protections and should make a device non-compliant; unpatched OS versions; public Wi-Fi; lost or stolen devices; and malicious apps with excessive permissions. Policy points: acceptable use, privacy expectations, what the company can see or wipe, onboarding and offboarding procedures, and support responsibilities. On exit, a selective wipe removes only corporate data from a BYOD device.",
+        "keyTerms": [
+          {
+            "term": "BYOD",
+            "def": "Employees use their own personal devices."
+          },
+          {
+            "term": "COPE",
+            "def": "Corporate-owned, personally enabled devices."
+          },
+          {
+            "term": "CYOD",
+            "def": "Employees choose from an approved device list."
+          },
+          {
+            "term": "MDM",
+            "def": "Software enforcing security policy on mobile devices."
+          },
+          {
+            "term": "Containerization",
+            "def": "Separating business data from personal data on a device."
+          },
+          {
+            "term": "Sideloading",
+            "def": "Installing apps from outside the official store."
+          }
+        ],
+        "analogy": "BYOD is a guest bringing their own car to the company parking lot: the company can set parking rules but can't inspect the car. COPE is a company car you may also use on weekends. Containerization is a locked box in the trunk that only the company can open or destroy.",
+        "technical": "A company allows BYOD with MDM enrollment required for email. Policy forces a six-digit passcode, encryption, and OS updates, and blocks jailbroken devices. When an employee leaves, IT selectively wipes the corporate container, leaving personal photos untouched. When a phone is lost, remote lock is triggered and the full device is wiped only if it is corporate-owned.",
+        "table": {
+          "headers": [
+            "Model",
+            "Owner",
+            "Tradeoff"
+          ],
+          "rows": [
+            [
+              "BYOD",
+              "Employee",
+              "Low cost, less control, privacy concerns"
+            ],
+            [
+              "COPE",
+              "Company",
+              "More control, some personal use allowed"
+            ],
+            [
+              "CYOD",
+              "Company",
+              "Choice within approved list"
+            ],
+            [
+              "Corporate-owned, business only",
+              "Company",
+              "Tightest control"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "BYOD",
+            "b": "COPE",
+            "diff": "In BYOD the employee owns the device. In COPE the company owns it but allows personal use."
+          },
+          {
+            "a": "Selective Wipe",
+            "b": "Full Wipe",
+            "diff": "A selective wipe removes only corporate data. A full wipe resets the entire device."
+          },
+          {
+            "a": "MDM",
+            "b": "MAM",
+            "diff": "MDM manages the whole device. MAM manages only specific apps and their data."
+          }
+        ],
+        "soc": "SOC analysts check MDM compliance data when investigating a mobile incident, such as whether a device was jailbroken, running an old OS, or recently saw impossible-travel sign-ins.",
+        "takeaways": [
+          "BYOD = employee-owned; COPE = company-owned, personal use allowed; CYOD = choice from a list.",
+          "MDM enforces passcodes, encryption, app control, remote wipe, and compliance checks.",
+          "Containerization and selective wipe protect company data on personal devices; sideloading and jailbreaking are risks."
+        ],
+        "taglish": "BYOD — sarili mong device. COPE — kumpanya ang may-ari pero pwedeng personal na gamit. CYOD — pipili ka sa listahan. MDM — nagpapatupad ng patakaran sa mobile. Containerization — hiwalay ang laman ng trabaho at personal. Sideloading — pag-install ng app sa labas ng official store."
+      },
+      {
+        "id": "d4-t26",
+        "title": "Log Management and SIEM Operations: Collect, Normalize, Correlate, Retain",
+        "tag": "4.4",
+        "minutes": 15,
+        "goal": "Describe the log pipeline from collection through aggregation, normalization, correlation, alerting, and retention, and why time synchronization and integrity matter.",
+        "why": "Logs are only useful if they arrive, line up in time, and survive long enough. The exam asks how to make logging effective and trustworthy.",
+        "simple": "A security information and event management (SIEM) platform collects logs from many sources, aggregates them in one place, normalizes them into a common format so fields like source IP and username line up, correlates events across sources to spot patterns no single log shows, and raises alerts. Collection methods include agents, syslog forwarding, APIs, and flow collectors. Time synchronization with NTP is essential: if devices disagree about the time, events cannot be ordered, and an attacker's timeline becomes impossible to reconstruct. Log retention sets how long logs are kept, balancing investigation needs (attackers are often present for weeks or months), legal and compliance requirements, and storage cost; hot storage is fast and recent, cold storage is cheaper and slower. Integrity matters too: send logs to a central collector quickly, restrict who can modify or delete them, and use hashing or write-once storage so attackers cannot erase their tracks. Tuning matters: baselines and thresholds reduce false positives, while alert fatigue happens when analysts drown in noisy alerts and miss the real ones. Dashboards show trends and key metrics, and playbooks describe what to do for each alert type. Common mistakes: logging too little, logging everything without parsing, unsynchronized clocks, no retention policy, and nobody owning the alerts. User and entity behavior analytics (UEBA) adds statistical baselines to catch unusual behavior.",
+        "keyTerms": [
+          {
+            "term": "SIEM",
+            "def": "A platform that collects, normalizes, correlates, and alerts on security logs."
+          },
+          {
+            "term": "Normalization",
+            "def": "Converting logs into a common field format."
+          },
+          {
+            "term": "Correlation",
+            "def": "Linking events from different sources into one pattern."
+          },
+          {
+            "term": "NTP",
+            "def": "Network Time Protocol, used to synchronize clocks."
+          },
+          {
+            "term": "Log Retention",
+            "def": "How long logs are kept."
+          },
+          {
+            "term": "Alert Fatigue",
+            "def": "Analysts overwhelmed by noisy alerts."
+          }
+        ],
+        "analogy": "A SIEM is a detective's evidence board. Normalization is translating every witness statement into the same language, correlation is connecting the strings between photos, and NTP is making sure every witness's watch shows the same time.",
+        "technical": "A failed VPN login, a successful login from a new country twenty minutes later, and a large file download are each unremarkable alone. The SIEM normalizes the three log formats, correlates them by username, and raises a high-priority alert. During the investigation, the analyst relies on NTP-synchronized timestamps to order events, and finds enough retained history to see the first suspicious login three weeks earlier.",
+        "table": {
+          "headers": [
+            "Stage",
+            "What Happens",
+            "Why It Matters"
+          ],
+          "rows": [
+            [
+              "Collect",
+              "Gather logs from sources",
+              "Coverage"
+            ],
+            [
+              "Normalize",
+              "Common format",
+              "Fields line up"
+            ],
+            [
+              "Correlate",
+              "Link events",
+              "Finds multi-step attacks"
+            ],
+            [
+              "Alert",
+              "Notify on rules",
+              "Timely response"
+            ],
+            [
+              "Retain",
+              "Store for a set period",
+              "Investigations and compliance"
+            ],
+            [
+              "Protect",
+              "Integrity controls",
+              "Attackers can't erase logs"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Log Aggregation",
+            "b": "Correlation",
+            "diff": "Aggregation gathers logs in one place. Correlation connects events across them to find patterns."
+          },
+          {
+            "a": "False Positive",
+            "b": "False Negative",
+            "diff": "A false positive is an alert for harmless activity. A false negative is a real attack that was missed."
+          },
+          {
+            "a": "SIEM",
+            "b": "SOAR",
+            "diff": "SIEM collects and analyzes. SOAR automates response actions and workflows."
+          }
+        ],
+        "soc": "Analysts spend their day in the SIEM triaging alerts, tuning noisy rules, and building searches for hunting. Retention and time sync determine whether an investigation can be completed at all.",
+        "takeaways": [
+          "SIEM collects, normalizes, correlates, and alerts.",
+          "Synchronize clocks with NTP or the timeline falls apart.",
+          "Set retention and protect log integrity; tune alerts to avoid fatigue."
+        ],
+        "taglish": "SIEM — pinagsasama-sama ang logs. Normalization — pare-parehong format. Correlation — pinag-uugnay ang mga pangyayari mula sa iba't ibang source. NTP — iisang oras sa lahat ng device. Retention — gaano katagal itatago ang logs. Alert fatigue — sobrang daming alerto kaya nalalampasan ang totoo."
+      },
+      {
+        "id": "d4-t27",
+        "title": "Federation and SSO Protocols: SAML, OAuth, and OpenID Connect",
+        "tag": "4.6",
+        "minutes": 16,
+        "goal": "Tell SAML, OAuth 2.0, and OpenID Connect apart, and explain single sign-on, federation, identity providers, service providers, tokens, and scopes.",
+        "why": "These three names are easy to confuse. The exam asks which one handles authentication, which handles delegated authorization, and which fits enterprise web single sign-on.",
+        "simple": "Single sign-on (SSO) lets a user authenticate once and access many applications. Federation extends this across organizations: an identity provider (IdP) authenticates the user and vouches for them to a service provider (SP), the application, which trusts the IdP. SAML (Security Assertion Markup Language) is an XML-based standard that passes signed assertions from the IdP to the SP, and is widely used for enterprise web SSO. OAuth 2.0 is an authorization framework: it lets an application obtain limited access to a user's resources on another service through access tokens, without sharing the password; scopes define exactly what access is granted, such as read-only calendar. OAuth alone is not authentication. OpenID Connect (OIDC) adds an authentication layer on top of OAuth 2.0, providing an ID token (often a JSON Web Token) that tells the application who the user is. Related protocols: Kerberos for tickets inside a domain, LDAP for directory queries, RADIUS and TACACS+ for network access and device administration. Security points: validate tokens and signatures, use short-lived tokens, protect against token theft, require MFA at the IdP, restrict which apps can request consent, and log federation sign-ins. Benefits of SSO include fewer passwords, central policy, and fast deprovisioning, while the risk is that compromising the IdP or one session can expose many applications, so it deserves the strongest protection.",
+        "keyTerms": [
+          {
+            "term": "SSO",
+            "def": "Authenticate once to reach many applications."
+          },
+          {
+            "term": "Identity Provider",
+            "def": "The system that authenticates users and vouches for them."
+          },
+          {
+            "term": "Service Provider",
+            "def": "The application that trusts the identity provider."
+          },
+          {
+            "term": "SAML",
+            "def": "XML-based standard for exchanging signed authentication assertions."
+          },
+          {
+            "term": "OAuth 2.0",
+            "def": "A framework for delegated authorization using tokens and scopes."
+          },
+          {
+            "term": "OpenID Connect",
+            "def": "An authentication layer on top of OAuth 2.0 that issues an ID token."
+          }
+        ],
+        "analogy": "SAML is a notarized letter from the company saying 'this person is who they claim.' OAuth is a valet key that lets the parking attendant move the car but not open the trunk. OpenID Connect is the valet key plus a name badge that says who is driving.",
+        "technical": "An employee opens a cloud HR app, is redirected to the company IdP, signs in with MFA, and returns with a signed SAML assertion that the HR app accepts: federated SSO. A calendar app asks to read the user's contacts; the user approves a read-only scope and the app receives an OAuth access token without ever seeing the password. A mobile app uses OpenID Connect so users can sign in with an existing identity and the app receives an ID token containing their identity claims.",
+        "table": {
+          "headers": [
+            "Protocol",
+            "Purpose",
+            "Format / Token"
+          ],
+          "rows": [
+            [
+              "SAML",
+              "Enterprise web SSO (authentication)",
+              "XML assertion"
+            ],
+            [
+              "OAuth 2.0",
+              "Delegated authorization",
+              "Access token with scopes"
+            ],
+            [
+              "OpenID Connect",
+              "Authentication on top of OAuth",
+              "ID token (often JWT)"
+            ],
+            [
+              "Kerberos",
+              "Domain ticket-based authentication",
+              "Tickets"
+            ],
+            [
+              "LDAP",
+              "Directory queries",
+              "Directory protocol"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "OAuth",
+            "b": "OpenID Connect",
+            "diff": "OAuth grants access to resources. OIDC adds proof of who the user is."
+          },
+          {
+            "a": "SAML",
+            "b": "OAuth",
+            "diff": "SAML is mainly for authentication in enterprise SSO using XML. OAuth is for authorization using tokens."
+          },
+          {
+            "a": "Authentication",
+            "b": "Authorization",
+            "diff": "Authentication proves who you are. Authorization decides what you may do."
+          }
+        ],
+        "soc": "Analysts review federation sign-in logs, token anomalies, and consent grants. An attacker who steals a session token can bypass MFA, so token lifetime and revocation matter.",
+        "takeaways": [
+          "SAML = XML SSO assertions; OAuth = delegated authorization with scopes; OIDC = authentication on top of OAuth.",
+          "The IdP authenticates; the SP trusts it.",
+          "SSO is convenient but makes the IdP a high-value target requiring MFA and monitoring."
+        ],
+        "taglish": "SSO — isang login para sa maraming app. IdP — nagpapatunay kung sino ka. SP — ang app na nagtitiwala sa IdP. SAML — XML na patunay para sa enterprise SSO. OAuth — pahintulot para sa limitadong access gamit ang token. OpenID Connect — OAuth na may dagdag na patunay ng pagkakakilanlan."
+      },
+      {
+        "id": "d4-t28",
+        "title": "Vulnerability Prioritization: CVSS Bands, EPSS, KEV, and Business Context",
+        "tag": "4.3",
+        "minutes": 14,
+        "goal": "Prioritize vulnerabilities using CVSS severity bands, exploit likelihood (EPSS), known-exploited lists (KEV), exposure, and asset criticality, and explain compensating controls and exceptions.",
+        "why": "Real teams cannot patch everything at once. The exam asks which vulnerability to fix first and why.",
+        "simple": "The Common Vulnerability Scoring System (CVSS) rates technical severity from 0.0 to 10.0: roughly 0.1 to 3.9 is low, 4.0 to 6.9 medium, 7.0 to 8.9 high, and 9.0 to 10.0 critical. CVSS measures severity, not risk to your specific business, so teams adjust using context. The Exploit Prediction Scoring System (EPSS) estimates the probability that a vulnerability will be exploited in the near future, and a catalog of known exploited vulnerabilities (KEV), maintained by CISA, lists flaws that attackers are actively using; a lower-scored flaw on that list can outrank a higher-scored one that nobody exploits. Other context: is the system internet-facing, how critical is the asset and the data on it, is there a public exploit, is the vulnerable component reachable, and do existing controls such as segmentation or a WAF reduce exposure? Common Vulnerabilities and Exposures (CVE) gives each flaw a standard identifier. A false positive is a reported finding that is not real; validate before spending effort. Remediation options: patch, change configuration, upgrade, or apply a compensating control or virtual patch when patching is not possible. Exceptions should be documented, approved, time-limited, and reviewed. After fixing, rescan to confirm. Reporting should show trends and time to remediate, with service-level targets such as critical internet-facing flaws within days.",
+        "keyTerms": [
+          {
+            "term": "CVSS",
+            "def": "A 0 to 10 score of a vulnerability's technical severity."
+          },
+          {
+            "term": "CVE",
+            "def": "A standard identifier for a publicly known vulnerability."
+          },
+          {
+            "term": "EPSS",
+            "def": "An estimate of the likelihood a vulnerability will be exploited."
+          },
+          {
+            "term": "KEV",
+            "def": "A catalog of vulnerabilities known to be exploited in the wild."
+          },
+          {
+            "term": "Compensating Control",
+            "def": "An alternative safeguard when the primary fix is not possible."
+          },
+          {
+            "term": "Virtual Patching",
+            "def": "Blocking exploitation with a control such as a WAF without changing the vulnerable code."
+          }
+        ],
+        "analogy": "CVSS is how severe the storm forecast says a hurricane is in general. EPSS is the chance it will hit your coast. KEV is the list of cities it has already hit. Your own context is whether you live on the beach or inland.",
+        "technical": "Two findings appear: a CVSS 9.8 flaw on an isolated lab server with no exposure, and a CVSS 7.5 flaw on an internet-facing VPN appliance listed in KEV. The team fixes the VPN flaw first, adds the lab server to the normal patch cycle, rescans to confirm, and documents a time-limited exception for a legacy system with a compensating control.",
+        "table": {
+          "headers": [
+            "Input",
+            "What It Tells You"
+          ],
+          "rows": [
+            [
+              "CVSS",
+              "Technical severity"
+            ],
+            [
+              "EPSS",
+              "Likelihood of exploitation"
+            ],
+            [
+              "KEV",
+              "Already exploited in the wild"
+            ],
+            [
+              "Exposure",
+              "Internet-facing or internal"
+            ],
+            [
+              "Asset criticality",
+              "Business impact if exploited"
+            ],
+            [
+              "Compensating control",
+              "Reduces risk if no patch"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "CVSS",
+            "b": "Risk",
+            "diff": "CVSS is technical severity. Risk also depends on exposure, exploitability, and business impact."
+          },
+          {
+            "a": "CVE",
+            "b": "CVSS",
+            "diff": "A CVE identifies a flaw. CVSS scores its severity."
+          },
+          {
+            "a": "False Positive",
+            "b": "False Negative",
+            "diff": "A false positive is a finding that is not real. A false negative is a real flaw the scan missed."
+          }
+        ],
+        "soc": "The SOC and vulnerability team agree on service-level targets, validate scanner findings, and use threat intelligence to move actively exploited flaws to the top of the queue.",
+        "takeaways": [
+          "CVSS 9.0 to 10.0 is critical, but context decides priority.",
+          "EPSS predicts exploitation likelihood; KEV lists vulnerabilities already exploited.",
+          "Use patches, compensating controls, or documented time-limited exceptions, then rescan to verify."
+        ],
+        "taglish": "CVSS — iskor ng bigat ng kahinaan, 0 hanggang 10. CVE — ID ng kahinaan. EPSS — tsansa na maaabuso ito. KEV — listahan ng mga kahinaang aktibong inaabuso na. Context — kung internet-facing at gaano kahalaga ang asset ang magpapasya ng priority."
+      },
+      {
+        "id": "d4-t29",
+        "title": "Forensic Acquisition: Imaging, Write Blockers, Memory Capture, and Admissibility",
+        "tag": "4.8",
+        "minutes": 16,
+        "goal": "Walk through forensic acquisition — order of volatility, write blockers, bit-for-bit imaging, hashing, memory capture, chain of custody, legal hold, and what makes evidence admissible.",
+        "why": "The Digital Forensics lesson introduces the topic; this lesson drills the specific steps and tools the exam asks about.",
+        "simple": "Forensics preserves and analyzes evidence so that it is trustworthy. Collect evidence in order of volatility, from most to least short-lived: CPU registers and cache, RAM and running processes, network connections and routing tables, temporary files and swap, disk contents, remote logs and monitoring data, and archival media. Capturing memory first matters because it contains running processes, keys, and connections that vanish on power-off. For disks, create a bit-for-bit forensic image of the entire drive, including deleted and unallocated space, using a write blocker so the original cannot be changed, then work on the copy. Hash the original and the copy (for example SHA-256) and compare: matching hashes prove the copy is exact and that nothing changed later. Document everything with a chain of custody: who collected the evidence, when, where it was stored, and every transfer; gaps weaken or destroy its value in court. A legal hold tells the organization to preserve relevant data and suspends normal deletion; e-discovery is finding and producing electronic evidence for legal proceedings. Preserve logs, take screenshots or photographs of the scene, label and seal evidence, and store it securely. Provenance records where data came from. Analysis uses tools such as disk analysis suites and memory analyzers to build a timeline, and reporting should state findings, methods, and limitations clearly. Avoid altering the system: do not browse files on the live machine, and decide carefully between shutting down (loses memory) and isolating the machine from the network while it stays on.",
+        "keyTerms": [
+          {
+            "term": "Order of Volatility",
+            "def": "Collecting the most short-lived evidence first."
+          },
+          {
+            "term": "Write Blocker",
+            "def": "A device or software preventing changes to evidence media."
+          },
+          {
+            "term": "Forensic Image",
+            "def": "A bit-for-bit copy of storage, including deleted space."
+          },
+          {
+            "term": "Chain of Custody",
+            "def": "A record of who handled evidence, when, and where."
+          },
+          {
+            "term": "Legal Hold",
+            "def": "A directive to preserve data relevant to a legal matter."
+          },
+          {
+            "term": "Hash Verification",
+            "def": "Comparing hashes to prove a copy matches the original."
+          }
+        ],
+        "analogy": "Forensics is a crime-scene investigation for computers. You photograph the room before moving anything, bag evidence in sealed labeled bags, sign every handoff, and examine copies, never the original.",
+        "technical": "An analyst isolates a suspected laptop from the network but leaves it powered on, captures its memory first, then removes the drive and connects it to a write blocker to create a forensic image. They hash both, record the hashes, label the evidence bag, and log each transfer. Months later, when the case goes to court, the chain of custody and matching hashes support admissibility.",
+        "table": {
+          "headers": [
+            "Step",
+            "Purpose"
+          ],
+          "rows": [
+            [
+              "Isolate and document",
+              "Stop spread, record the scene"
+            ],
+            [
+              "Capture memory",
+              "Preserve volatile evidence"
+            ],
+            [
+              "Write blocker + image",
+              "Copy without changing original"
+            ],
+            [
+              "Hash original and copy",
+              "Prove integrity"
+            ],
+            [
+              "Chain of custody",
+              "Prove handling"
+            ],
+            [
+              "Analyze the copy",
+              "Build a timeline"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Chain of Custody",
+            "b": "Hash",
+            "diff": "Chain of custody documents handling over time. A hash proves the data itself has not changed."
+          },
+          {
+            "a": "Legal Hold",
+            "b": "Retention Policy",
+            "diff": "A legal hold overrides normal deletion for relevant data. Retention policy sets routine keep and delete schedules."
+          },
+          {
+            "a": "Imaging",
+            "b": "Copying Files",
+            "diff": "A forensic image captures everything on the drive, including deleted data. Copying files only captures visible files."
+          }
+        ],
+        "soc": "Often the SOC performs initial triage and containment, then hands the case to forensics. Good early handling, such as not rebooting a host and recording who touched it, determines whether evidence can be used.",
+        "takeaways": [
+          "Collect by order of volatility: memory before disk.",
+          "Image with a write blocker, hash the original and the copy, and analyze the copy.",
+          "Chain of custody and legal holds protect admissibility."
+        ],
+        "taglish": "Order of volatility — kunin muna ang pinakamabilis mawala (memory). Write blocker — pumipigil na mabago ang original. Forensic image — eksaktong kopya, kasama ang deleted space. Hash — patunay na pareho ang kopya. Chain of custody — talaan kung sino ang humawak. Legal hold — bawal burahin ang data na kailangan sa kaso."
       }
     ]
   },
@@ -2481,6 +5531,503 @@ const DOMAINS = [
         ],
         taglish:
           "Ang SLE ay hindi basta-basta lang binibilang — ito ay Asset Value (halaga ng ari-arian) beses Exposure Factor (ilang porsyento ng halaga ang talagang mawawala sa isang insidente). Yung risk assessment, may iba't ibang klase: ad hoc (kapag may partikular na dahilan), one-time (isang beses lang), recurring (regular na iskedyul), continuous (walang tigil na pagsubaybay). Risk appetite — pangkalahatang saloobin ng organisasyon sa panganib (mapangahas, maingat, o katamtaman). Risk tolerance — mas specific na hangganan kung gaano karaming pagbabago ang katanggap-tanggap sa isang partikular na sukatan. Risk exemption — pansamantalang exempted, may expiration; risk exception — mas permanente, may dokumentadong dahilan."
+      },
+      {
+        "id": "d5-t40",
+        "title": "Case Files: Famous Breaches and What They Teach",
+        "tag": "5.4",
+        "minutes": 18,
+        "goal": "Use well-known public breaches as memory anchors, linking each to the control failure and the exam concept it illustrates.",
+        "why": "Stories stick where definitions don't. Linking a concept to an incident gives you a second path to the answer on exam day. This lesson is a casebook.",
+        "simple": "Each case below is a widely reported public incident summarized briefly; details come from public reporting and may be simplified. Target (2013): attackers used a third-party vendor's credentials to reach the network, illustrating third-party risk, segmentation, and ignored alerts. Equifax (2017): a known flaw in a web framework went unpatched, illustrating patch and vulnerability management and asset inventory. Colonial Pipeline (2021): a legacy remote-access account without multifactor authentication led to ransomware and operational shutdown, illustrating MFA, access control, and resilience. SolarWinds (2020): a poisoned software update delivered a backdoor, illustrating supply chain risk and the limits of trusting signed code. Capital One (2019): a cloud misconfiguration and excessive permissions, illustrating the shared responsibility model and least privilege. Knight Capital (2012): a faulty deployment, illustrating change management. Stuxnet (2010): malware crossing an air gap, illustrating removable media risk. Mirai (2016): default credentials on IoT devices, illustrating hardening. NotPetya/Maersk (2017): wiper malware and recovery that depended on a surviving copy, illustrating resilience and backups. Code Spaces (2014): backups deleted alongside production, illustrating backup separation. The pattern across cases: few breaches use exotic techniques; most are failures of basics — inventory, patching, access, segmentation, backups, and response.",
+        "keyTerms": [
+          {
+            "term": "Third-Party Risk",
+            "def": "Risk introduced by vendors and partners with access to your systems or data."
+          },
+          {
+            "term": "Lateral Movement",
+            "def": "Moving from an initial foothold to other systems."
+          },
+          {
+            "term": "Supply Chain Attack",
+            "def": "Compromising a supplier to reach its customers."
+          },
+          {
+            "term": "Root Cause",
+            "def": "The underlying control failure behind an incident."
+          },
+          {
+            "term": "Lessons Learned",
+            "def": "The post-incident review that turns an event into improvements."
+          }
+        ],
+        "analogy": "Famous breaches are like case studies in medical school. The patient may be different each time, but the underlying conditions repeat: untreated infection, skipped checkups, ignored symptoms.",
+        "technical": "A study group takes five incidents and fills a grid: initial access, what control would have broken the chain, and which Security+ objective it maps to. Target maps to vendor access and segmentation. Equifax maps to vulnerability management. Colonial maps to MFA. SolarWinds maps to supply chain. Capital One maps to cloud configuration and least privilege.",
+        "table": {
+          "headers": [
+            "Incident",
+            "What Failed",
+            "Exam Concept"
+          ],
+          "rows": [
+            [
+              "Target 2013",
+              "Vendor access, segmentation, alerts",
+              "Third-party risk, monitoring"
+            ],
+            [
+              "Equifax 2017",
+              "Unpatched known flaw",
+              "Vulnerability and patch management"
+            ],
+            [
+              "Colonial 2021",
+              "Legacy VPN without MFA",
+              "Authentication, resilience"
+            ],
+            [
+              "SolarWinds 2020",
+              "Trusted update poisoned",
+              "Supply chain"
+            ],
+            [
+              "Capital One 2019",
+              "Cloud misconfiguration",
+              "Shared responsibility, least privilege"
+            ],
+            [
+              "Knight 2012",
+              "Inconsistent deployment",
+              "Change management"
+            ],
+            [
+              "Maersk 2017",
+              "Wiper, backups",
+              "Resilience and recovery"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Root Cause",
+            "b": "Symptom",
+            "diff": "The symptom is what was noticed (data leaked, systems down). The root cause is the control failure behind it (unpatched flaw, no MFA)."
+          },
+          {
+            "a": "Lessons Learned",
+            "b": "Blame",
+            "diff": "A lessons-learned review improves process and controls; it is not an exercise in finding someone to punish."
+          }
+        ],
+        "soc": "After an incident, the SOC contributes timelines, indicators, and detection gaps to the post-incident review: what was seen, when, and what would have caught it earlier. Those findings become new detections, playbooks, and tuned alerts.",
+        "takeaways": [
+          "Most breaches come from failures of basics: inventory, patching, access control, segmentation, and backups.",
+          "Tie each famous incident to one control and one exam concept.",
+          "Lessons learned should lead to concrete control changes."
+        ],
+        "taglish": "Karamihan ng malalaking breach ay hindi gumamit ng kakaibang teknik — kulang lang sa basics: hindi na-patch, walang MFA, walang segmentation, walang backup na hiwalay. Iugnay ang bawat sikat na kaso sa isang konsepto sa exam para madaling tandaan."
+      },
+      {
+        "id": "d5-t41",
+        "title": "Security Frameworks, Standards, and Regulations",
+        "tag": "5.4",
+        "minutes": 18,
+        "goal": "Identify what NIST CSF, NIST RMF, ISO 27001/27002, CIS Controls, SOC 2, PCI DSS, HIPAA, GDPR, and SOX are for, and tell a framework from a regulation.",
+        "why": "Exam questions name an acronym and ask which kind of obligation it is and who it applies to. This lesson is the reference list.",
+        "simple": "A framework is a voluntary, structured set of good practices; a regulation or law is mandatory; a standard sits between, sometimes voluntary and sometimes required by contract. The NIST Cybersecurity Framework organizes security into functions (Identify, Protect, Detect, Respond, Recover, with Govern added in version 2.0). The NIST Risk Management Framework is a process for selecting and assessing controls, commonly used in US government. ISO/IEC 27001 is a certifiable standard for an information security management system, and ISO 27002 is the guidance on its controls. The CIS Critical Security Controls are a prioritized list of practical safeguards, and CIS Benchmarks give hardening configurations. SOC 2 is an audit report on a service provider's controls against trust criteria such as security, availability, and confidentiality. PCI DSS is an industry standard, enforced by card brands, for organizations handling payment card data. HIPAA is a US law protecting health information, GDPR is the EU regulation protecting personal data, with rights for data subjects, requirements on controllers and processors, and breach notification, and SOX governs financial reporting controls for public companies. Cloud-specific guidance includes the Cloud Security Alliance's Cloud Controls Matrix, and OWASP publishes web application security guidance such as the Top 10. Compliance means meeting obligations and proving it with evidence, and non-compliance can bring fines, legal action, loss of contracts, and reputational damage.",
+        "keyTerms": [
+          {
+            "term": "NIST CSF",
+            "def": "A voluntary framework organized by functions such as Identify, Protect, Detect, Respond, Recover."
+          },
+          {
+            "term": "ISO/IEC 27001",
+            "def": "A certifiable standard for an information security management system."
+          },
+          {
+            "term": "SOC 2",
+            "def": "An audit report on a provider's controls against trust criteria."
+          },
+          {
+            "term": "PCI DSS",
+            "def": "Industry standard for protecting payment card data."
+          },
+          {
+            "term": "HIPAA",
+            "def": "US law protecting health information."
+          },
+          {
+            "term": "GDPR",
+            "def": "EU regulation protecting personal data and data subject rights."
+          }
+        ],
+        "analogy": "A framework is a cookbook you may follow. A standard is a recipe that restaurants must match to earn a rating. A regulation is the health inspector's law: you follow it or you are fined.",
+        "technical": "A startup selling to enterprises gets a SOC 2 report to prove its controls. A clinic follows HIPAA and the NIST CSF to organize its program. An online store that takes card payments is bound by PCI DSS through its payment processor contract. A company with EU customers appoints a data protection officer, supports deletion requests, and prepares breach notification procedures under GDPR.",
+        "table": {
+          "headers": [
+            "Name",
+            "Type",
+            "Applies To"
+          ],
+          "rows": [
+            [
+              "NIST CSF",
+              "Framework (voluntary)",
+              "Any organization"
+            ],
+            [
+              "NIST RMF",
+              "Process/framework",
+              "Especially US government"
+            ],
+            [
+              "ISO 27001",
+              "Certifiable standard",
+              "Any organization"
+            ],
+            [
+              "CIS Controls",
+              "Prioritized safeguards",
+              "Any organization"
+            ],
+            [
+              "SOC 2",
+              "Audit report",
+              "Service providers"
+            ],
+            [
+              "PCI DSS",
+              "Industry standard",
+              "Card data handlers"
+            ],
+            [
+              "HIPAA",
+              "US law",
+              "Health information"
+            ],
+            [
+              "GDPR",
+              "EU regulation",
+              "Personal data of people in the EU"
+            ],
+            [
+              "SOX",
+              "US law",
+              "Public company financial reporting"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Framework",
+            "b": "Regulation",
+            "diff": "A framework is guidance you choose to adopt. A regulation is legally enforced."
+          },
+          {
+            "a": "ISO 27001",
+            "b": "ISO 27002",
+            "diff": "27001 is the certifiable requirements standard. 27002 is the supporting guidance on controls."
+          },
+          {
+            "a": "SOC 2",
+            "b": "ISO 27001",
+            "diff": "SOC 2 is an auditor's report about a service provider's controls. ISO 27001 is a certification of a management system."
+          }
+        ],
+        "soc": "The SOC helps produce compliance evidence: logs, access reviews, incident records, and scan reports. Detection and breach-notification timelines are often dictated by regulation.",
+        "takeaways": [
+          "Framework = voluntary guidance; regulation/law = mandatory; standard = voluntary or contractually required.",
+          "Know the domain of each: PCI DSS (cards), HIPAA (health), GDPR (EU personal data), SOX (financial reporting).",
+          "NIST CSF functions are Identify, Protect, Detect, Respond, Recover (plus Govern in 2.0)."
+        ],
+        "taglish": "Framework — gabay na kusang sinusunod. Regulation — batas, kailangang sundin. PCI DSS — para sa card data. HIPAA — para sa health data sa US. GDPR — para sa personal data ng mga nasa EU. SOX — para sa financial reporting. SOC 2 — audit report ng service provider."
+      },
+      {
+        "id": "d5-t12",
+        "title": "Security Policies and Personnel Controls",
+        "tag": "5.1",
+        "minutes": 15,
+        "goal": "Name the common security policies (acceptable use, incident response, change management, BCP, data retention) and personnel controls (job rotation, mandatory vacation, dual control, onboarding and offboarding).",
+        "why": "Governance questions often ask which policy or personnel control would have prevented a described problem.",
+        "simple": "Policies state management's intent and are supported by standards, procedures, and guidelines. Common policies: acceptable use (what users may do with company assets), information security, incident response, change management, business continuity and disaster recovery, data classification and retention, access control, password policy, remote work or BYOD, and third-party or vendor management. Personnel controls reduce insider risk and fraud. Separation of duties splits a sensitive task so no one person can complete it alone. Dual control requires two people to act together, as with two keys. Job rotation moves staff between roles periodically, which can reveal fraud and cross-trains people. Mandatory vacation forces time away so another person covers the role and anomalies surface. Least privilege and need to know limit access. Background checks, signed NDAs and acceptable use acknowledgments, and onboarding training set expectations at hire. Offboarding promptly disables accounts, recovers devices and badges, and reminds the leaver of confidentiality duties. Clean desk policies reduce exposure of paper and screens. Policies need ownership, review dates, and enforcement, and exceptions should be documented and time-limited. A policy nobody can find or follow is a paper control, not a real one.",
+        "keyTerms": [
+          {
+            "term": "Acceptable Use Policy",
+            "def": "Rules on how users may use company systems and data."
+          },
+          {
+            "term": "Separation of Duties",
+            "def": "No single person controls an entire sensitive process."
+          },
+          {
+            "term": "Dual Control",
+            "def": "Two people must act together to complete a task."
+          },
+          {
+            "term": "Job Rotation",
+            "def": "Periodically moving staff between roles."
+          },
+          {
+            "term": "Mandatory Vacation",
+            "def": "Requiring time off so others can spot irregularities."
+          },
+          {
+            "term": "Offboarding",
+            "def": "Removing access and recovering assets when someone leaves."
+          }
+        ],
+        "analogy": "Dual control is a safe-deposit box that needs both the bank's key and yours. Separation of duties is having one person write the check and another approve it. Mandatory vacation is a surprise audit: someone else sits at your desk and sees what you hide.",
+        "technical": "A company's payments team separates duties: one employee creates vendor accounts, another approves payments. The treasurer must take two consecutive weeks of leave each year; during one such leave, a colleague notices irregular vendor invoices, exposing a long-running fraud. Offboarding checklists disable accounts the same day staff leave.",
+        "table": {
+          "headers": [
+            "Control",
+            "What It Does",
+            "Catches / Prevents"
+          ],
+          "rows": [
+            [
+              "Separation of duties",
+              "Splits a task among people",
+              "Single-person fraud"
+            ],
+            [
+              "Dual control",
+              "Requires two actors",
+              "Unilateral action"
+            ],
+            [
+              "Job rotation",
+              "Moves people between roles",
+              "Long-term hidden fraud"
+            ],
+            [
+              "Mandatory vacation",
+              "Forces someone else to cover",
+              "Concealed irregularities"
+            ],
+            [
+              "Acceptable use policy",
+              "Sets user rules",
+              "Misuse of assets"
+            ],
+            [
+              "Offboarding",
+              "Removes access promptly",
+              "Ghost accounts"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Separation of Duties",
+            "b": "Dual Control",
+            "diff": "Separation of duties splits a process into different people's responsibilities. Dual control requires two people to act together on the same step."
+          },
+          {
+            "a": "Job Rotation",
+            "b": "Mandatory Vacation",
+            "diff": "Both expose fraud. Rotation moves people between roles. Vacation removes someone temporarily so a replacement sees their work."
+          },
+          {
+            "a": "Policy",
+            "b": "Procedure",
+            "diff": "A policy states what and why. A procedure gives the step-by-step how."
+          }
+        ],
+        "soc": "Analysts watch for activity that continues on a vacationing employee's account, and for accounts of departed staff. HR integration keeps offboarding and access reviews accurate.",
+        "takeaways": [
+          "Separation of duties splits tasks; dual control needs two actors; rotation and mandatory vacation expose fraud.",
+          "Common policies: AUP, incident response, change management, BCP/DR, retention.",
+          "Offboarding must promptly remove access and recover assets."
+        ],
+        "taglish": "Separation of duties — hati-hati ang gawain para walang isang taong may hawak ng buong proseso. Dual control — dalawang tao ang kailangan. Job rotation — palitan ng posisyon. Mandatory vacation — pilit na bakasyon para may ibang makakita ng kakaiba. Offboarding — tanggalin agad ang access ng umalis."
+      },
+      {
+        "id": "d5-t13",
+        "title": "Risk Registers, Risk Ownership, Gap Analysis, and Reporting",
+        "tag": "5.2",
+        "minutes": 14,
+        "goal": "Build and read a risk register, assign risk owners, explain thresholds and key indicators, perform a gap analysis, and report risk to leaders.",
+        "why": "The Risk Assessment lesson covers calculations and appetite. This lesson covers the working artifacts and how risk is managed over time.",
+        "simple": "A risk register is a living list of identified risks, each with a description, likelihood, impact, score, owner, chosen treatment, status, and review date. Every risk needs an owner: a named person accountable for the decision and the follow-up, usually a business leader and not just the security team. Risk analysis can be qualitative (high/medium/low or a scored matrix) or quantitative (SLE, ARO, ALE with money values). Treatment options are avoid, transfer (insurance, contracts), mitigate (add controls), or accept, and residual risk is what remains after controls. Risk thresholds and tolerance define when escalation is required, and key risk indicators (KRIs) are metrics that signal rising risk, such as unpatched critical systems or overdue access reviews. Risk reporting turns the register into plain-language dashboards for executives, showing top risks, trends, and decisions needed. A gap analysis compares current state to a desired state, such as a framework or policy, and lists the gaps with priorities and remediation plans. Risk management is continuous: review the register on a schedule, after incidents, and when the business changes. Exceptions and exemptions should be documented, time-limited, approved by the right owner, and reviewed.",
+        "keyTerms": [
+          {
+            "term": "Risk Register",
+            "def": "A maintained list of risks with owners, scores, and treatments."
+          },
+          {
+            "term": "Risk Owner",
+            "def": "The accountable person who decides how a risk is treated."
+          },
+          {
+            "term": "Residual Risk",
+            "def": "The risk that remains after controls are applied."
+          },
+          {
+            "term": "Key Risk Indicator",
+            "def": "A metric that signals rising risk."
+          },
+          {
+            "term": "Gap Analysis",
+            "def": "Comparing the current state with a target state to find what is missing."
+          },
+          {
+            "term": "Risk Exception",
+            "def": "A documented, time-limited approval to operate outside policy."
+          }
+        ],
+        "analogy": "A risk register is a ship's hazard log: every iceberg listed with a name, a size, who is steering around it, and when it was last checked. A gap analysis is comparing the ship's equipment list to the lifeboat regulations and seeing what is missing.",
+        "technical": "A team finds an unsupported database server. They log it in the register with a high score, name the data owner as risk owner, and choose mitigation: segment it now and migrate within six months. The CISO reports it in the quarterly risk dashboard. A separate gap analysis against ISO 27001 produces a prioritized list of control gaps with owners and dates.",
+        "table": {
+          "headers": [
+            "Register Field",
+            "Example"
+          ],
+          "rows": [
+            [
+              "Risk",
+              "Unsupported database server"
+            ],
+            [
+              "Likelihood / Impact",
+              "High / High"
+            ],
+            [
+              "Owner",
+              "Head of Finance Systems"
+            ],
+            [
+              "Treatment",
+              "Mitigate: segment now, migrate in 6 months"
+            ],
+            [
+              "Residual risk",
+              "Medium until migration"
+            ],
+            [
+              "Review date",
+              "Next quarter"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Risk Owner",
+            "b": "Control Owner",
+            "diff": "The risk owner is accountable for the risk decision. A control owner runs a specific safeguard."
+          },
+          {
+            "a": "Inherent Risk",
+            "b": "Residual Risk",
+            "diff": "Inherent is before controls. Residual is what is left after controls."
+          },
+          {
+            "a": "Risk Exception",
+            "b": "Risk Acceptance",
+            "diff": "An exception is a documented, time-limited deviation from policy. Acceptance is a decision to live with a risk. Both need approval by the right owner."
+          }
+        ],
+        "soc": "SOC metrics, vulnerability data, and incident trends feed KRIs. Analysts help keep the register honest by reporting new threats and control failures that change likelihood.",
+        "takeaways": [
+          "A risk register lists risks, owners, treatments, and review dates, and it is a living document.",
+          "Every risk needs a named, accountable owner.",
+          "Gap analysis compares current state to a target and drives remediation plans."
+        ],
+        "taglish": "Risk register — listahan ng mga panganib kasama ang may-ari at plano. Risk owner — taong may pananagutan sa desisyon. Residual risk — natitirang panganib matapos ang controls. Gap analysis — paghahambing ng kasalukuyan sa dapat na estado."
+      },
+      {
+        "id": "d5-t14",
+        "title": "Privacy Roles and Data Subject Rights",
+        "tag": "5.4",
+        "minutes": 14,
+        "goal": "Distinguish data controller, processor, data protection officer, and data subject, and explain consent, data subject rights, data processing agreements, and breach notification.",
+        "why": "Privacy questions turn on knowing who is responsible for what and which rights individuals have.",
+        "simple": "Privacy law uses specific roles. The data subject is the person the data is about. The data controller decides why and how personal data is processed and carries primary accountability. The data processor handles personal data on the controller's behalf, such as a payroll or cloud provider, and works under a data processing agreement (DPA) that sets what it may do. A data protection officer (DPO) advises on and monitors compliance and is required in some situations. Core principles: lawfulness and transparency, purpose limitation (use data only for the stated purpose), data minimization (collect only what is needed), accuracy, storage limitation (keep only as long as needed), integrity and confidentiality, and accountability. Consent must be informed, specific, and revocable. Data subject rights include access, correction, deletion (the right to be forgotten), restriction, portability, and objection. Privacy impact assessments evaluate risks of a new processing activity, and privacy by design builds protections in from the start. Breach notification rules require reporting certain breaches to regulators and sometimes individuals within a set time, so incident response plans include legal and privacy contacts. Retention and deletion schedules, data inventories, and mapping of data flows make rights requests answerable. This lesson is conceptual and is not legal advice.",
+        "keyTerms": [
+          {
+            "term": "Data Subject",
+            "def": "The individual the personal data is about."
+          },
+          {
+            "term": "Data Controller",
+            "def": "The party that decides why and how personal data is processed."
+          },
+          {
+            "term": "Data Processor",
+            "def": "A party that processes data on the controller's behalf."
+          },
+          {
+            "term": "DPO",
+            "def": "A data protection officer who advises on and monitors compliance."
+          },
+          {
+            "term": "Data Minimization",
+            "def": "Collecting only the data that is needed."
+          },
+          {
+            "term": "Privacy Impact Assessment",
+            "def": "A review of the privacy risks of a planned processing activity."
+          }
+        ],
+        "analogy": "The controller is the restaurant that decides what to do with your order information. The processor is the delivery company handling it under a contract. You are the customer, the data subject, and you may ask the restaurant what it has on you or to delete it.",
+        "technical": "A retailer (controller) uses an email-marketing vendor (processor) under a data processing agreement. A customer submits a deletion request; the retailer finds the data across its systems using a data inventory and instructs the vendor to delete it too. A new loyalty app triggers a privacy impact assessment before launch, and the team removes a field that is not needed, applying data minimization.",
+        "table": {
+          "headers": [
+            "Role / Right",
+            "Meaning"
+          ],
+          "rows": [
+            [
+              "Data subject",
+              "Person the data is about"
+            ],
+            [
+              "Controller",
+              "Decides purpose and means"
+            ],
+            [
+              "Processor",
+              "Processes on controller's behalf"
+            ],
+            [
+              "DPO",
+              "Advises and monitors compliance"
+            ],
+            [
+              "Access / deletion / portability",
+              "Rights of the data subject"
+            ],
+            [
+              "Breach notification",
+              "Report certain breaches within a deadline"
+            ]
+          ]
+        },
+        "confusion": [
+          {
+            "a": "Controller",
+            "b": "Processor",
+            "diff": "The controller decides why and how data is used. The processor follows the controller's instructions."
+          },
+          {
+            "a": "Data Minimization",
+            "b": "Storage Limitation",
+            "diff": "Minimization limits how much is collected. Storage limitation limits how long it is kept."
+          },
+          {
+            "a": "Consent",
+            "b": "Contract",
+            "diff": "Consent is a revocable permission. Some processing is justified by other bases, such as fulfilling a contract."
+          }
+        ],
+        "soc": "The SOC supports privacy through breach detection, containment, and the scoping evidence needed for notification. Time-to-notify requirements make accurate logs and incident timelines important.",
+        "takeaways": [
+          "Controller decides; processor acts on instructions under a DPA; data subject has rights.",
+          "Minimization, purpose limitation, and storage limitation are core principles.",
+          "Breach notification deadlines make fast detection and scoping essential."
+        ],
+        "taglish": "Data subject — ang taong pagmamay-ari ng datos. Controller — nagpapasya kung bakit at paano gagamitin ang datos. Processor — sumusunod sa utos ng controller. DPO — tagapayo sa pagsunod. Data minimization — kolektahin lang ang kailangan."
       }
     ]
   }

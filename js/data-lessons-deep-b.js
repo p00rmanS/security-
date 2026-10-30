@@ -1,7 +1,5 @@
-/* In-depth lessons, part B (Domains 4-5), plus the merge step that folds
-   every bundle registered on globalThis.__DEEP (part A and this file) into
-   DOMAINS, PRO_TIPS, QUICK_SUMMARIES, QUESTIONS, GLOSSARY and ACRONYMS.
-   Loaded after data-lessons-deep-a.js. */
+/* In-depth lessons, part B (Domains 4-5). Registers a bundle on
+   globalThis.__DEEP; data-lessons-merge.js (loaded last) merges it. */
 
 (globalThis.__DEEP = globalThis.__DEEP || []).push({
   lessons: {
@@ -1012,36 +1010,3 @@
     { acro: "SCIM", expansion: "System for Cross-domain Identity Management", meaning: "A standard for automating user provisioning across systems." }
   ]
 });
-
-/* ---------- merge every registered bundle into the app's globals ---------- */
-
-(function () {
-  "use strict";
-
-  const sortKey = (domain, lesson) => {
-    const m = /^(\d+)\.(\d+)$/.exec(lesson.tag || "");
-    if (!m || parseInt(m[1], 10) !== domain.number) return 9999;
-    return parseInt(m[2], 10);
-  };
-
-  (globalThis.__DEEP || []).forEach((bundle) => {
-    DOMAINS.forEach((d) => {
-      (bundle.lessons[d.id] || []).forEach((l) => {
-        if (!d.topics.some((t) => t.id === l.id)) d.topics.push(l);
-      });
-    });
-    Object.assign(PRO_TIPS, bundle.tips || {});
-    Object.assign(QUICK_SUMMARIES, bundle.summaries || {});
-    (bundle.questions || []).forEach((q) => { if (!QUESTIONS.some((x) => x.id === q.id)) QUESTIONS.push(q); });
-    (bundle.glossary || []).forEach((g) => { if (!GLOSSARY.some((x) => x.term.toLowerCase() === g.term.toLowerCase())) GLOSSARY.push(g); });
-    (bundle.acronyms || []).forEach((a) => { if (!ACRONYMS.some((x) => x.acro === a.acro)) ACRONYMS.push(a); });
-  });
-
-  DOMAINS.forEach((d) => {
-    d.topics = d.topics
-      .map((t, i) => ({ t, i, k: sortKey(d, t) }))
-      .sort((a, b) => a.k - b.k || a.i - b.i)
-      .map((x) => x.t);
-  });
-  ACRONYMS.sort((a, b) => a.acro.localeCompare(b.acro, undefined, { sensitivity: "base" }));
-})();

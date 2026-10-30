@@ -43,7 +43,10 @@ js/data-lessons-extra.js 9 more lessons + their tips, summaries, questions, glos
                          merged into the globals above
 js/data-lessons-deep-a.js, -b.js  11 in-depth lessons ("Going deeper" + "Exam patterns" sections)
 js/data-stories.js       "Story from the Field" scenarios
-Totals with every file loaded: 135 lessons, 272 questions, 177 glossary terms, 253 acronyms
+js/data-lessons-more-a.js, -b.js  10 more lessons (ICS/OT, DR sites, certificates, threat intel sharing,
+                         OS hardening, IR exercises, pen test lifecycle, exam strategy, ...), ids in the t16x range
+js/data-lessons-merge.js Merges every lesson bundle; warns on the console if a lesson id is duplicated
+Totals with every file loaded: 145 lessons, 292 questions, 197 glossary terms, 267 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     226 domain + 12 refresher practice questions (250 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)

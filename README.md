@@ -46,7 +46,10 @@ js/data-stories.js       "Story from the Field" scenarios
 js/data-lessons-more-a.js, -b.js  10 more lessons (ICS/OT, DR sites, certificates, threat intel sharing,
                          OS hardening, IR exercises, pen test lifecycle, exam strategy, ...), ids in the t16x range
 js/data-lessons-merge.js Merges every lesson bundle; warns on the console if a lesson id is duplicated
-Totals with every file loaded: 145 lessons, 292 questions, 197 glossary terms, 267 acronyms
+js/data-lessons-more2-a.js, -b.js  9 more lessons (legacy/EOL systems, SD-WAN/SASE/ZTNA, web gateways and WAF,
+                         log analysis practice, MFA attacks, secure SDLC, SOAR automation, worked ALE/SLE
+                         risk examples, KPIs/KRIs and reporting)
+Totals with every file loaded: 154 lessons, 310 questions, 214 glossary terms, 277 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     226 domain + 12 refresher practice questions (250 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)

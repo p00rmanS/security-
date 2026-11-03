@@ -792,3 +792,45 @@ tr:last-child td { border-bottom: none; }
   .remember-head { background: #000 !important; color: #fff !important; }
   a { color: #000; text-decoration: underline; }
 }
+
+/* ---------- Study paths ---------- */
+
+.path-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 18px 0 8px; }
+.path-card { border: 1px solid var(--border); background: var(--surface-card); padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; }
+.path-card.active { border: 2px solid var(--border-strong); }
+.path-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.path-card h3 { margin: 0; font-size: 21px; }
+.path-aud { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-strong); margin: 2px 0 6px; }
+.path-card p { font-size: 15px; margin-bottom: 10px; }
+.path-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.path-card .btn-row { margin-top: auto; padding-top: 8px; }
+.path-prompt { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border: 2px solid var(--border-strong); }
+.path-prompt p { margin: 2px 0 8px; font-size: 14.5px; }
+.path-banner { background: var(--surface-alt); border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 8px 14px; margin: 0 0 14px; font-size: 14px; color: var(--text-secondary); }
+
+/* ---------- Exam blueprint ---------- */
+
+.bp-body { display: none; padding: 12px 16px 16px; border-top: 1px solid var(--border); background: var(--surface-card); }
+.ol-module.open .bp-body { display: block; }
+.bp-topics { border: 1px solid var(--border); }
+.bp-topic { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 7px 12px; border-bottom: 1px solid var(--border); font-size: 14.5px; border-left: 3px solid var(--green); }
+.bp-topic:last-child { border-bottom: none; }
+.bp-topic.bp-weak { border-left-color: var(--amber); }
+.bp-topic.bp-gap { border-left-color: var(--red); background: var(--red-soft); }
+.bp-name { font-weight: 600; color: var(--text-primary); flex: 1 1 40%; }
+.bp-links { display: flex; flex-wrap: wrap; gap: 2px 12px; justify-content: flex-end; flex: 1 1 55%; }
+.bp-links .link-btn { text-align: right; font-size: 13px; }
+.bp-also { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
+/* ---------- Flashcards ---------- */
+
+.fc-progress { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin: 6px 0 10px; }
+.fc-card { border: 2px solid var(--border-strong); background: var(--surface-card); min-height: 260px; padding: 34px 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; gap: 18px; }
+.fc-front { font-family: var(--font-display); font-size: 34px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.fc-hint { font-size: 14px; color: var(--text-muted); }
+.fc-back { border-top: 1px solid var(--border); padding-top: 18px; width: 100%; }
+.fc-answer { font-size: 22px; color: var(--text-primary); font-weight: 600; }
+.fc-extra { font-size: 15px; color: var(--text-secondary); margin-top: 10px; max-width: 60ch; margin-left: auto; margin-right: auto; }
+.fc-grades { display: flex; gap: 10px; justify-content: center; margin: 16px 0 6px; flex-wrap: wrap; }
+.fc-foot { text-align: center; margin-top: 6px; }
+@media (max-width: 860px) { .fc-front { font-size: 26px; } .fc-card { padding: 24px 16px; } }

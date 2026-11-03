@@ -20,6 +20,11 @@
       navCollapsed: false,
       outlineSections: {},
       hiddenSections: {},
+      activePath: null,
+      navCourseOrder: false,
+      pathChecks: {},
+      cards: {},
+      qStats: {},
       completedLessons: {},
       bookmarks: {},
       notes: {},
@@ -57,6 +62,11 @@
         navCollapsed: !!parsed.navCollapsed,
         outlineSections: parsed.outlineSections || {},
         hiddenSections: parsed.hiddenSections || {},
+        activePath: parsed.activePath || null,
+        navCourseOrder: !!parsed.navCourseOrder,
+        pathChecks: parsed.pathChecks || {},
+        cards: parsed.cards || {},
+        qStats: parsed.qStats || {},
         completedLessons: parsed.completedLessons || {},
         bookmarks: parsed.bookmarks || {},
         notes: parsed.notes || {},
@@ -249,6 +259,9 @@
   const routes = {
     dashboard: renderDashboard,
     course: renderCoursePage,
+    paths: renderPathsPage,
+    blueprint: renderBlueprint,
+    flashcards: renderFlashcards,
     exam: renderExamOverview,
     fundamentals: renderFundamentals,
     domain: renderDomainPage,
@@ -353,7 +366,9 @@
     let html = "";
     html += navGroupOpen("Course");
     html += navLink("dashboard", null, "Dashboard", activeRoute === "dashboard");
+    html += navLink("paths", null, "Study paths", activeRoute === "paths");
     html += navLink("course", null, "Course content", activeRoute === "course" || activeRoute === "lesson");
+    html += navLink("blueprint", null, "Exam blueprint", activeRoute === "blueprint");
     html += navLink("exam", null, "Exam overview", activeRoute === "exam");
     html += "</div>";
 
@@ -371,6 +386,7 @@
 
     html += navGroupOpen("Practice & reference");
     html += navLink("practice", null, "Practice Center", activeRoute === "practice");
+    html += navLink("flashcards", null, "Flashcards", activeRoute === "flashcards");
     html += navLink("labs", null, "Labs / SOC Simulator", activeRoute === "labs" || activeRoute === "lab");
     html += navLink("glossary", null, "Glossary", activeRoute === "glossary");
     html += navLink("acronyms", null, "Acronyms", activeRoute === "acronyms");
@@ -761,6 +777,31 @@
     return html;
   }
 
+  function pathBannerHtml(ctx, lessonId) {
+    if (ctx.path) {
+      return '<div class="path-banner">Following <b>' + escapeHtml(ctx.path.def.title) + "</b> &middot; step " + (ctx.ids.indexOf(lessonId) + 1) + " of " + ctx.ids.length +
+        ' &middot; <button class="link-btn" data-use-course-order>Use course order instead</button> &middot; <button class="link-btn" data-goto-path="' + ctx.path.id + '">View path</button></div>';
+    }
+    if (state.activePath && state.navCourseOrder) {
+      return '<div class="path-banner">Showing course order. <button class="link-btn" data-use-path-order>Follow my study path again</button></div>';
+    }
+    return "";
+  }
+
+  function practiceCtaHtml(lessonId, kind, practiceScope, objective) {
+    const nLesson = questionsForScope("lesson:" + lessonId).length;
+    const nObj = objective ? questionsForScope("obj:" + objective).length : 0;
+    return (
+      '<div class="practice-cta"><div><b>Check yourself</b><p>' +
+      (nLesson ? nLesson + " question" + (nLesson === 1 ? "" : "s") + " on this lesson" : "No questions tied to this lesson yet") +
+      (nObj ? ", " + nObj + " for objective " + escapeHtml(objective) : "") + ".</p></div>" +
+      '<div class="btn-row" style="margin:0;">' +
+      (nLesson ? '<button class="btn btn-primary" data-practice-scope="lesson:' + lessonId + '">Practice this lesson</button>' : "") +
+      (nObj ? '<button class="btn" data-practice-scope="obj:' + objective + '">Practice objective ' + escapeHtml(objective) + "</button>" : "") +
+      '<button class="btn" data-practice-domain="' + practiceScope + '">Whole ' + (kind === "fund" ? "module" : "domain") + "</button></div></div>"
+    );
+  }
+
   function renderLessonFocus(lessonId) {
     const found = findLessonFull(lessonId);
     const wrap = el("<div></div>");
@@ -770,7 +811,8 @@
       return wrap;
     }
     const { kind, lesson, domain } = found;
-    const ids = allLessonIds();
+    const navCtx = navContext(lessonId);
+    const ids = navCtx.ids;
     const idx = ids.indexOf(lessonId);
     const prevId = idx > 0 ? ids[idx - 1] : null;
     const nextId = idx !== -1 && idx < ids.length - 1 ? ids[idx + 1] : null;
@@ -802,10 +844,11 @@
       '<div class="lesson-crumbs"><button data-nav-to="course">Course</button><span class="sep">/</span>' +
       (mod ? '<button data-nav-to="' + mod.route + (mod.param ? "/" + mod.param : "") + '">' + escapeHtml(mod.label + ": " + mod.title) + "</button>" : "") +
       (objective ? '<span class="sep">/</span><span>Objective ' + escapeHtml(objective) + "</span>" : "") + "</div>" +
+      pathBannerHtml(navCtx, lessonId) +
 
       '<div class="lesson-title-row"><h1>' + escapeHtml(lesson.title) + "</h1>" +
       '<div class="lesson-actions">' + bookmarkButton(lesson.id) + completeToggleButton(lesson.id) + "</div></div>" +
-      '<div class="lesson-meta"><span class="tag">Lesson ' + (idx + 1) + " of " + ids.length + "</span>" +
+      '<div class="lesson-meta"><span class="tag">' + (navCtx.path ? "Path step " : "Lesson ") + (idx + 1) + " of " + ids.length + "</span>" +
       (lesson.minutes ? '<span class="tag">' + lesson.minutes + " min</span>" : "") +
       (kind === "domain" && found.isFlagship ? '<span class="tag tag-blue">Flagship</span>' : "") +
       (done ? '<span class="badge-complete">' + icon("check", 14) + " Completed</span>" : "") + "</div>" +
@@ -815,18 +858,17 @@
 
       lessonBodyBlocks(kind, lesson) +
 
-      '<div class="practice-cta"><div><b>Check yourself</b><p>Practice questions for this ' + (kind === "fund" ? "module" : "domain") + ' are in the Practice Center.</p></div>' +
-      '<button class="btn" data-practice-domain="' + practiceScope + '">Start practice ' + icon("chevronRight", 14) + "</button></div>" +
+      practiceCtaHtml(lesson.id, kind, practiceScope, objective) +
 
       '<section class="l-section" id="notes-box"><div class="l-label"><span class="l-num">' + icon("note", 13) + "</span>My notes</div>" +
       '<textarea class="notes-textarea" data-notes-for="' + lesson.id + '" placeholder="Anything worth remembering? Notes save automatically in this browser.">' + escapeHtml(existingNote) + "</textarea></section>" +
 
       '<div class="lesson-focus-nav">' +
       '<button class="btn lesson-nav-btn prev" id="lesson-nav-prev"' + (prevId ? "" : " disabled") + "><small>" + icon("chevronLeft", 12) + " Previous <kbd>←</kbd></small>" +
-      '<span class="t">' + (prevLesson ? escapeHtml(prevLesson.title) : "Start of course") + "</span></button>" +
+      '<span class="t">' + (prevLesson ? escapeHtml(prevLesson.title) : (navCtx.path ? "Start of path" : "Start of course")) + "</span></button>" +
       '<div class="lesson-nav-mid">' + completeToggleButton(lesson.id) + "</div>" +
       '<button class="btn lesson-nav-btn next" id="lesson-nav-next"' + (nextId ? "" : " disabled") + "><small>Next <kbd>→</kbd> " + icon("chevronRight", 12) + "</small>" +
-      '<span class="t">' + (nextLesson ? escapeHtml(nextLesson.title) : "End of course") + "</span></button>" +
+      '<span class="t">' + (nextLesson ? escapeHtml(nextLesson.title) : (navCtx.path ? "End of path" : "End of course")) + "</span></button>" +
       "</div>" +
       '<div class="lesson-focus-hint"><kbd>←</kbd> <kbd>→</kbd> change lesson &middot; <kbd>Shift</kbd>+<kbd>→</kbd> complete and continue &middot; <kbd>C</kbd> complete &middot; <kbd>O</kbd> course content &middot; <kbd>?</kbd> all shortcuts</div>' +
       "</article>";
@@ -835,6 +877,10 @@
     wireBookmarkButtons(wrap);
     wireNotesInputs(wrap);
     wirePracticeDomainButtons(wrap);
+    wireScopeButtons(wrap);
+    wrap.querySelectorAll("[data-use-course-order]").forEach((b) => b.addEventListener("click", () => { state.navCourseOrder = true; saveState(); render({ keepScroll: true }); }));
+    wrap.querySelectorAll("[data-use-path-order]").forEach((b) => b.addEventListener("click", () => { state.navCourseOrder = false; saveState(); render({ keepScroll: true }); }));
+    wrap.querySelectorAll("[data-goto-path]").forEach((b) => b.addEventListener("click", () => navigate("paths", b.getAttribute("data-goto-path"))));
 
     wrap.querySelectorAll("[data-nav-to]").forEach((b) => {
       b.addEventListener("click", () => {
@@ -1032,6 +1078,8 @@
       (streak > 0 ? '<div class="streak"><b>' + streak + "</b><span>day streak</span></div>" : "") +
       progressRing(pct, { size: 104, stroke: 8, color: "var(--accent)", trackColor: "var(--border)", label: pct + "%", sub: "complete" }) +
       "</div></div>" +
+
+      pathCardHtml() +
 
       '<div class="card-grid">' +
         statCard(completedCount() + " / " + TOTAL_LESSONS, "Lessons completed") +
@@ -1255,7 +1303,19 @@
     if (scope === "fund") return QUESTIONS.filter((q) => q.domainId === "fund");
     if (scope === "missed") return QUESTIONS.filter((q) => state.missedQuestions[q.id]);
     if (scope === "flagged") return QUESTIONS.filter((q) => state.flaggedQuestions[q.id]);
+    if (scope.indexOf("lesson:") === 0) return QUESTIONS.filter((q) => q.tag === scope.slice(7));
+    if (scope.indexOf("obj:") === 0) return QUESTIONS.filter((q) => objectiveOfLesson(q.tag) === scope.slice(4));
     return QUESTIONS.filter((q) => q.domainId === scope);
+  }
+
+  function quizScopeOptionsHtml(defaultScope) {
+    const opt = (k, label) => '<option value="' + k + '"' + (k === defaultScope ? " selected" : "") + ">" + label + " (" + questionsForScope(k).length + ")</option>";
+    let html = "";
+    if (!(defaultScope in SCOPE_LABELS)) html += opt(defaultScope, scopeLabel(defaultScope));
+    html += Object.keys(SCOPE_LABELS).map((k) => opt(k, SCOPE_LABELS[k])).join("");
+    html += '<optgroup label="By exam objective">' +
+      OBJECTIVES.filter((o) => questionsForScope("obj:" + o.id).length > 0).map((o) => opt("obj:" + o.id, escapeHtml(o.id + " " + o.title))).join("") + "</optgroup>";
+    return html;
   }
 
   function renderPractice() {
@@ -1276,10 +1336,7 @@
       '<div class="card">' +
       '<label style="display:block;font-weight:600;margin-bottom:6px;">Scope</label>' +
       '<select class="select-input" id="qz-scope" style="width:100%;margin-bottom:14px;">' +
-      Object.keys(SCOPE_LABELS).map((k) => {
-        const n = questionsForScope(k).length;
-        return '<option value="' + k + '"' + (k === defaultScope ? " selected" : "") + ">" + SCOPE_LABELS[k] + " (" + n + ")</option>";
-      }).join("") +
+      quizScopeOptionsHtml(defaultScope) +
       "</select>" +
       '<label style="display:block;font-weight:600;margin-bottom:6px;">Number of Questions</label>' +
       '<select class="select-input" id="qz-count" style="width:100%;margin-bottom:14px;"></select>' +
@@ -1342,7 +1399,7 @@
       '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scope</th><th>Score</th><th>Mode</th></tr></thead><tbody>' +
       recent.map((a) => {
         const pct = Math.round((a.correct / a.total) * 100);
-        return "<tr><td>" + escapeHtml(new Date(a.date).toLocaleDateString()) + "</td><td>" + (SCOPE_LABELS[a.scopeKey] || a.scopeKey) + "</td><td>" + a.correct + "/" + a.total + " (" + pct + "%)</td><td>" + escapeHtml(a.mode) + "</td></tr>";
+        return "<tr><td>" + escapeHtml(new Date(a.date).toLocaleDateString()) + "</td><td>" + scopeLabel(a.scopeKey) + "</td><td>" + a.correct + "/" + a.total + " (" + pct + "%)</td><td>" + escapeHtml(a.mode) + "</td></tr>";
       }).join("") +
       "</tbody></table></div>"
     );
@@ -1375,7 +1432,7 @@
     const revealed = activeQuiz.mode === "practice" && !!activeQuiz.answers[q.id] && activeQuiz.answers[q.id].checked;
 
     wrap.innerHTML =
-      '<div class="quiz-progress">Question ' + (activeQuiz.index + 1) + " of " + total + " &middot; " + (SCOPE_LABELS[activeQuiz.scope] || activeQuiz.scope) +
+      '<div class="quiz-progress">Question ' + (activeQuiz.index + 1) + " of " + total + " &middot; " + scopeLabel(activeQuiz.scope) +
       (activeQuiz.secondsLeft !== null ? ' &middot; <span id="qz-timer-display">' + formatTime(activeQuiz.secondsLeft) + "</span>" : "") + "</div>" +
       '<div class="progress-track" style="margin-bottom:16px;"><div class="progress-fill" style="width:' + Math.round(((activeQuiz.index) / total) * 100) + '%"></div></div>' +
       '<div class="card">' +
@@ -1526,6 +1583,11 @@
       timeSeconds: Math.round((Date.now() - activeQuiz.startedAt) / 1000),
       domainBreakdown: domainBreakdown
     };
+    activeQuiz.questions.forEach((qq) => {
+      const st = state.qStats[qq.id] || { r: 0, w: 0 };
+      if (activeQuiz.answers[qq.id].isCorrect) st.r++; else st.w++;
+      state.qStats[qq.id] = st;
+    });
     state.quizHistory.push(record);
     recordActivity();
     saveState();
@@ -1550,7 +1612,7 @@
     wrap.innerHTML =
       '<div class="eyebrow">Quiz Results</div>' +
       "<h1>" + pct + "% (" + correct + " / " + total + ")</h1>" +
-      '<p class="lede">' + (SCOPE_LABELS[q.scope] || q.scope) + " &middot; " + escapeHtml(q.mode) + " mode &middot; " + formatTime(Math.round((Date.now() - q.startedAt) / 1000)) + " elapsed</p>" +
+      '<p class="lede">' + scopeLabel(q.scope) + " &middot; " + escapeHtml(q.mode) + " mode &middot; " + formatTime(Math.round((Date.now() - q.startedAt) / 1000)) + " elapsed</p>" +
       '<div class="card"><h3 style="margin-top:0;">Domain Breakdown</h3>' +
       Object.keys(domainBreakdown).map((dk) => {
         const b = domainBreakdown[dk];
@@ -2193,6 +2255,576 @@
     navigate(item.route, item.param);
   }
 
+  /* ============================= EXAM OBJECTIVES & COVERAGE ============================= */
+
+  const objectiveCache = new Map();
+
+  function objectiveOfLesson(id) {
+    if (!id) return null;
+    if (objectiveCache.has(id)) return objectiveCache.get(id);
+    let result = null;
+    if (FLAGSHIP_OBJ[id]) result = FLAGSHIP_OBJ[id];
+    else {
+      const f = findLessonFull(id);
+      if (f && f.kind === "fund") result = "fund";
+      else if (f && /^\d+\.\d+$/.test(f.lesson.tag || "")) result = f.lesson.tag;
+    }
+    objectiveCache.set(id, result);
+    return result;
+  }
+
+  function objectiveById(id) {
+    return OBJECTIVES.find((o) => o.id === id) || null;
+  }
+
+  function flattenText(v) {
+    if (v === null || v === undefined) return "";
+    if (typeof v === "string") return v;
+    if (Array.isArray(v)) return v.map(flattenText).join(" ");
+    if (typeof v === "object") return Object.keys(v).map((k) => flattenText(v[k])).join(" ");
+    return String(v);
+  }
+
+  let lessonRecordCache = null;
+  function lessonRecords() {
+    if (lessonRecordCache) return lessonRecordCache;
+    const recs = [];
+    FUNDAMENTALS.forEach((f) => recs.push({ id: f.id, title: f.title, obj: "fund", domainId: "fund", text: flattenText(f) }));
+    DOMAINS.forEach((d) => [d.flagship, ...d.topics].forEach((l) => {
+      recs.push({ id: l.id, title: l.title, obj: objectiveOfLesson(l.id), domainId: d.id, text: flattenText(l) });
+    }));
+    lessonRecordCache = recs;
+    return recs;
+  }
+
+  function objectiveStats(o) {
+    const lessons = lessonRecords().filter((r) => r.obj === o.id);
+    const done = lessons.filter((r) => state.completedLessons[r.id]).length;
+    let right = 0;
+    let wrong = 0;
+    let qCount = 0;
+    QUESTIONS.forEach((q) => {
+      if (objectiveOfLesson(q.tag) !== o.id) return;
+      qCount++;
+      const s = state.qStats[q.id];
+      if (s) { right += s.r; wrong += s.w; }
+    });
+    const attempts = right + wrong;
+    return { lessons, done, qCount, attempts, acc: attempts ? right / attempts : null };
+  }
+
+  let coverageCache = null;
+  function buildCoverage() {
+    if (coverageCache) return coverageCache;
+    const recs = lessonRecords();
+    coverageCache = OBJECTIVES.map((o) => {
+      const own = recs.filter((r) => r.obj === o.id);
+      const topics = o.topics.map((t) => {
+        let re;
+        try { re = new RegExp(t[1], "i"); } catch (e) { re = /$^/; }
+        const hits = recs.filter((r) => re.test(r.text));
+        const ownHits = hits.filter((r) => r.obj === o.id);
+        const status = ownHits.length ? "ok" : hits.length ? "weak" : "gap";
+        return { name: t[0], status: status, show: ownHits.concat(hits.filter((r) => r.obj !== o.id)).slice(0, 4), total: hits.length };
+      });
+      return { o: o, own: own, topics: topics };
+    });
+    return coverageCache;
+  }
+
+  function renderBlueprint() {
+    const wrap = el("<div></div>");
+    const cov = buildCoverage();
+    const allTopics = cov.reduce((n, c) => n + c.topics.length, 0);
+    const okTopics = cov.reduce((n, c) => n + c.topics.filter((t) => t.status === "ok").length, 0);
+    const weakTopics = cov.reduce((n, c) => n + c.topics.filter((t) => t.status === "weak").length, 0);
+    const gapTopics = allTopics - okTopics - weakTopics;
+
+    let html =
+      '<div class="eyebrow">Exam Blueprint</div><h1>SY0-701 Objective Coverage</h1>' +
+      '<p class="lede">Every objective and sub-topic from the SY0-701 outline, matched against the full text of every lesson. Green means a lesson built for that objective teaches it; amber means it only appears inside lessons for other objectives; red means no lesson covers it yet. This list is a study aid written from the published outline, so always compare it with the official CompTIA objectives PDF for your exam version.</p>' +
+      '<div class="card-grid">' +
+      statCard(OBJECTIVES.length, "Objectives") +
+      statCard(allTopics, "Exam topics tracked") +
+      statCard(Math.round((okTopics / allTopics) * 100) + "%", "Taught in their own objective's lessons", "green") +
+      statCard(gapTopics, "Topics with no lesson", gapTopics === 0 ? "green" : "amber") +
+      "</div>" +
+      '<div class="btn-row"><button class="btn btn-sm" data-bp-all="open">Expand all</button><button class="btn btn-sm" data-bp-all="close">Collapse all</button></div>';
+
+    DOMAINS.forEach((d) => {
+      html += '<h2 style="display:flex;align-items:center;gap:10px;"><span class="domain-badge" style="--domain-color:' + DOMAIN_COLORS[d.id] + ';">D' + d.number + "</span>" + escapeHtml(d.title) + ' <span class="tag tag-accent">' + d.weight + "% of exam</span></h2>";
+      html += '<div class="outline-page">';
+      cov.filter((c) => c.o.domain === d.id).forEach((c) => {
+        const st = objectiveStats(c.o);
+        const gaps = c.topics.filter((t) => t.status === "gap").length;
+        const weak = c.topics.filter((t) => t.status === "weak").length;
+        html +=
+          '<div class="ol-module" data-bp-obj="' + c.o.id + '" style="--domain-color:' + DOMAIN_COLORS[d.id] + ';">' +
+          '<button class="ol-module-head" data-bp-toggle>' + icon("chevronRight", 14, "chev") +
+          '<span class="ol-module-name"><b>' + escapeHtml(c.o.id + "  " + c.o.title) + "</b><span>" +
+          st.lessons.length + " lessons &middot; " + st.done + " done &middot; " + st.qCount + " questions" +
+          (st.acc !== null ? " &middot; your accuracy " + Math.round(st.acc * 100) + "%" : "") +
+          (gaps ? ' &middot; <span style="color:var(--red);">' + gaps + " gap" + (gaps === 1 ? "" : "s") + "</span>" : "") +
+          (weak ? ' &middot; <span style="color:var(--amber);">' + weak + " thin</span>" : "") +
+          '</span></span><span class="ol-module-tick"></span></button>' +
+          '<div class="bp-body">' +
+          '<div class="btn-row" style="margin:0 0 10px;">' +
+          (st.lessons[0] ? '<button class="btn btn-sm btn-primary" data-open-lesson="' + (st.lessons.find((r) => !state.completedLessons[r.id]) || st.lessons[0]).id + '">Study this objective</button>' : "") +
+          (st.qCount ? '<button class="btn btn-sm" data-practice-scope="obj:' + c.o.id + '">Practice ' + st.qCount + " questions</button>" : "") +
+          "</div>" +
+          '<div class="bp-topics">' +
+          c.topics.map((t) => (
+            '<div class="bp-topic bp-' + t.status + '"><span class="bp-name">' + escapeHtml(t.name) + '</span><span class="bp-links">' +
+            (t.status === "gap"
+              ? '<span class="tag tag-amber">No lesson yet</span>'
+              : (t.status === "weak" ? '<span class="bp-also">also in:</span>' : "") +
+                t.show.map((r) => '<button class="link-btn" data-open-lesson="' + r.id + '">' + escapeHtml(r.title.length > 46 ? r.title.slice(0, 44) + "…" : r.title) + "</button>").join("")) +
+            "</span></div>"
+          )).join("") +
+          "</div></div></div>";
+      });
+      html += "</div>";
+    });
+
+    wrap.innerHTML = html;
+    wrap.querySelectorAll("[data-bp-toggle]").forEach((b) => {
+      b.addEventListener("click", () => b.parentElement.classList.toggle("open"));
+    });
+    wrap.querySelectorAll("[data-bp-all]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const open = b.getAttribute("data-bp-all") === "open";
+        wrap.querySelectorAll("[data-bp-obj]").forEach((m) => m.classList.toggle("open", open));
+      });
+    });
+    wireOpenLesson(wrap);
+    wireScopeButtons(wrap);
+    return wrap;
+  }
+
+  /* ============================= STUDY PATHS ============================= */
+
+  const CORE_SET = new Set(CORE_LESSON_IDS);
+  const PATH_SIDE_LESSONS = ["d5-t161"];
+
+  function objectiveOrderKey(domain, lesson) {
+    const m = /^(\d+)\.(\d+)$/.exec(lesson.tag || "");
+    if (!m || parseInt(m[1], 10) !== domain.number) return 999;
+    return parseInt(m[2], 10);
+  }
+
+  function pathDomainLessons(d, coreOnly) {
+    const rest = d.topics
+      .filter((t) => PATH_SIDE_LESSONS.indexOf(t.id) === -1)
+      .map((t, i) => ({ t: t, i: i, k: objectiveOrderKey(d, t), c: CORE_SET.has(t.id) ? 0 : 1 }))
+      .sort((a, b) => a.k - b.k || a.c - b.c || a.i - b.i)
+      .map((x) => x.t);
+    let list = [d.flagship].concat(rest);
+    if (coreOnly) list = list.filter((l) => l === d.flagship || CORE_SET.has(l.id));
+    return list;
+  }
+
+  function lessonStep(l) { return { type: "lesson", id: l.id }; }
+
+  function pathStageMinutes(stage) {
+    return stage.steps.reduce((sum, s) => {
+      if (s.type === "lesson") { const f = findLessonFull(s.id); return sum + (f && f.lesson.minutes ? f.lesson.minutes : 12); }
+      if (s.type === "quiz") return sum + 20;
+      return sum + 5;
+    }, 0);
+  }
+
+  function domainQuizStep(d, target, minTotal) {
+    return { type: "quiz", scope: d.id, target: target, need: 1, minTotal: minTotal || 10, label: "Domain " + d.number + " practice quiz: score " + target + "% or better" };
+  }
+
+  function memorizeStage() {
+    return {
+      title: "Memorize what must be memorized",
+      sub: "Acronyms, ports, and the confusable terms",
+      steps: [
+        { type: "link", key: "fc-acr", route: "flashcards", param: "acronyms", label: "Flashcards: study the Acronyms deck until nothing is due" },
+        { type: "link", key: "fc-ports", route: "flashcards", param: "ports", label: "Flashcards: study the Ports deck until nothing is due" },
+        { type: "link", key: "cram", route: "cram", label: "Read the Exam Cram Sheet (mnemonics and must-memorize facts)" },
+        { type: "link", key: "compare", route: "compare", label: "Review the Compare and Contrast cards" }
+      ]
+    };
+  }
+
+  function readinessStage(mocks) {
+    return {
+      title: "Exam readiness",
+      sub: "Prove it under exam conditions",
+      steps: [
+        { type: "lesson", id: "d5-t161" },
+        { type: "quiz", scope: "mock", target: 85, need: mocks, minTotal: 40, label: mocks + " timed mock exam" + (mocks === 1 ? "" : "s") + " of 40+ questions at 85% or better (use Exam Simulation mode)" },
+        { type: "link", key: "blueprint", route: "blueprint", label: "Open the Exam Blueprint and confirm no objective is left unstudied" },
+        { type: "link", key: "book", route: "exam", label: "Re-read the Exam Overview, then book your exam" }
+      ]
+    };
+  }
+
+  function buildPath(id) {
+    const def = STUDY_PATHS.find((p) => p.id === id);
+    if (!def) return null;
+    const stages = [];
+
+    if (id === "beginner") {
+      stages.push({
+        title: "Start here",
+        sub: "Know the exam before you study for it",
+        steps: [
+          { type: "link", key: "exam", route: "exam", label: "Read the Exam Overview: format, scoring, and domain weights" },
+          { type: "link", key: "plan", route: "plan", label: "Open the 100-Day Plan and set your start date" }
+        ]
+      });
+      stages.push({
+        title: "Module 0: A+ / Network+ refresher",
+        sub: "The networking and systems vocabulary everything else assumes",
+        steps: FUNDAMENTALS.map((f) => ({ type: "lesson", id: f.id })).concat([{ type: "quiz", scope: "fund", target: 70, need: 1, minTotal: 5, label: "Fundamentals check: score 70% or better" }])
+      });
+      DOMAINS.forEach((d) => {
+        stages.push({
+          title: "Domain " + d.number + ": " + d.title,
+          sub: d.weight + "% of the exam",
+          domainId: d.id,
+          steps: pathDomainLessons(d, false).map(lessonStep).concat([domainQuizStep(d, 75)])
+        });
+      });
+      stages.push(memorizeStage());
+      stages.push(readinessStage(2));
+    } else if (id === "core" || id === "cram") {
+      const order = ["d4", "d2", "d5", "d3", "d1"];
+      order.forEach((did) => {
+        const d = domainById(did);
+        const steps = pathDomainLessons(d, true).map(lessonStep);
+        if (id === "cram") steps.push({ type: "link", key: "fc-" + did, route: "flashcards", param: "acronyms", label: "Flashcards: 10 minutes on due cards" });
+        steps.push(domainQuizStep(d, id === "cram" ? 80 : 75));
+        stages.push({ title: "Domain " + d.number + ": " + d.title, sub: d.weight + "% of the exam", domainId: d.id, steps: steps });
+      });
+      if (id === "core") stages.push(memorizeStage());
+      stages.push(readinessStage(id === "cram" ? 3 : 2));
+    } else if (id === "weak") {
+      const objAcc = OBJECTIVES.map((o) => ({ o: o, st: objectiveStats(o) }));
+      const weakObjs = objAcc.filter((x) => x.st.attempts >= 3 && x.st.acc < 0.7).sort((a, b) => a.st.acc - b.st.acc);
+      const missedLessonIds = [];
+      QUESTIONS.forEach((q) => {
+        const s = state.qStats[q.id];
+        if (s && s.w > s.r && findLessonFull(q.tag) && missedLessonIds.indexOf(q.tag) === -1) missedLessonIds.push(q.tag);
+      });
+      if (missedLessonIds.length) {
+        stages.push({ title: "Lessons behind questions you missed", sub: "Re-read these first", steps: missedLessonIds.map((lid) => ({ type: "lesson", id: lid })) });
+      }
+      weakObjs.forEach((x) => {
+        const recs = x.st.lessons.filter((r) => missedLessonIds.indexOf(r.id) === -1);
+        const steps = recs.map((r) => ({ type: "lesson", id: r.id }));
+        steps.push({ type: "quiz", scope: "obj:" + x.o.id, target: 80, need: 1, minTotal: Math.min(5, x.st.qCount), label: "Re-test objective " + x.o.id + ": score 80% or better" });
+        stages.push({ title: "Objective " + x.o.id + ": " + x.o.title, sub: "Your accuracy so far: " + Math.round(x.st.acc * 100) + "%", steps: steps });
+      });
+      const untested = DOMAINS.filter((d) => domainBestScore(d.id) === null);
+      if (untested.length) {
+        stages.push({ title: "Domains you have not tested yet", sub: "Find out where you stand", steps: untested.map((d) => domainQuizStep(d, 75, 10)) });
+      }
+      if (!stages.length) {
+        stages.push({ title: "No weak spots found yet", sub: "Take domain quizzes, then come back", steps: DOMAINS.map((d) => domainQuizStep(d, 75, 10)) });
+      }
+      stages.push(readinessStage(2));
+    }
+
+    const lessonIds = [];
+    stages.forEach((s) => s.steps.forEach((st) => { if (st.type === "lesson" && lessonIds.indexOf(st.id) === -1) lessonIds.push(st.id); }));
+    return { id: id, def: def, stages: stages, lessonIds: lessonIds };
+  }
+
+  function quizAttemptCount(scope, target, minTotal) {
+    return state.quizHistory.filter((h) => h.scopeKey === scope && h.total >= (minTotal || 1) && Math.round((h.correct / h.total) * 100) >= target).length;
+  }
+
+  function stepDone(step, pathId) {
+    if (step.type === "lesson") return !!state.completedLessons[step.id];
+    if (step.type === "quiz") return quizAttemptCount(step.scope, step.target, step.minTotal) >= (step.need || 1);
+    return !!state.pathChecks[pathId + ":" + step.key];
+  }
+
+  function pathProgress(path) {
+    let total = 0;
+    let done = 0;
+    let minutes = 0;
+    let next = null;
+    path.stages.forEach((stage) => stage.steps.forEach((s) => {
+      total++;
+      const d = stepDone(s, path.id);
+      if (d) done++;
+      else if (!next) next = { step: s, stage: stage };
+      if (s.type === "lesson") { const f = findLessonFull(s.id); minutes += f && f.lesson.minutes ? f.lesson.minutes : 12; }
+    }));
+    return { total: total, done: done, pct: total ? Math.round((done / total) * 100) : 0, next: next, hours: Math.round((minutes / 60) * 10) / 10 };
+  }
+
+  function activePathObject() {
+    if (!state.activePath) return null;
+    return buildPath(state.activePath);
+  }
+
+  function stepTitle(step) {
+    if (step.type === "lesson") { const f = findLessonFull(step.id); return f ? f.lesson.title : step.id; }
+    return step.label;
+  }
+
+  function goToStep(step) {
+    if (step.type === "lesson") navigate("lesson", step.id);
+    else if (step.type === "quiz") { pendingQuizScope = step.scope; navigate("practice"); }
+    else navigate(step.route, step.param || null);
+  }
+
+  function renderPathsPage(param) {
+    if (param) return renderPathDetail(param);
+    const wrap = el("<div></div>");
+    let html =
+      '<div class="eyebrow">Study Paths</div><h1>Choose how you want to study</h1>' +
+      '<p class="lede">A path is an ordered plan: lessons in exam-objective order, quiz checkpoints you must pass, and memorization tasks. Pick one and the lesson player will follow it, so the Next button always takes you to the right step. You can switch at any time without losing progress.</p><div class="path-grid">';
+    STUDY_PATHS.forEach((def) => {
+      const p = buildPath(def.id);
+      const pr = pathProgress(p);
+      const active = state.activePath === def.id;
+      html +=
+        '<div class="path-card' + (active ? " active" : "") + '">' +
+        '<div class="path-card-head"><h3>' + escapeHtml(def.title) + "</h3>" + (active ? '<span class="tag tag-accent">Your path</span>' : "") + "</div>" +
+        '<div class="path-aud">' + escapeHtml(def.audience) + "</div>" +
+        "<p>" + escapeHtml(def.blurb) + "</p>" +
+        '<div class="path-meta"><span class="tag">' + p.lessonIds.length + " lessons</span><span class=\"tag\">" + pr.total + " steps</span><span class=\"tag\">about " + pr.hours + " h of lessons</span></div>" +
+        progressBar(pr.pct) +
+        '<div class="btn-row"><button class="btn btn-primary" data-path-start="' + def.id + '">' + (active ? "Continue" : "Start this path") + '</button><button class="btn" data-path-view="' + def.id + '">View steps</button></div>' +
+        "</div>";
+    });
+    html += "</div>";
+    wrap.innerHTML = html;
+    wrap.querySelectorAll("[data-path-view]").forEach((b) => b.addEventListener("click", () => navigate("paths", b.getAttribute("data-path-view"))));
+    wrap.querySelectorAll("[data-path-start]").forEach((b) => b.addEventListener("click", () => {
+      const id = b.getAttribute("data-path-start");
+      state.activePath = id;
+      state.navCourseOrder = false;
+      saveState();
+      const pr = pathProgress(buildPath(id));
+      if (pr.next) goToStep(pr.next.step); else navigate("paths", id);
+    }));
+    return wrap;
+  }
+
+  function renderPathDetail(id) {
+    const wrap = el("<div></div>");
+    const path = buildPath(id);
+    if (!path) { wrap.innerHTML = '<div class="empty-state">Path not found.</div>'; return wrap; }
+    const pr = pathProgress(path);
+    const active = state.activePath === id;
+    let html =
+      '<div class="breadcrumb"><a href="#/paths">Study paths</a> / ' + escapeHtml(path.def.title) + "</div>" +
+      "<h1>" + escapeHtml(path.def.title) + "</h1>" +
+      '<p class="lede">' + escapeHtml(path.def.blurb) + "</p>" +
+      '<div class="btn-row" style="align-items:center;">' +
+      '<button class="btn btn-primary" id="path-go">' + (pr.next ? (pr.done ? "Continue where you left off" : "Start") : "Path complete") + "</button>" +
+      (active ? '<span class="tag tag-accent">Your active path</span>' : '<button class="btn" id="path-activate">Make this my path</button>') +
+      '<span class="tag">' + pr.done + " / " + pr.total + " steps done</span></div>" + progressBar(pr.pct) +
+      '<div class="outline-page" style="margin-top:16px;">';
+    path.stages.forEach((stage, si) => {
+      const sd = stage.steps.filter((s) => stepDone(s, id)).length;
+      const open = pr.next ? pr.next.stage === stage : si === 0;
+      const color = stage.domainId ? DOMAIN_COLORS[stage.domainId] : "var(--accent)";
+      html +=
+        '<div class="ol-module' + (open ? " open" : "") + '" style="--domain-color:' + color + ';">' +
+        '<button class="ol-module-head" data-bp-toggle>' + icon("chevronRight", 14, "chev") +
+        '<span class="ol-module-name"><b>' + (si + 1) + ". " + escapeHtml(stage.title) + "</b><span>" + escapeHtml(stage.sub || "") + " &middot; " + sd + " / " + stage.steps.length + " steps &middot; about " + Math.round(pathStageMinutes(stage) / 60 * 10) / 10 + " h</span></span>" +
+        '<span class="ol-module-tick"></span></button><ul class="ol-lessons">';
+      stage.steps.forEach((s, i) => {
+        const done = stepDone(s, id);
+        const isNext = pr.next && pr.next.step === s;
+        html +=
+          '<li class="ol-lesson' + (done ? " done" : "") + (isNext ? " current" : "") + '" data-step="' + si + ":" + i + '" tabindex="0" role="link">' +
+          '<button class="ol-check" data-step-check="' + si + ":" + i + '" aria-pressed="' + done + '" aria-label="Toggle done">' + icon("check", 13) + "</button>" +
+          '<span class="ol-text">' + escapeHtml(stepTitle(s)) +
+          '<span class="ol-sub">' + (s.type === "lesson" ? "Lesson" : s.type === "quiz" ? "Quiz checkpoint" : "Task") + "</span></span></li>";
+      });
+      html += "</ul></div>";
+    });
+    html += "</div>";
+    wrap.innerHTML = html;
+
+    const stepAt = (key) => { const p = key.split(":"); return path.stages[parseInt(p[0], 10)].steps[parseInt(p[1], 10)]; };
+    wrap.querySelectorAll("[data-bp-toggle]").forEach((b) => b.addEventListener("click", () => b.parentElement.classList.toggle("open")));
+    wrap.querySelectorAll("[data-step]").forEach((row) => {
+      const go = () => goToStep(stepAt(row.getAttribute("data-step")));
+      row.addEventListener("click", go);
+      row.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target === row) go(); });
+    });
+    wrap.querySelectorAll("[data-step-check]").forEach((b) => b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const s = stepAt(b.getAttribute("data-step-check"));
+      if (s.type === "lesson") toggleLessonComplete(s.id);
+      else if (s.type === "link") { const k = id + ":" + s.key; if (state.pathChecks[k]) delete state.pathChecks[k]; else state.pathChecks[k] = true; saveState(); }
+      else { toast("Quiz checkpoints complete automatically when you reach the score."); return; }
+      render({ keepScroll: true });
+    }));
+    const goBtn = wrap.querySelector("#path-go");
+    goBtn.addEventListener("click", () => { state.activePath = id; state.navCourseOrder = false; saveState(); if (pr.next) goToStep(pr.next.step); });
+    const act = wrap.querySelector("#path-activate");
+    if (act) act.addEventListener("click", () => { state.activePath = id; state.navCourseOrder = false; saveState(); render({ keepScroll: true }); });
+    return wrap;
+  }
+
+  /* Next/previous follow the active path when the lesson is part of it. */
+  function navContext(lessonId) {
+    if (state.activePath && !state.navCourseOrder) {
+      const p = buildPath(state.activePath);
+      if (p && p.lessonIds.indexOf(lessonId) !== -1) return { ids: p.lessonIds, path: p };
+    }
+    return { ids: allLessonIds(), path: null };
+  }
+
+  function pathCardHtml() {
+    const p = activePathObject();
+    if (!p) {
+      return '<div class="card path-prompt"><div><b>No study path chosen yet</b><p>Pick a route (full course, fast track, final cram, or weak areas) and the app will tell you exactly what to do next.</p></div><button class="btn btn-primary" data-goto="paths">Choose a study path</button></div>';
+    }
+    const pr = pathProgress(p);
+    return (
+      '<div class="card path-prompt"><div style="flex:1;min-width:0;"><div class="eyebrow" style="margin-bottom:4px;">Your path: ' + escapeHtml(p.def.title) + "</div>" +
+      (pr.next ? "<b>Next: " + escapeHtml(stepTitle(pr.next.step)) + "</b><p>" + escapeHtml(pr.next.stage.title) + "</p>" : "<b>Path complete. Book your exam when your mock scores say you are ready.</b>") +
+      progressBar(pr.pct) + "</div>" +
+      '<div class="btn-row" style="margin:0;"><button class="btn btn-primary" data-goto="paths/' + p.id + '">View path</button></div></div>'
+    );
+  }
+
+  /* ============================= FLASHCARDS (SPACED REPETITION) ============================= */
+
+  const FLASH_INTERVALS = { 1: 1, 2: 2, 3: 4, 4: 8, 5: 16 };
+  const FLASH_NEW_PER_SESSION = 15;
+  let flashSession = null;
+
+  function flashDecks() {
+    return [
+      { id: "acronyms", title: "Acronyms", blurb: "Expand every Security+ acronym and recall what it means.", cards: () => ACRONYMS.map((a) => ({ id: "ac:" + a.acro, front: a.acro, back: a.expansion, extra: a.meaning })) },
+      { id: "ports", title: "Ports and protocols", blurb: "Port to service, and service to port. Both directions are separate cards.", cards: () => PORTS.reduce((arr, p) => {
+        arr.push({ id: "pt:" + p.port + ":a", front: "Port " + p.port + " (" + p.proto + ")", back: p.service, extra: p.note });
+        arr.push({ id: "pt:" + p.port + ":b", front: "Which port(s) for " + p.service + "?", back: p.port + " (" + p.proto + ")", extra: p.note });
+        return arr;
+      }, []) },
+      { id: "glossary", title: "Glossary terms", blurb: "Plain-language definitions of the key terms.", cards: () => GLOSSARY.map((g) => ({ id: "gl:" + g.term, front: g.term, back: g.plain, extra: g.technical })) }
+    ];
+  }
+
+  function flashDue(card) {
+    const s = state.cards[card.id];
+    return !s || s.due <= todayIso();
+  }
+
+  function flashCounts(deck) {
+    const cards = deck.cards();
+    let due = 0;
+    let fresh = 0;
+    cards.forEach((c) => { const s = state.cards[c.id]; if (!s) fresh++; else if (s.due <= todayIso()) due++; });
+    return { total: cards.length, due: due, fresh: fresh, learned: cards.length - fresh };
+  }
+
+  function startFlashSession(deckId) {
+    const deck = flashDecks().find((d) => d.id === deckId);
+    if (!deck) return;
+    const cards = deck.cards();
+    const due = shuffle(cards.filter((c) => state.cards[c.id] && state.cards[c.id].due <= todayIso()));
+    const fresh = shuffle(cards.filter((c) => !state.cards[c.id])).slice(0, FLASH_NEW_PER_SESSION);
+    flashSession = { deck: deckId, title: deck.title, queue: due.concat(fresh), seen: 0, flipped: false, again: 0, good: 0 };
+  }
+
+  function gradeFlash(grade) {
+    if (!flashSession || flashSession.queue.length === 0) return;
+    const card = flashSession.queue.shift();
+    const cur = state.cards[card.id] || { box: 0 };
+    if (grade === "again") {
+      state.cards[card.id] = { box: 1, due: todayIso() };
+      flashSession.again++;
+      flashSession.queue.splice(Math.min(3, flashSession.queue.length), 0, card);
+    } else {
+      const box = Math.min(5, (cur.box || 0) + (grade === "easy" ? 2 : 1));
+      const d = new Date();
+      d.setDate(d.getDate() + FLASH_INTERVALS[box]);
+      state.cards[card.id] = { box: box, due: d.toISOString().slice(0, 10) };
+      flashSession.good++;
+      recordActivity();
+    }
+    flashSession.seen++;
+    flashSession.flipped = false;
+    saveState();
+    render({ keepScroll: true });
+  }
+
+  function flashKey(e) {
+    if (!flashSession || flashSession.queue.length === 0) return false;
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); flashSession.flipped = !flashSession.flipped; render({ keepScroll: true }); return true; }
+    if (flashSession.flipped && e.key === "1") { e.preventDefault(); gradeFlash("again"); return true; }
+    if (flashSession.flipped && e.key === "2") { e.preventDefault(); gradeFlash("good"); return true; }
+    if (flashSession.flipped && e.key === "3") { e.preventDefault(); gradeFlash("easy"); return true; }
+    return false;
+  }
+
+  function renderFlashcards(deckParam) {
+    const wrap = el("<div></div>");
+    if (deckParam && (!flashSession || flashSession.deck !== deckParam)) startFlashSession(deckParam);
+    if (!deckParam) flashSession = null;
+
+    if (flashSession && deckParam) {
+      const s = flashSession;
+      if (s.queue.length === 0) {
+        wrap.innerHTML =
+          '<div class="breadcrumb"><a href="#/flashcards">Flashcards</a> / ' + escapeHtml(s.title) + "</div>" +
+          "<h1>Session complete</h1><p class=\"lede\">You reviewed " + s.seen + " cards this session (" + s.good + " remembered, " + s.again + " to repeat). Cards you got right come back after a growing delay, so a few minutes every day beats a long cram.</p>" +
+          '<div class="btn-row"><button class="btn btn-primary" id="fc-more">Study more new cards</button><button class="btn" id="fc-back">Back to decks</button></div>';
+        wrap.querySelector("#fc-more").addEventListener("click", () => { flashSession = null; render(); });
+        wrap.querySelector("#fc-back").addEventListener("click", () => { flashSession = null; navigate("flashcards"); });
+        return wrap;
+      }
+      const c = s.queue[0];
+      wrap.innerHTML =
+        '<div class="breadcrumb"><a href="#/flashcards">Flashcards</a> / ' + escapeHtml(s.title) + "</div>" +
+        '<div class="fc-progress">' + s.queue.length + " cards left in this session</div>" +
+        '<div class="fc-card" id="fc-card" tabindex="0" role="button" aria-label="Flip card">' +
+        '<div class="fc-front">' + escapeHtml(c.front) + "</div>" +
+        (s.flipped ? '<div class="fc-back"><div class="fc-answer">' + escapeHtml(c.back) + "</div>" + (c.extra ? '<div class="fc-extra">' + escapeHtml(c.extra) + "</div>" : "") + "</div>" : '<div class="fc-hint">Think of the answer, then press <kbd>Space</kbd> or click to reveal</div>') +
+        "</div>" +
+        (s.flipped
+          ? '<div class="fc-grades"><button class="btn" id="fc-again">Missed it <kbd>1</kbd></button><button class="btn btn-primary" id="fc-good">Got it <kbd>2</kbd></button><button class="btn" id="fc-easy">Easy <kbd>3</kbd></button></div>'
+          : '<div class="fc-grades"><button class="btn btn-primary" id="fc-flip">Show answer <kbd>Space</kbd></button></div>') +
+        '<div class="fc-foot"><button class="link-btn" id="fc-end">End session</button></div>';
+      wrap.querySelector("#fc-card").addEventListener("click", () => { s.flipped = !s.flipped; render({ keepScroll: true }); });
+      const bind = (id, fn) => { const b = wrap.querySelector(id); if (b) b.addEventListener("click", fn); };
+      bind("#fc-flip", () => { s.flipped = true; render({ keepScroll: true }); });
+      bind("#fc-again", () => gradeFlash("again"));
+      bind("#fc-good", () => gradeFlash("good"));
+      bind("#fc-easy", () => gradeFlash("easy"));
+      bind("#fc-end", () => { flashSession = null; navigate("flashcards"); });
+      return wrap;
+    }
+
+    wrap.innerHTML =
+      '<div class="eyebrow">Flashcards</div><h1>Memorize with spaced repetition</h1>' +
+      '<p class="lede">Cards you remember come back after longer and longer gaps; cards you miss come back the same day. Ten minutes a day beats a weekend of cramming. In a session: <kbd>Space</kbd> reveals the answer, then <kbd>1</kbd> missed, <kbd>2</kbd> got it, <kbd>3</kbd> easy.</p><div class="path-grid">' +
+      flashDecks().map((d) => {
+        const c = flashCounts(d);
+        return (
+          '<div class="path-card"><div class="path-card-head"><h3>' + escapeHtml(d.title) + "</h3></div><p>" + escapeHtml(d.blurb) + "</p>" +
+          '<div class="path-meta"><span class="tag tag-accent">' + c.due + " due</span><span class=\"tag\">" + c.fresh + " new</span><span class=\"tag\">" + c.learned + " / " + c.total + " learned</span></div>" +
+          progressBar((c.learned / c.total) * 100) +
+          '<div class="btn-row"><button class="btn btn-primary" data-fc-start="' + d.id + '"' + (c.due + c.fresh === 0 ? " disabled" : "") + ">" + (c.due + c.fresh === 0 ? "All caught up" : "Study now") + "</button></div></div>"
+        );
+      }).join("") + "</div>";
+    wrap.querySelectorAll("[data-fc-start]").forEach((b) => b.addEventListener("click", () => navigate("flashcards", b.getAttribute("data-fc-start"))));
+    return wrap;
+  }
+
+  function scopeLabel(scope) {
+    if (SCOPE_LABELS[scope]) return SCOPE_LABELS[scope];
+    if (scope.indexOf("lesson:") === 0) { const f = findLessonFull(scope.slice(7)); return "Lesson: " + (f ? f.lesson.title : scope.slice(7)); }
+    if (scope.indexOf("obj:") === 0) { const o = objectiveById(scope.slice(4)); return "Objective " + scope.slice(4) + (o ? ": " + o.title : ""); }
+    return scope;
+  }
+
   /* ============================= SHORTCUTS & SHELL ============================= */
 
   const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || "");
@@ -2231,7 +2863,7 @@
   function stepLesson(delta) {
     const id = currentLessonId();
     if (!id) return;
-    const ids = allLessonIds();
+    const ids = navContext(id).ids;
     const next = ids[ids.indexOf(id) + delta];
     if (next) navigate("lesson", next);
   }
@@ -2329,6 +2961,7 @@
       }
       if (e.ctrlKey || e.metaKey || e.altKey || modalOpen() || isTypingTarget(e.target)) return;
 
+      if (parseHash().route === "flashcards" && flashKey(e)) return;
       const lessonId = currentLessonId();
       switch (key) {
         case "ArrowLeft":

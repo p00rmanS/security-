@@ -1,0 +1,322 @@
+/* Extra practice questions, aimed at the exam objectives that had the fewest
+   questions. Scenario-style, written to match the SY0-701 style: pick the
+   BEST answer, or select TWO. Each question's `tag` is the id of the lesson it
+   tests, which is how the app maps it to an exam objective. Choices are
+   shuffled at quiz time, so the position of the correct answer here does not
+   matter. Loaded after data-questions.js and the lesson bundles. */
+
+(function () {
+  "use strict";
+
+  // Q(id, tag, prompt, [correct, wrong1, wrong2, wrong3], explanation, [why1, why2, why3])
+  function Q(id, tag, prompt, texts, explanation, why) {
+    const ids = ["a", "b", "c", "d"];
+    const dist = {};
+    why.forEach((w, i) => { dist[ids[i + 1]] = w; });
+    return {
+      id: id, domainId: tag.slice(0, 2), tag: tag, type: "single", prompt: prompt,
+      choices: texts.map((t, i) => ({ id: ids[i], text: t })),
+      correct: "a", explanation: explanation, distractorExplanations: dist
+    };
+  }
+
+  // M(id, tag, prompt, [correct1, correct2, wrong1, wrong2], explanation, [why1, why2])  -- select TWO
+  function M(id, tag, prompt, texts, explanation, why) {
+    const ids = ["a", "b", "c", "d"];
+    const dist = {};
+    why.forEach((w, i) => { dist[ids[i + 2]] = w; });
+    return {
+      id: id, domainId: tag.slice(0, 2), tag: tag, type: "multi", prompt: prompt + " (Select TWO.)",
+      choices: texts.map((t, i) => ({ id: ids[i], text: t })),
+      correct: ["a", "b"], explanation: explanation, distractorExplanations: dist
+    };
+  }
+
+  const BANK = [
+    /* ---------------- 1.1 controls ---------------- */
+    Q("q-b-d1-1", "d1-t180", "A data center installs bollards in front of its entrance to stop vehicles from ramming the building. How is this control BEST classified?",
+      ["Physical, preventive", "Technical, detective", "Managerial, directive", "Operational, corrective"],
+      "Bollards are physical barriers that stop vehicles, so they are a physical preventive control.",
+      ["Nothing in the scenario is technology that detects events.", "Bollards are not a policy that instructs people.", "Bollards do not repair damage after an event."]),
+    Q("q-b-d1-2", "d1-t180", "A company requires all employees to sign an acceptable use policy that states what they may do with company laptops. Which control type is this?",
+      ["Directive", "Preventive", "Detective", "Corrective"],
+      "A policy that tells people what they must and must not do is a directive control (managerial category).",
+      ["Preventive controls technically or physically stop actions rather than instruct people.", "Detective controls identify events after or while they occur.", "Corrective controls repair or limit damage after an incident."]),
+    Q("q-b-d1-3", "d1-t180", "A security team deploys an IDS that raises an alert when it sees known exploit traffic. How is the IDS BEST described?",
+      ["Technical, detective", "Technical, preventive", "Physical, deterrent", "Operational, compensating"],
+      "An IDS uses technology to identify suspicious events but does not block them, so it is a technical detective control.",
+      ["An IDS alerts and does not block; an IPS would be preventive.", "An IDS is not a physical device that discourages entry.", "It is not a substitute for another control in the scenario."]),
+    Q("q-b-d1-4", "d1-t180", "A bank rotates its tellers between branches every few months so that fraud is more likely to be discovered. Which control is this?",
+      ["Operational, detective", "Technical, preventive", "Physical, deterrent", "Managerial, corrective"],
+      "Job rotation is an operational control carried out by people that helps detect fraud or errors.",
+      ["No technology blocks anything here.", "No physical barrier or sign is involved.", "Job rotation does not repair damage after an incident."]),
+    M("q-b-d1-5", "d1-t180", "Which TWO of the following are examples of PREVENTIVE controls?",
+      ["A firewall rule that blocks Telnet", "A locked server cage with a badge reader", "A security camera recording an entrance", "A warning sign about monitoring"],
+      "A firewall block rule and a locked cage both stop actions from happening, so they are preventive.",
+      ["A recording camera is mainly detective.", "A warning sign is deterrent, not preventive."]),
+
+    /* ---------------- 1.2 fundamentals ---------------- */
+    Q("q-b-d1-6", "d1-t181", "A user digitally signs an email so the recipient can prove the message came from that user and the user cannot later deny sending it. Which security concept does this provide?",
+      ["Non-repudiation", "Availability", "Obfuscation", "Compensating control"],
+      "Digital signatures provide non-repudiation, along with integrity and authentication.",
+      ["Availability concerns being accessible when needed.", "Obfuscation makes data harder to understand.", "A compensating control substitutes for another control."]),
+    Q("q-b-d1-7", "d1-t181", "A company compares its current security controls to the NIST Cybersecurity Framework and lists the controls that are missing. What is this activity?",
+      ["Gap analysis", "Penetration testing", "Business impact analysis", "Vulnerability scanning"],
+      "A gap analysis compares the current state to a desired standard and identifies differences to remediate.",
+      ["Penetration testing attempts to exploit weaknesses.", "A BIA measures the impact of losing business functions.", "A vulnerability scan identifies technical flaws in systems."]),
+    Q("q-b-d1-8", "d1-t181", "In a zero trust architecture, which component establishes or terminates a session based on the policy engine's decision?",
+      ["Policy administrator", "Implicit trust zone", "Subject", "Policy-driven access control"],
+      "The policy administrator carries out the policy engine's decision by establishing or tearing down the session.",
+      ["The implicit trust zone is the area where approved traffic flows.", "The subject is the user or device requesting access.", "Policy-driven access control describes the principle, not the component that executes sessions."]),
+    Q("q-b-d1-9", "d1-t8", "A building uses sensors that detect heat and movement to trigger an alert when someone enters a restricted room after hours. What type of sensor technology does this describe?",
+      ["Infrared (motion) sensor", "Pressure sensor in the floor only", "Ultrasonic distance meter for parking", "A badge reader"],
+      "Infrared sensors detect heat and motion and are commonly used for intrusion detection.",
+      ["A pressure sensor detects weight, not heat and movement.", "Ultrasonic sensors measure distance with sound and are not described.", "A badge reader checks credentials rather than detecting motion."]),
+    Q("q-b-d1-10", "d1-t37", "A security team creates a fake database filled with fabricated records on a monitored server to see who tries to access it. What is this called?",
+      ["A honeypot", "A bastion host", "A jump server", "A sinkhole"],
+      "A honeypot is a decoy system designed to attract and record attacker activity.",
+      ["A bastion host is a hardened gateway, not a decoy.", "A jump server is a controlled access point for administrators.", "A sinkhole redirects malicious domain lookups."]),
+
+    /* ---------------- 1.3 change management ---------------- */
+    Q("q-b-d1-11", "d1-t182", "Before upgrading a firewall, a team documents exactly how to return to the previous configuration if the upgrade fails. What is this document?",
+      ["A backout plan", "An incident response plan", "A business impact analysis", "A service level agreement"],
+      "A backout plan describes how to reverse a change and restore the prior state.",
+      ["An incident response plan covers security incidents.", "A BIA analyzes the impact of disruptions to business functions.", "An SLA defines service performance commitments."]),
+    Q("q-b-d1-12", "d1-t182", "A change is scheduled for Saturday at 2 a.m. to minimize disruption to users. What is this scheduled period called?",
+      ["A maintenance window", "A restricted activity", "A dependency", "A baseline"],
+      "A maintenance window is a planned time when changes can be made with minimal impact.",
+      ["A restricted activity is something not allowed without special approval.", "A dependency is a relationship between systems.", "A baseline is an approved standard configuration."]),
+    Q("q-b-d1-13", "d1-t3b", "A patch is applied and a legacy application that depends on an older library stops working. Which change management consideration was MOST likely missed?",
+      ["Dependencies identified during impact analysis", "The size of the password history", "The color of the network cables", "The CVSS score of the patch"],
+      "Impact analysis should identify dependencies so that changes do not break systems that rely on the changed component.",
+      ["Password history is unrelated to application compatibility.", "Cable color has no relevance.", "The CVSS score measures vulnerability severity, not compatibility."]),
+    Q("q-b-d1-14", "d1-t3", "A company allows administrators to restart a standard set of services on a schedule without separate approval each time. What type of change is this?",
+      ["Standard change", "Emergency change", "Unauthorized change", "Major redesign"],
+      "Standard changes are routine, low-risk, and pre-approved.",
+      ["Emergency changes address urgent problems and are reviewed afterward.", "Unauthorized changes bypass the process.", "A major redesign would require full review and approval."]),
+
+    /* ---------------- 2.1 threat actors ---------------- */
+    Q("q-b-d2-1", "d2-t180", "A group defaces a company's website with a political message and announces a denial-of-service attack on social media. Which threat actor is MOST likely?",
+      ["Hacktivist", "Nation-state", "Organized crime", "Insider threat"],
+      "Attacks motivated by political or philosophical beliefs and aimed at publicity are typical of hacktivists.",
+      ["Nation-states typically operate quietly with espionage or strategic goals.", "Organized crime seeks financial gain.", "An insider has legitimate internal access and is not described."]),
+    Q("q-b-d2-2", "d2-t180", "A finance employee who was passed over for promotion copies customer data to a personal drive before resigning. What is the MOST likely motivation?",
+      ["Revenge or financial gain by an insider", "Espionage by a nation-state", "Chaos by an unskilled attacker", "Philosophical protest"],
+      "An internal person with legitimate access acting out of resentment or for profit is an insider threat.",
+      ["The actor is internal, not a state-sponsored group.", "An unskilled external attacker would not have this access.", "Nothing in the scenario suggests a cause or protest."]),
+    Q("q-b-d2-3", "d2-t180", "An organized group encrypts a hospital's files and demands payment in cryptocurrency. Which attributes BEST describe this actor?",
+      ["External, well-funded, financially motivated", "Internal, low-resourced, curious", "External, state-sponsored, ideological", "Internal, well-funded, political"],
+      "Ransomware gangs are external, professional, and motivated by money.",
+      ["The attacker is not an internal, low-resourced curious individual.", "State-sponsored ideological actors do not typically demand ransom payments.", "The actor is not described as internal or political."]),
+    Q("q-b-d2-4", "d2-t180", "A department begins using an unapproved cloud file-sharing service because it is easier than the company's tool. What is this?",
+      ["Shadow IT", "A nation-state attack", "Hacktivism", "A zero-day exploit"],
+      "Using technology without approval from the IT or security team is shadow IT.",
+      ["No external government actor is involved.", "There is no political motive.", "No unknown vulnerability exploit is described."]),
+    Q("q-b-d2-5", "d2-t180", "A skilled attacker who is not authorized, but who discovers a flaw and reports it to the company without causing damage, is BEST described as which type of hacker?",
+      ["Gray hat", "White hat", "Black hat", "Script kiddie"],
+      "Acting without authorization but without malicious intent describes a gray hat.",
+      ["A white hat has permission.", "A black hat acts maliciously.", "A script kiddie is an unskilled attacker using others' tools."]),
+
+    /* ---------------- 2.5 mitigation ---------------- */
+    Q("q-b-d2-6", "d2-t181", "Malware that infected one department's workstations spread to the finance network because both were on the same flat network. Which mitigation would BEST limit similar spread?",
+      ["Network segmentation", "A longer password history", "Disabling the screen saver", "Encrypting the backups"],
+      "Segmentation separates networks into zones so a compromise in one does not easily spread to another.",
+      ["Password history does not stop network spread.", "A screen saver is unrelated to malware spread.", "Encrypted backups protect data but do not limit lateral movement."]),
+    Q("q-b-d2-7", "d2-t181", "A company wants a server to run only a small, approved set of programs. Which technique BEST achieves this?",
+      ["Application allow list", "Signature-based antivirus", "Increasing log retention", "A banner warning"],
+      "An allow list permits only approved applications to run, blocking everything else.",
+      ["Signature antivirus blocks known malware but allows other unknown programs.", "Log retention records activity but does not restrict programs.", "A banner does not enforce anything."]),
+    M("q-b-d2-8", "d2-t181", "Which TWO actions are hardening techniques that reduce a server's attack surface?",
+      ["Disabling unused ports and services", "Removing unnecessary software", "Adding more user accounts for convenience", "Leaving default passwords in place"],
+      "Disabling unneeded services and removing unnecessary software both shrink the attack surface.",
+      ["More accounts increase exposure.", "Default passwords are well-known weaknesses."]),
+    Q("q-b-d2-9", "d2-t181", "A company retires old servers but leaves them powered on in a closet, still connected to the network, with data on the drives. Which mitigation was neglected?",
+      ["Decommissioning", "Segmentation", "Patching", "Monitoring"],
+      "Decommissioning includes sanitizing data, disconnecting systems, and removing them from service and records.",
+      ["The issue is not about network zoning.", "Patching does not address retired systems left in place.", "Monitoring would not remove the data and exposure of the retired systems."]),
+    Q("q-b-d2-10", "d2-t182", "A server shows signs of compromise even after its operating system was reinstalled and its disk replaced. Which is the MOST likely location of the persistent malware?",
+      ["Firmware", "A user document", "The browser cache", "The recycle bin"],
+      "Firmware is stored on the hardware and survives OS reinstalls and disk replacement.",
+      ["A user document would be lost with the disk replacement.", "Browser cache would not persist across a disk replacement.", "The recycle bin resides on the replaced disk."]),
+
+    /* ---------------- 4.2 asset management ---------------- */
+    Q("q-b-d4-1", "d4-t181", "An organization is discarding hard drives that held confidential data. Which action provides the strongest assurance that the data cannot be recovered?",
+      ["Physical destruction with a certificate of destruction", "Deleting the files", "Quick format", "Moving the drives to a storage room"],
+      "Physically destroying the media and documenting it is the strongest sanitization method.",
+      ["Deleted files can be recovered.", "A quick format leaves data recoverable.", "Storing the drives leaves the data intact."]),
+    Q("q-b-d4-2", "d4-t181", "A scan discovers devices on the network that are not listed in the asset inventory. Which asset management practice does this support?",
+      ["Enumeration", "Decommissioning", "Procurement", "Sanitization"],
+      "Enumeration discovers what assets actually exist so they can be reconciled with the inventory.",
+      ["Decommissioning retires assets.", "Procurement is acquiring assets.", "Sanitization removes data from media."]),
+    Q("q-b-d4-3", "d4-t2", "Which information is MOST important to record for every asset so that someone is accountable for it?",
+      ["The asset owner", "The vendor's logo", "The color of the device", "The purchase receipt only"],
+      "Assigning an owner ensures accountability for the asset's protection and lifecycle.",
+      ["A logo has no accountability value.", "Color is irrelevant.", "A receipt alone does not assign responsibility."]),
+    Q("q-b-d4-4", "d4-t181", "Before destroying archived records, the legal team informs IT that litigation is expected. What should IT do?",
+      ["Preserve the records under a legal hold instead of destroying them", "Destroy them on schedule", "Move them to a personal cloud account", "Encrypt them and delete the key"],
+      "A legal hold overrides normal disposal so potentially relevant data is preserved.",
+      ["Destroying them risks spoliation penalties.", "Moving data to a personal account is improper and risks loss of control.", "Deleting the key makes the data unrecoverable, which is destruction."]),
+    Q("q-b-d4-5", "d4-t181", "Which action is part of decommissioning a server?",
+      ["Removing its accounts, certificates, and monitoring entries and updating the inventory", "Leaving its certificates active", "Keeping its DNS record", "Giving it a new owner without review"],
+      "Decommissioning includes cleaning up identities, certificates, and records and updating the inventory.",
+      ["Active certificates for a retired server are a risk.", "A stale DNS record can mislead or be abused.", "Reassigning without review defeats lifecycle control."]),
+
+    /* ---------------- 4.7 automation ---------------- */
+    Q("q-b-d4-6", "d4-t166", "A SOC wants new employee accounts to be created and permissions assigned automatically when HR records a new hire. Which security automation use case is this?",
+      ["User provisioning", "Packet capture", "Threat hunting", "Penetration testing"],
+      "Automating account creation and access assignment from an authoritative source is user provisioning.",
+      ["Packet capture records network traffic.", "Threat hunting is proactive searching for threats.", "Penetration testing simulates attacks."]),
+    Q("q-b-d4-7", "d4-t166", "A cloud team deploys a rule that automatically reverts any storage bucket that becomes publicly readable. What is this automated control called?",
+      ["A guardrail", "A honeypot", "A playbook review", "A tabletop exercise"],
+      "A guardrail automatically prevents or corrects insecure configurations.",
+      ["A honeypot is a decoy system.", "A playbook review is a manual check.", "A tabletop exercise is a discussion-based drill."]),
+    Q("q-b-d4-8", "d4-t7", "Which is a recognized DRAWBACK of heavy security automation?",
+      ["It can add complexity and technical debt that must be maintained", "It always eliminates the need for staff", "It prevents logging", "It makes every alert a true positive"],
+      "Automation increases complexity and requires ongoing maintenance, creating technical debt if neglected.",
+      ["Automation still needs skilled staff.", "Automation can and should log actions.", "Automation does not guarantee alert accuracy."]),
+    Q("q-b-d4-9", "d4-t166", "A security tool automatically disables an account whenever a rule detects suspicious activity. A false positive locks out the chief financial officer during quarter-end. Which risk of automation does this illustrate?",
+      ["Errors can cause harm at machine speed without human review", "Automation always reduces cost", "Automation guarantees accuracy", "Automation removes the need for policies"],
+      "Automated actions can amplify mistakes, so high-impact actions often need human approval or safeguards.",
+      ["The scenario is about harm, not cost savings.", "A false positive shows accuracy is not guaranteed.", "Policies are still needed."]),
+
+    /* ---------------- 4.8 incident response ---------------- */
+    Q("q-b-d4-10", "d4-flagship", "After detecting malware on several hosts, which incident response phase involves isolating the infected systems to stop the spread?",
+      ["Containment", "Preparation", "Lessons learned", "Detection"],
+      "Containment limits the spread and damage of an incident.",
+      ["Preparation happens before incidents.", "Lessons learned happens after the incident.", "Detection identified the incident but does not stop its spread."]),
+    Q("q-b-d4-11", "d4-t162", "A company runs a meeting where managers discuss how they would respond to a ransomware scenario without using any systems. Which exercise is this?",
+      ["Tabletop exercise", "Simulation with live malware", "Penetration test", "Failover test"],
+      "A tabletop exercise is a discussion-based walk through a scenario.",
+      ["A simulation involves hands-on actions in a test environment.", "A penetration test attacks systems.", "A failover test switches production to a backup system."]),
+    Q("q-b-d4-12", "d4-t8b", "A forensic investigator needs to collect evidence from a running computer. In which order should they collect data?",
+      ["From most volatile (memory) to least volatile (disk)", "From least volatile to most volatile", "Alphabetically by file name", "Only the disk, ignoring memory"],
+      "Collect the most volatile data first because it is lost when power is removed.",
+      ["Collecting the least volatile first risks losing volatile data.", "Alphabetical order has no forensic basis.", "Ignoring memory loses important volatile evidence."]),
+    Q("q-b-d4-13", "d4-t29", "An investigator creates a bit-for-bit copy of a suspect's drive using a write blocker and records the hash value. What is the PRIMARY purpose of the write blocker and hash?",
+      ["Preserve evidence integrity", "Speed up the investigation", "Encrypt the evidence", "Delete unneeded files"],
+      "Write blockers prevent changes and hashes prove that the copy is identical and unaltered.",
+      ["Speed is not their purpose.", "They do not encrypt evidence.", "Deleting files would alter evidence."]),
+    Q("q-b-d4-14", "d4-t12", "A security team proactively searches its network for signs of compromise that no alert has flagged, using a hypothesis about attacker behavior. What is this activity?",
+      ["Threat hunting", "Incident containment", "Vulnerability scanning", "Disaster recovery"],
+      "Threat hunting is the proactive, hypothesis-driven search for threats that evaded detection.",
+      ["Containment limits an incident already identified.", "Vulnerability scanning looks for weaknesses, not attacker presence.", "Disaster recovery restores operations after disruption."]),
+    Q("q-b-d4-15", "d4-t174", "After a confirmed ransomware infection, which action should be taken FIRST?",
+      ["Isolate affected systems from the network", "Pay the ransom immediately", "Wipe all servers before collecting evidence", "Wait to see whether the encryption stops"],
+      "Isolating affected systems stops the spread while preserving evidence for analysis.",
+      ["Paying is not a first action and carries risks.", "Wiping first destroys evidence.", "Waiting allows more systems to be encrypted."]),
+    M("q-b-d4-16", "d4-t162", "Which TWO outputs should come from a post-incident lessons learned review?",
+      ["A timeline and root cause analysis", "Corrective actions with owners and deadlines", "A decision to delete all incident logs", "An assignment of blame to one employee"],
+      "A good review produces a timeline, root cause, and tracked corrective actions.",
+      ["Deleting logs would destroy evidence and learning.", "Blame discourages honest reporting and does not fix root causes."]),
+
+    /* ---------------- 4.9 data sources ---------------- */
+    Q("q-b-d4-17", "d4-t182", "An analyst wants to know which user logged in to a Windows server and when. Which source is MOST useful?",
+      ["The operating system security log", "A NetFlow record", "A vulnerability scan report", "A DNS zone file"],
+      "OS security logs record authentication events including who logged on and when.",
+      ["NetFlow records connection metadata without user identity.", "A vulnerability scan lists weaknesses, not logins.", "A DNS zone file lists records and not logins."]),
+    Q("q-b-d4-18", "d4-t182", "Which data source would show the exact commands run by a process on a compromised laptop?",
+      ["Endpoint detection and response telemetry", "Firewall log", "Email gateway log", "Load balancer statistics"],
+      "EDR and endpoint logs capture process and command activity on the device.",
+      ["A firewall log shows connections, not commands.", "An email gateway log shows messages.", "Load balancer statistics show traffic distribution."]),
+    Q("q-b-d4-19", "d4-t9", "An investigator needs to confirm which servers an email passed through and whether SPF and DKIM checks passed. What should they examine?",
+      ["The email headers", "The mail server's CPU graph", "A backup tape", "The Wi-Fi heat map"],
+      "Email headers contain the delivery path and authentication results.",
+      ["A CPU graph shows server load.", "A backup tape stores archived data.", "A heat map shows wireless signal strength."]),
+    Q("q-b-d4-20", "d4-t9", "Which source provides the content of network communications and can be used to reconstruct an unencrypted file transfer?",
+      ["Packet capture", "NetFlow", "A SIEM dashboard", "An SNMP trap"],
+      "Packet captures record payloads, allowing reconstruction of unencrypted transfers.",
+      ["NetFlow records metadata without content.", "A dashboard visualizes data and does not hold packet contents.", "An SNMP trap is an alert from a device."]),
+
+    /* ---------------- 5.1 governance ---------------- */
+    Q("q-b-d5-1", "d5-t182", "A document states that all stored customer data must be encrypted with AES-256. Which tier of governance documentation is this?",
+      ["Standard", "Guideline", "Policy", "Procedure"],
+      "A standard defines specific, mandatory technical requirements that implement a policy.",
+      ["A guideline is optional advice.", "A policy is a high-level statement of intent.", "A procedure gives step-by-step instructions."]),
+    Q("q-b-d5-2", "d5-t182", "Which document would an administrator follow step by step to disable a departing employee's access?",
+      ["An offboarding procedure", "An acceptable use policy", "A password standard", "A guideline on passphrases"],
+      "Procedures provide detailed, mandatory steps for tasks such as offboarding.",
+      ["An AUP defines acceptable behavior, not steps.", "A password standard sets requirements for passwords.", "A guideline is optional advice."]),
+    Q("q-b-d5-3", "d5-t1", "Which role is accountable for a data set and decides how it is classified?",
+      ["Data owner", "Data custodian", "Help desk", "Auditor"],
+      "The data owner is accountable for the data and its classification.",
+      ["The custodian operates the controls but does not decide classification.", "The help desk provides user support.", "An auditor evaluates controls and does not own the data."]),
+    Q("q-b-d5-4", "d5-t1", "A multinational company must follow different privacy laws in several countries. Which governance consideration does this illustrate?",
+      ["External considerations such as regional and national laws", "Internal password standards", "Guidelines for desk setup", "Physical access badges"],
+      "Governance must account for legal and regulatory requirements across jurisdictions.",
+      ["Password standards are internal and not the point.", "Desk setup guidelines are unrelated.", "Badges are physical controls and not a legal consideration."]),
+    Q("q-b-d5-5", "d5-t1", "In a decentralized governance model, who sets security rules?",
+      ["Individual business units set many of their own rules", "One central authority sets all rules", "Only external regulators", "Only the help desk"],
+      "Decentralized governance allows local units to make decisions, trading consistency for flexibility.",
+      ["That describes centralized governance.", "Regulators set requirements but do not run internal governance.", "The help desk does not set governance rules."]),
+
+    /* ---------------- 5.3 third-party risk ---------------- */
+    Q("q-b-d5-6", "d5-t113", "Which agreement defines measurable service levels, such as uptime, and remedies if they are not met?",
+      ["Service level agreement (SLA)", "Non-disclosure agreement (NDA)", "Memorandum of understanding (MOU)", "Business partners agreement (BPA)"],
+      "An SLA specifies measurable service commitments and remedies.",
+      ["An NDA protects confidentiality.", "An MOU states shared intent and is generally non-binding.", "A BPA defines partnership terms."]),
+    Q("q-b-d5-7", "d5-t3", "Before hiring a vendor to process customer data, a company reviews the vendor's independent security assessment and financial statements. Which concept is this?",
+      ["Due diligence", "Incident response", "Tokenization", "Change management"],
+      "Due diligence is the investigation performed before engaging a vendor.",
+      ["Incident response handles incidents.", "Tokenization protects data values.", "Change management controls modifications to systems."]),
+    Q("q-b-d5-8", "d5-t183", "A company wants the ability to inspect a vendor's security controls under the contract. Which clause provides this?",
+      ["Right to audit", "Rules of engagement", "Non-compete", "Force majeure"],
+      "A right-to-audit clause allows the customer to inspect or demand evidence of the vendor's controls.",
+      ["Rules of engagement define penetration test boundaries.", "A non-compete restricts business competition.", "Force majeure addresses extraordinary events beyond control."]),
+    Q("q-b-d5-9", "d5-t183", "A member of the vendor selection committee has a financial stake in one of the bidders. What should happen?",
+      ["The member should disclose the interest and be recused from the decision", "The member should lead the evaluation", "The interest should be kept secret", "The bidder should win automatically"],
+      "Conflicts of interest require disclosure and recusal to keep selection fair.",
+      ["Leading the evaluation compounds the conflict.", "Secrecy worsens the problem.", "Awarding automatically is improper."]),
+    Q("q-b-d5-10", "d5-t113", "Which document lists the specific tasks, deliverables, timeline, and price for one project under an existing master agreement?",
+      ["Statement of work (SOW)", "Master services agreement (MSA)", "Service level agreement (SLA)", "Memorandum of understanding (MOU)"],
+      "A SOW defines the specifics of an engagement under the umbrella of an MSA.",
+      ["The MSA holds general terms.", "An SLA defines service performance targets.", "An MOU states intent and is usually non-binding."]),
+
+    /* ---------------- 5.5 audits and assessments ---------------- */
+    Q("q-b-d5-11", "d5-t181", "A team of control owners reviews its own controls against a checklist before an external audit. What is this called?",
+      ["Self-assessment", "Regulatory examination", "Independent third-party audit", "Penetration test"],
+      "A self-assessment is performed by the people responsible for the controls.",
+      ["A regulatory examination is performed by a regulator.", "An independent audit is done by outside auditors.", "A penetration test simulates attacks."]),
+    Q("q-b-d5-12", "d5-t160", "A penetration tester has no prior information about the target environment. Which test type is this?",
+      ["Unknown environment (black box)", "Known environment (white box)", "Partially known (gray box)", "Integrated (purple team)"],
+      "Testing with no prior knowledge is unknown environment, also called black box.",
+      ["White box provides full information.", "Gray box provides partial information.", "Purple team describes collaboration between red and blue teams."]),
+    Q("q-b-d5-13", "d5-t160", "Which activity is an example of ACTIVE reconnaissance?",
+      ["Port scanning a target's servers", "Reading the target's public press releases", "Looking up WHOIS records", "Searching social media profiles"],
+      "Port scanning directly interacts with the target and can be detected.",
+      ["Reading press releases is passive.", "WHOIS lookups are passive.", "Searching social media is passive."]),
+    Q("q-b-d5-14", "d5-t181", "An independent firm examines a service provider's controls over several months and issues a formal report. What is this formal statement of the controls called?",
+      ["Attestation", "Acknowledgement", "A guideline", "Tokenization"],
+      "An attestation is a formal assurance or opinion about controls, such as a SOC 2 report.",
+      ["Acknowledgement is an individual confirming they read a policy.", "A guideline is optional advice.", "Tokenization replaces sensitive values with tokens."]),
+    Q("q-b-d5-15", "d5-t160", "In a security exercise, which team's role is to coordinate the exercise, enforce the rules, and act as referee?",
+      ["White team", "Red team", "Blue team", "Purple team"],
+      "The white team referees and coordinates the exercise.",
+      ["The red team plays the attacker.", "The blue team defends.", "The purple team facilitates collaboration between red and blue."]),
+
+    /* ---------------- 5.6 awareness ---------------- */
+    Q("q-b-d5-16", "d5-t180", "A company sends fake phishing emails to employees and gives immediate feedback to those who click. What is the PRIMARY purpose?",
+      ["Train users to recognize and report phishing", "Punish employees who click", "Replace the email filter", "Collect employees' personal passwords"],
+      "Simulations measure and improve recognition and reporting through teachable moments.",
+      ["Punishment discourages reporting.", "Simulations complement filters and do not replace them.", "Collecting passwords is not the purpose and would be improper."]),
+    Q("q-b-d5-17", "d5-t180", "An employee finds a USB drive in the parking lot. According to good awareness training, what should the employee do?",
+      ["Not plug it in and report it to security", "Plug it into a work computer to identify the owner", "Plug it into a personal computer at home", "Keep it as a spare"],
+      "Unknown removable media may contain malware, so it should not be connected and should be reported.",
+      ["Plugging it into a work computer risks infection.", "Plugging it into a personal computer also risks infection.", "Keeping it does not address the risk."]),
+    Q("q-b-d5-18", "d5-t6", "Which measure BEST indicates that a phishing awareness program is working?",
+      ["Increasing report rate and decreasing click rate over time", "The number of employees who attended", "The number of emails sent", "The length of the training video"],
+      "Behavior metrics such as report and click rates show real improvement.",
+      ["Attendance alone does not show behavior change.", "Emails sent measures activity, not effectiveness.", "Video length is not a measure of effectiveness."]),
+    Q("q-b-d5-19", "d5-t180", "An employee posts photos of the office badge, workstations, and a whiteboard of project names on social media. Which concept does this violate?",
+      ["Operational security (OPSEC)", "Change management", "Data masking", "Key escrow"],
+      "OPSEC means not revealing information that adversaries could use to harm the organization.",
+      ["Change management controls modifications to systems.", "Data masking hides values in data.", "Key escrow stores copies of encryption keys."]),
+    Q("q-b-d5-20", "d5-t180", "A user receives an unexpected request from a colleague to buy gift cards urgently and keep it confidential. What should the user do?",
+      ["Verify the request through a separate channel and report it", "Buy the gift cards immediately", "Reply to the email asking for more details", "Ignore security policy because the sender looks familiar"],
+      "Urgent, secret payment requests are red flags; verify out of band and report.",
+      ["Buying immediately may complete a fraud.", "Replying uses the possibly compromised channel.", "Familiarity can be faked by attackers."])
+  ];
+
+  BANK.forEach((q) => {
+    if (!QUESTIONS.some((x) => x.id === q.id)) QUESTIONS.push(q);
+  });
+})();

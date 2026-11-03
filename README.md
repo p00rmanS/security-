@@ -52,7 +52,12 @@ js/data-lessons-more2-a.js, -b.js  9 more lessons (legacy/EOL systems, SD-WAN/SA
 js/data-lessons-more3-a.js, -b.js  10 more lessons (BEC/payment fraud, IPv6 security, firewall rules and ACLs,
                          wireless authentication/EAP, STRIDE threat modeling, API security, reading CLI tool
                          output, incident playbooks by scenario, modern password guidance, retention/legal hold)
-Totals with every file loaded: 164 lessons, 330 questions, 237 glossary terms, 292 acronyms
+js/data-lessons-more4-*.js, more5-*.js  24 lessons written against the Exam Blueprint checker to close every gap
+js/data-objectives.js    Every SY0-701 objective and sub-topic (546), each with a pattern the Blueprint page
+                         matches against all lesson text
+js/data-paths.js         Study-path metadata, the core-lesson list, and the ports deck
+js/data-questions-bank.js 64 extra scenario questions aimed at the thinnest objectives (incl. select-two)
+Totals with every file loaded: 188 lessons, 442 questions, 274 glossary terms, 305 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     226 domain + 12 refresher practice questions (250 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)
@@ -60,6 +65,22 @@ js/data-acronyms.js      216 Security+ acronyms (223 with extras)
 js/data-labs.js          10 hands-on labs (fictional data only)
 js/app.js                Routing, rendering, icons, quiz engine, plan generator, state
 ```
+
+## Study system (aimed at passing SY0-701)
+
+- **Study paths** (`#/paths`): Zero to Certified (all lessons in objective order, a quiz checkpoint after each
+  domain), Fast Track (core lessons only, by exam weight), Final Two Weeks (cram), and Fix My Weak Areas (built
+  from your own quiz results). The lesson player's Next/Previous follows the path you choose.
+- **Exam Blueprint** (`#/blueprint`): every objective and sub-topic from the SY0-701 outline matched against the
+  full text of every lesson. Green = taught in a lesson built for that objective; amber = only mentioned elsewhere;
+  red = no lesson. This is a keyword-based study aid written from the published outline. It proves topics are
+  *covered*, not that you have *mastered* them, and you should still compare it with CompTIA's official objectives
+  PDF for your exam version.
+- **Flashcards** (`#/flashcards`): spaced repetition for acronyms, ports (both directions), and glossary terms.
+- **Practice by lesson or objective**: any lesson page has "Practice this lesson"; the Practice Center has a "By
+  exam objective" group. Per-question results feed the weak-areas path and the blueprint accuracy figures.
+- Honest limit: the built-in question bank (442) is a supplement. For exam volume, also use official CompTIA
+  practice material and timed mock exams from other providers.
 
 ## The course player
 

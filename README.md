@@ -49,7 +49,10 @@ js/data-lessons-merge.js Merges every lesson bundle; warns on the console if a l
 js/data-lessons-more2-a.js, -b.js  9 more lessons (legacy/EOL systems, SD-WAN/SASE/ZTNA, web gateways and WAF,
                          log analysis practice, MFA attacks, secure SDLC, SOAR automation, worked ALE/SLE
                          risk examples, KPIs/KRIs and reporting)
-Totals with every file loaded: 154 lessons, 310 questions, 214 glossary terms, 277 acronyms
+js/data-lessons-more3-a.js, -b.js  10 more lessons (BEC/payment fraud, IPv6 security, firewall rules and ACLs,
+                         wireless authentication/EAP, STRIDE threat modeling, API security, reading CLI tool
+                         output, incident playbooks by scenario, modern password guidance, retention/legal hold)
+Totals with every file loaded: 164 lessons, 330 questions, 237 glossary terms, 292 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     226 domain + 12 refresher practice questions (250 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)

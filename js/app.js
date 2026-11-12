@@ -21,6 +21,11 @@
       outlineSections: {},
       hiddenSections: {},
       activePath: null,
+      examDate: null,
+      dailyMinutes: 90,
+      mockHistory: [],
+      pbqProgress: {},
+      listenRate: 1,
       navCourseOrder: false,
       pathChecks: {},
       cards: {},
@@ -63,6 +68,11 @@
         outlineSections: parsed.outlineSections || {},
         hiddenSections: parsed.hiddenSections || {},
         activePath: parsed.activePath || null,
+        examDate: parsed.examDate || null,
+        dailyMinutes: parsed.dailyMinutes || 90,
+        mockHistory: Array.isArray(parsed.mockHistory) ? parsed.mockHistory : [],
+        pbqProgress: parsed.pbqProgress || {},
+        listenRate: parsed.listenRate || 1,
         navCourseOrder: !!parsed.navCourseOrder,
         pathChecks: parsed.pathChecks || {},
         cards: parsed.cards || {},
@@ -334,6 +344,7 @@
     const { route, param } = parseHash();
     const fn = routes[route] || renderDashboard;
     const content = document.getElementById("content");
+    if (window.SECAPP) SECAPP.leaveHandlers.forEach((h) => h(route, param));
 
     renderSidebar(route, param);
     applyLayout();
@@ -367,6 +378,7 @@
     html += navGroupOpen("Course");
     html += navLink("dashboard", null, "Dashboard", activeRoute === "dashboard");
     html += navLink("paths", null, "Study paths", activeRoute === "paths");
+    html += navLink("planner", null, "Exam date planner", activeRoute === "planner");
     html += navLink("course", null, "Course content", activeRoute === "course" || activeRoute === "lesson");
     html += navLink("blueprint", null, "Exam blueprint", activeRoute === "blueprint");
     html += navLink("exam", null, "Exam overview", activeRoute === "exam");
@@ -386,6 +398,8 @@
 
     html += navGroupOpen("Practice & reference");
     html += navLink("practice", null, "Practice Center", activeRoute === "practice");
+    html += navLink("mock", null, "Mock exam", activeRoute === "mock");
+    html += navLink("pbq", null, "PBQ practice", activeRoute === "pbq");
     html += navLink("flashcards", null, "Flashcards", activeRoute === "flashcards");
     html += navLink("labs", null, "Labs / SOC Simulator", activeRoute === "labs" || activeRoute === "lab");
     html += navLink("glossary", null, "Glossary", activeRoute === "glossary");
@@ -847,7 +861,7 @@
       pathBannerHtml(navCtx, lessonId) +
 
       '<div class="lesson-title-row"><h1>' + escapeHtml(lesson.title) + "</h1>" +
-      '<div class="lesson-actions">' + bookmarkButton(lesson.id) + completeToggleButton(lesson.id) + "</div></div>" +
+      '<div class="lesson-actions">' + extHookHtml("lessonActions", lesson) + bookmarkButton(lesson.id) + completeToggleButton(lesson.id) + "</div></div>" +
       '<div class="lesson-meta"><span class="tag">' + (navCtx.path ? "Path step " : "Lesson ") + (idx + 1) + " of " + ids.length + "</span>" +
       (lesson.minutes ? '<span class="tag">' + lesson.minutes + " min</span>" : "") +
       (kind === "domain" && found.isFlagship ? '<span class="tag tag-blue">Flagship</span>' : "") +
@@ -878,6 +892,7 @@
     wireNotesInputs(wrap);
     wirePracticeDomainButtons(wrap);
     wireScopeButtons(wrap);
+    extHookWire("lessonActions", wrap, lesson);
     wrap.querySelectorAll("[data-use-course-order]").forEach((b) => b.addEventListener("click", () => { state.navCourseOrder = true; saveState(); render({ keepScroll: true }); }));
     wrap.querySelectorAll("[data-use-path-order]").forEach((b) => b.addEventListener("click", () => { state.navCourseOrder = false; saveState(); render({ keepScroll: true }); }));
     wrap.querySelectorAll("[data-goto-path]").forEach((b) => b.addEventListener("click", () => navigate("paths", b.getAttribute("data-goto-path"))));
@@ -1080,6 +1095,7 @@
       "</div></div>" +
 
       pathCardHtml() +
+      extHookHtml("dashboard") +
 
       '<div class="card-grid">' +
         statCard(completedCount() + " / " + TOTAL_LESSONS, "Lessons completed") +
@@ -1119,6 +1135,7 @@
     wireContinueButtons(wrap);
     wirePracticeDomainButtons(wrap);
     wireScopeButtons(wrap);
+    extHookWire("dashboard", wrap);
     return wrap;
   }
 
@@ -2699,6 +2716,15 @@
   const FLASH_NEW_PER_SESSION = 15;
   let flashSession = null;
 
+  let flashDomain = "all";
+
+  function lessonDeckRecords() {
+    const recs = [];
+    FUNDAMENTALS.forEach((f) => recs.push({ lesson: f, domainId: "fund" }));
+    DOMAINS.forEach((d) => [d.flagship, ...d.topics].forEach((l) => recs.push({ lesson: l, domainId: d.id })));
+    return flashDomain === "all" ? recs : recs.filter((r) => r.domainId === flashDomain);
+  }
+
   function flashDecks() {
     return [
       { id: "acronyms", title: "Acronyms", blurb: "Expand every Security+ acronym and recall what it means.", cards: () => ACRONYMS.map((a) => ({ id: "ac:" + a.acro, front: a.acro, back: a.expansion, extra: a.meaning })) },
@@ -2707,7 +2733,24 @@
         arr.push({ id: "pt:" + p.port + ":b", front: "Which port(s) for " + p.service + "?", back: p.port + " (" + p.proto + ")", extra: p.note });
         return arr;
       }, []) },
-      { id: "glossary", title: "Glossary terms", blurb: "Plain-language definitions of the key terms.", cards: () => GLOSSARY.map((g) => ({ id: "gl:" + g.term, front: g.term, back: g.plain, extra: g.technical })) }
+      { id: "glossary", title: "Glossary terms", blurb: "Plain-language definitions of the key terms.", cards: () => GLOSSARY.filter((g) => flashDomain === "all" || g.domain === flashDomain).map((g) => ({ id: "gl:" + g.term, front: g.term, back: g.plain, extra: g.technical })) },
+      { id: "pairs", title: "Confusable pairs", blurb: "The look-alike terms the exam uses as distractors (RTO vs RPO, virus vs worm...). Explain the difference.", cards: () => lessonDeckRecords().reduce((arr, r) => {
+        (r.lesson.confusion || []).forEach((c, i) => arr.push({ id: "cf:" + r.lesson.id + ":" + i, front: c.a + "  vs  " + c.b, back: c.diff, extra: r.lesson.title }));
+        return arr;
+      }, []) },
+      { id: "terms", title: "Key terms from lessons", blurb: "Every key term defined inside the lessons. Say the definition before you flip.", cards: () => lessonDeckRecords().reduce((arr, r) => {
+        (r.lesson.keyTerms || []).forEach((t) => arr.push({ id: "kt:" + r.lesson.id + ":" + t.term, front: t.term, back: t.def, extra: r.lesson.title }));
+        return arr;
+      }, []) },
+      { id: "remember", title: "What to remember", blurb: "Recall each lesson's exam-focus points, then check the list.", cards: () => lessonDeckRecords().reduce((arr, r) => {
+        const items = lessonRemember(r.lesson);
+        if (items.length) arr.push({ id: "rm:" + r.lesson.id, front: r.lesson.title + ": what must you remember?", back: items.map((t, i) => (i + 1) + ". " + t).join("\n"), extra: "" });
+        return arr;
+      }, []) },
+      { id: "tips", title: "Pro tips", blurb: "Exam-taking tricks: how the questions are worded and which answer they want.", cards: () => lessonDeckRecords().reduce((arr, r) => {
+        if (PRO_TIPS[r.lesson.id]) arr.push({ id: "tp:" + r.lesson.id, front: "Pro tip: " + r.lesson.title, back: PRO_TIPS[r.lesson.id], extra: "" });
+        return arr;
+      }, []) }
     ];
   }
 
@@ -2804,7 +2847,10 @@
 
     wrap.innerHTML =
       '<div class="eyebrow">Flashcards</div><h1>Memorize with spaced repetition</h1>' +
-      '<p class="lede">Cards you remember come back after longer and longer gaps; cards you miss come back the same day. Ten minutes a day beats a weekend of cramming. In a session: <kbd>Space</kbd> reveals the answer, then <kbd>1</kbd> missed, <kbd>2</kbd> got it, <kbd>3</kbd> easy.</p><div class="path-grid">' +
+      '<p class="lede">Cards you remember come back after longer and longer gaps; cards you miss come back the same day. Ten minutes a day beats a weekend of cramming. In a session: <kbd>Space</kbd> reveals the answer, then <kbd>1</kbd> missed, <kbd>2</kbd> got it, <kbd>3</kbd> easy.</p>' +
+      '<div class="filter-row" role="group" aria-label="Filter lesson decks by domain"><span class="vt-label" style="align-self:center;">Domain</span>' +
+      [["all", "All"], ["fund", "Refresher"], ["d1", "D1"], ["d2", "D2"], ["d3", "D3"], ["d4", "D4"], ["d5", "D5"]].map((x) => '<button class="filter-chip' + (flashDomain === x[0] ? " active" : "") + '" data-fc-domain="' + x[0] + '">' + x[1] + "</button>").join("") +
+      '</div><div class="path-grid">' +
       flashDecks().map((d) => {
         const c = flashCounts(d);
         return (
@@ -2815,6 +2861,7 @@
         );
       }).join("") + "</div>";
     wrap.querySelectorAll("[data-fc-start]").forEach((b) => b.addEventListener("click", () => navigate("flashcards", b.getAttribute("data-fc-start"))));
+    wrap.querySelectorAll("[data-fc-domain]").forEach((b) => b.addEventListener("click", () => { flashDomain = b.getAttribute("data-fc-domain"); render({ keepScroll: true }); }));
     return wrap;
   }
 
@@ -2839,6 +2886,7 @@
     { keys: ["O"], label: "Show / hide course content" },
     { keys: ["M"], label: "Show / hide the menu" },
     { keys: ["T"], label: "Show / hide Taglish" },
+    { keys: ["L"], label: "Listen to the lesson (read aloud)" },
     { keys: ["/"], label: "Search" },
     { keys: [MOD_KEY, "K"], label: "Search" },
     { keys: ["?"], label: "Show this list" },
@@ -2961,6 +3009,7 @@
       }
       if (e.ctrlKey || e.metaKey || e.altKey || modalOpen() || isTypingTarget(e.target)) return;
 
+      if (window.SECAPP && SECAPP.keyHandlers.some((h) => h(e))) return;
       if (parseHash().route === "flashcards" && flashKey(e)) return;
       const lessonId = currentLessonId();
       switch (key) {
@@ -3012,6 +3061,29 @@
       }
     });
   }
+
+  /* ============================= EXTENSION API (separate feature files) ============================= */
+
+  function extHookHtml(name, arg) {
+    return (window.SECAPP ? SECAPP.hooks[name] : []).map((h) => h.html(arg) || "").join("");
+  }
+
+  function extHookWire(name, container, arg) {
+    (window.SECAPP ? SECAPP.hooks[name] : []).forEach((h) => { if (h.wire) h.wire(container, arg); });
+  }
+
+  window.SECAPP = {
+    get state() { return state; },
+    saveState, navigate, render, el, escapeHtml, shuffle, icon, progressBar, toast, todayIso, formatTime,
+    findLessonFull, allLessonIds, objectiveOfLesson, objectiveById, questionsForScope, buildPath, pathProgress,
+    pathStageMinutes, stepTitle, goToStep, stepDone, recordActivity, DOMAIN_COLORS, statCard, wireOpenLesson,
+    wireScopeButtons, scopeLabel, domainById, parseHash, lessonRecords, lessonRemember,
+    setQuizScope: function (scope) { pendingQuizScope = scope; },
+    routes: routes,
+    hooks: { dashboard: [], lessonActions: [] },
+    keyHandlers: [],
+    leaveHandlers: []
+  };
 
   document.addEventListener("DOMContentLoaded", () => {
     applyTheme();

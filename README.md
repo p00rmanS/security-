@@ -76,7 +76,12 @@ js/app.js                Routing, rendering, icons, quiz engine, plan generator,
   red = no lesson. This is a keyword-based study aid written from the published outline. It proves topics are
   *covered*, not that you have *mastered* them, and you should still compare it with CompTIA's official objectives
   PDF for your exam version.
-- **Flashcards** (`#/flashcards`): spaced repetition for acronyms, ports (both directions), and glossary terms.
+- **Flashcards** (`#/flashcards`): spaced repetition for acronyms, ports (both directions), glossary terms, lesson "what to remember" points, pro tips and confusable pairs, filterable by domain.
+- **Performance-based practice** (`#/pbq`): 18 simulated PBQs (firewall rule ordering graded by simulating first-match-wins, ordering, matching, log analysis, configuration forms).
+- **Mock exam** (`#/mock`): timed full/half/quick exams weighted by domain, PBQs first, review screen, domain breakdown. The score is an estimate, not CompTIA's formula.
+- **Exam date planner** (`#/planner`): packs unfinished path steps into the days left, reserving the last days for a mock and rest.
+- **Listen mode**: press `L` on a lesson to have it read aloud with the browser's speech synthesis.
+- **Installable / offline**: PWA manifest and a network-first service worker (registered on http/https only).
 - **Practice by lesson or objective**: any lesson page has "Practice this lesson"; the Practice Center has a "By
   exam objective" group. Per-question results feed the weak-areas path and the blueprint accuracy figures.
 - Honest limit: the built-in question bank (442) is a supplement. For exam volume, also use official CompTIA

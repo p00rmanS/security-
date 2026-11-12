@@ -1,0 +1,15 @@
+{
+  "name": "Security+ Learning Path",
+  "short_name": "Sec+ Path",
+  "description": "Independent study course for CompTIA Security+ (SY0-701): lessons, practice, mock exams, and flashcards.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1b1a17",
+  "theme_color": "#1b1a17",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

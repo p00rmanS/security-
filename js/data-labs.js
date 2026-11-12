@@ -311,5 +311,96 @@ const LABS = [
       { id: "t3", prompt: "What should the forensics team do now that this gap has been discovered?", choices: [ {id:"a", text:"Document the gap explicitly in the case file and tighten the sign-in/sign-out process going forward"}, {id:"b", text:"Quietly delete the incomplete entry so the log looks clean"}, {id:"c", text:"Ignore it, since the laptop is back in the locker now"}, {id:"d", text:"Destroy the evidence since the chain is no longer perfect"} ], correct: "a", explanation: "The correct response to a documentation gap is transparency — disclose it honestly and fix the process going forward. Altering or deleting a record to hide the gap would be a far more serious integrity violation than the original clerical mistake." }
     ],
     reflectionPrompt: "In your own words, explain the difference between 'this evidence was definitely tampered with' and 'this evidence's chain of custody has a gap that can't rule out tampering.' Why does that distinction still matter even though neither is a good outcome?"
+  },
+  {
+    id: "lab-dns-tunnel",
+    title: "Spot DNS Tunneling and Command-and-Control",
+    minutes: 20,
+    domainId: "d4",
+    objective: "Read DNS query logs and recognise beaconing and data exfiltration over DNS.",
+    scenario: "A fictional DNS resolver log for workstation WS-114 (192.168.10.114) is shown below. The SOC wants to know whether it is behaving normally.",
+    evidence: {
+      type: "log",
+      headers: ["Time", "Client", "Query", "Type", "Response size"],
+      rows: [
+        ["08:02:10", "192.168.10.114", "www.example-news.test", "A", "64 B"],
+        ["08:02:41", "192.168.10.114", "updates.example-os.test", "A", "64 B"],
+        ["08:15:00", "192.168.10.114", "dGhpcyBpcyBzZWNyZXQ.x7q.badzone.test", "TXT", "480 B"],
+        ["08:15:30", "192.168.10.114", "ZGF0YSBjaHVuayAy.x7q.badzone.test", "TXT", "480 B"],
+        ["08:16:00", "192.168.10.114", "cGF5cm9sbC54bHN4.x7q.badzone.test", "TXT", "480 B"],
+        ["08:16:30", "192.168.10.114", "c2FsYXJpZXM.x7q.badzone.test", "TXT", "480 B"]
+      ]
+    },
+    hints: [
+      "Look at the length and randomness of the subdomain labels.",
+      "Note the regular 30-second spacing and the TXT record type.",
+      "Normal browsing rarely queries many unique subdomains of one odd domain."
+    ],
+    tasks: [
+      { id: "t1", prompt: "Which pattern is the strongest indicator of DNS tunneling?", choices: [ {id:"a", text:"Many long, encoded-looking subdomains of one domain queried at regular intervals using TXT records"}, {id:"b", text:"A single A-record lookup for a news site"}, {id:"c", text:"Responses of 64 bytes"}, {id:"d", text:"Queries starting at 08:02"} ], correct: "a", explanation: "Encoded data in subdomains, a fixed beaconing interval and large TXT responses are classic signs of DNS used as a covert channel." },
+      { id: "t2", prompt: "Why do attackers use DNS for this?", choices: [ {id:"a", text:"DNS is usually allowed through firewalls, so it can carry data out and commands in"}, {id:"b", text:"DNS is faster than any other protocol"}, {id:"c", text:"DNS cannot be logged"}, {id:"d", text:"DNS always encrypts content"} ], correct: "a", explanation: "Because outbound DNS is rarely blocked, it is a favourite covert channel. It is not faster, can be logged, and is not encrypted by default." },
+      { id: "t3", prompt: "Which response is MOST appropriate first?", choices: [ {id:"a", text:"Isolate WS-114, block the domain at the DNS resolver, and start an incident investigation"}, {id:"b", text:"Ignore it because TXT records are common"}, {id:"c", text:"Delete the DNS logs"}, {id:"d", text:"Reboot the DNS server only"} ], correct: "a", explanation: "Contain the host, block the malicious domain (a DNS sinkhole works well), and investigate. Deleting logs destroys evidence." }
+    ],
+    reflectionPrompt: "What baseline of normal DNS behaviour would make this tunneling easier to detect automatically?"
+  },
+  {
+    id: "lab-email-auth",
+    title: "Read SPF, DKIM and DMARC Results",
+    minutes: 15,
+    domainId: "d4",
+    objective: "Interpret email authentication results in message headers to judge whether a sender was spoofed.",
+    scenario: "A fictional message claims to be from billing@acme-corp.test. The receiving gateway added these header results.",
+    evidence: {
+      type: "text",
+      content:
+        "Authentication-Results: mx.receiver.test;\n" +
+        "  spf=fail smtp.mailfrom=billing@acme-corp.test (sender IP 203.0.113.99 not permitted)\n" +
+        "  dkim=none (no signature)\n" +
+        "  dmarc=fail (p=reject) header.from=acme-corp.test\n" +
+        "From: Acme Billing <billing@acme-corp.test>\n" +
+        "Subject: Overdue invoice - pay now"
+    },
+    hints: [
+      "SPF checks whether the sending server IP is authorised for the domain.",
+      "DKIM checks a cryptographic signature on the message.",
+      "DMARC tells receivers what to do when SPF/DKIM alignment fails."
+    ],
+    tasks: [
+      { id: "t1", prompt: "What does spf=fail tell you?", choices: [ {id:"a", text:"The sending IP is not authorised to send mail for that domain"}, {id:"b", text:"The message body was altered"}, {id:"c", text:"The recipient mailbox is full"}, {id:"d", text:"The message was encrypted"} ], correct: "a", explanation: "SPF publishes the list of servers allowed to send for a domain in DNS; a fail means the sending server is not on it." },
+      { id: "t2", prompt: "The domain publishes p=reject. What should a compliant receiver do?", choices: [ {id:"a", text:"Reject the message"}, {id:"b", text:"Deliver it to the inbox"}, {id:"c", text:"Forward it to the CEO"}, {id:"d", text:"Strip the headers and deliver it"} ], correct: "a", explanation: "The DMARC policy p=reject instructs receivers to refuse mail that fails authentication and alignment. p=none only monitors and p=quarantine sends it to spam." },
+      { id: "t3", prompt: "Which conclusion is best supported?", choices: [ {id:"a", text:"The message is very likely spoofed"}, {id:"b", text:"The message is definitely legitimate"}, {id:"c", text:"DKIM proves the sender is honest"}, {id:"d", text:"Nothing can be concluded from the headers"} ], correct: "a", explanation: "SPF and DMARC both failed and there is no DKIM signature, so the message is very likely spoofed, and the urgency in the subject matches phishing." }
+    ],
+    reflectionPrompt: "Why is DMARC at p=none a good first step for a company but not a good final state?"
+  },
+  {
+    id: "lab-cloud-storage",
+    title: "Fix a Misconfigured Cloud Storage Bucket",
+    minutes: 20,
+    domainId: "d3",
+    objective: "Spot risky cloud storage settings and choose the right fixes under the shared responsibility model.",
+    scenario: "A fictional cloud storage bucket named hr-exports holds payroll files. Review its configuration.",
+    evidence: {
+      type: "log",
+      headers: ["Setting", "Value"],
+      rows: [
+        ["Public access block", "Off"],
+        ["Bucket policy principal", "* (everyone)"],
+        ["Encryption at rest", "Disabled"],
+        ["Versioning", "Disabled"],
+        ["Access logging", "Disabled"],
+        ["MFA for admin console users", "Not required"]
+      ]
+    },
+    hints: [
+      "Which setting directly exposes the data to the Internet?",
+      "Who is responsible for configuring this: the provider or the customer?",
+      "Think prevent, detect, recover."
+    ],
+    tasks: [
+      { id: "t1", prompt: "Which setting creates the most immediate risk?", choices: [ {id:"a", text:"Public access allowed with principal '*'"}, {id:"b", text:"Versioning disabled"}, {id:"c", text:"Access logging disabled"}, {id:"d", text:"The bucket name"} ], correct: "a", explanation: "A policy granting everyone access exposes payroll data to the Internet. The others are weaknesses but do not directly expose the data." },
+      { id: "t2", prompt: "Who is responsible for fixing this configuration?", choices: [ {id:"a", text:"The customer"}, {id:"b", text:"The cloud provider"}, {id:"c", text:"The ISP"}, {id:"d", text:"Nobody, it is automatic"} ], correct: "a", explanation: "Under the shared responsibility model the provider secures the platform, but the customer configures access, encryption and logging for their data." },
+      { id: "t3", prompt: "Which set of fixes is BEST?", choices: [ {id:"a", text:"Enable the public access block, restrict the policy to named roles, enable encryption, versioning and logging, and require MFA"}, {id:"b", text:"Rename the bucket"}, {id:"c", text:"Delete the logs"}, {id:"d", text:"Move the same settings to another region"} ], correct: "a", explanation: "Block public exposure and apply least privilege (prevent), enable logging (detect), and versioning (recover), with encryption and MFA as additional layers." }
+    ],
+    reflectionPrompt: "What automated control could alert you the next time someone makes a bucket public?"
   }
 ];

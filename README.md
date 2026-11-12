@@ -57,12 +57,13 @@ js/data-objectives.js    Every SY0-701 objective and sub-topic (546), each with 
                          matches against all lesson text
 js/data-paths.js         Study-path metadata, the core-lesson list, and the ports deck
 js/data-questions-bank.js 64 extra scenario questions aimed at the thinnest objectives (incl. select-two)
-Totals with every file loaded: 188 lessons, 442 questions, 274 glossary terms, 305 acronyms
+Totals with every file loaded: 188 lessons, 537 questions, 274 glossary terms, 305 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     226 domain + 12 refresher practice questions (250 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)
 js/data-acronyms.js      216 Security+ acronyms (223 with extras)
-js/data-labs.js          10 hands-on labs (fictional data only)
+js/data-labs.js          13 hands-on labs (fictional data only)
+js/data-questions-bank2.js  95 more questions aimed at lessons that had 0-1 questions
 js/app.js                Routing, rendering, icons, quiz engine, plan generator, state
 ```
 
@@ -84,7 +85,7 @@ js/app.js                Routing, rendering, icons, quiz engine, plan generator,
 - **Installable / offline**: PWA manifest and a network-first service worker (registered on http/https only).
 - **Practice by lesson or objective**: any lesson page has "Practice this lesson"; the Practice Center has a "By
   exam objective" group. Per-question results feed the weak-areas path and the blueprint accuracy figures.
-- Honest limit: the built-in question bank (442) is a supplement. For exam volume, also use official CompTIA
+- Honest limit: the built-in question bank (537) is a supplement. For exam volume, also use official CompTIA
   practice material and timed mock exams from other providers.
 
 ## The course player

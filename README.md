@@ -57,7 +57,7 @@ js/data-objectives.js    Every SY0-701 objective and sub-topic (546), each with 
                          matches against all lesson text
 js/data-paths.js         Study-path metadata, the core-lesson list, and the ports deck
 js/data-questions-bank.js 64 extra scenario questions aimed at the thinnest objectives (incl. select-two)
-Totals with every file loaded: 188 lessons, 537 questions, 274 glossary terms, 305 acronyms
+Totals with every file loaded: 193 lessons, 547 questions, 274 glossary terms, 305 acronyms
 js/data-comparisons.js   "Compare & Contrast" cards (18 tables)
 js/data-questions.js     226 domain + 12 refresher practice questions (250 total with data-lessons-extra.js)
 js/data-glossary.js      137 glossary terms (150 with extras)
